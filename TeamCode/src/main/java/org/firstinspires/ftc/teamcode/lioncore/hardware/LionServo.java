@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.lioncore.hardware;
 
-import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -10,10 +9,8 @@ public class LionServo {
     private boolean hasSecond;
     private boolean mirror;
     private double position;
-    private Timer timeSinceLastMovement;
 
     private LionServo(HardwareMap hwmp, String name) {
-        this.timeSinceLastMovement = new Timer();
         this.hardware = hwmp.get(Servo.class, name);
         this.hasSecond = false;
         this.mirror = false;
@@ -41,7 +38,6 @@ public class LionServo {
 
     public void setPosition(double position) {
         if (this.position == position) return;
-        this.timeSinceLastMovement.resetTimer();
         this.position = position;
         this.hardware.setPosition(this.position);
         if (this.hasSecond) {
@@ -52,9 +48,5 @@ public class LionServo {
 
     public double getPosition() {
         return this.position;
-    }
-
-    public double timeSinceLastMovement() {
-        return this.timeSinceLastMovement.getElapsedTimeSeconds();
     }
 }
