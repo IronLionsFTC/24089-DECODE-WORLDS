@@ -14,7 +14,6 @@ public class MotorConstants {
     }
 
     public static class ZPB {
-        public static DcMotor.ZeroPowerBehavior leftShooterMotor = DcMotor.ZeroPowerBehavior.FLOAT;
-        public static DcMotor.ZeroPowerBehavior rightShooterMotor = DcMotor.ZeroPowerBehavior.FLOAT;
+        public static DcMotor.ZeroPowerBehavior shooterMotors = DcMotor.ZeroPowerBehavior.FLOAT;
     }
 }
