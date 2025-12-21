@@ -9,8 +9,8 @@ public class MotorConstants {
     }
 
     public static class Reversed {
-        public static boolean leftShooterMotor = false;
-        public static boolean rightShooterMotor = true;
+        public static boolean leftShooterMotor = true;
+        public static boolean rightShooterMotor = false;
     }
 
     public static class ZPB {

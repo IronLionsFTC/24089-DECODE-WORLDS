@@ -19,6 +19,13 @@ public class Shooter extends SystemBase {
 
     // Control
     private PID pid;
+    public double targetRPM = 0;
+    public double targetHood = 0 ;
+
+    public Shooter() {
+        this.targetRPM = 0;
+        this.targetHood = 0;
+    }
 
     // PID constants
     @Config
@@ -54,5 +61,11 @@ public class Shooter extends SystemBase {
                 ShooterPID.P,
                 ShooterPID.P
         );
+
+        double current = this.motors.getVelocity(28.0);
+        telemetry.addData("Flywheel RPM", current);
+        double target = (ShooterPID.targetOverride == 0) ? targetRPM : ShooterPID.targetOverride;
+        double response = this.pid.calculate(current, target) + ((target == 0) ? 0 : ShooterPID.F);
+        this.motors.setPower(response);
     }
 }
