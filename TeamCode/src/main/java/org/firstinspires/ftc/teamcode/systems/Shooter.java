@@ -38,12 +38,21 @@ public class Shooter extends SystemBase {
 
     @Override
     public void init() {
+        this.pid = new PID(
+                ShooterPID.P,
+                ShooterPID.P,
+                ShooterPID.P
+        );
         this.motors.setReversed(MotorConstants.Reversed.leftShooterMotor, MotorConstants.Reversed.rightShooterMotor);
         this.motors.setZPB(MotorConstants.ZPB.shooterMotors);
     }
 
     @Override
     public void update(Telemetry telemetry) {
-
+        this.pid.setConstants(
+                ShooterPID.P,
+                ShooterPID.P,
+                ShooterPID.P
+        );
     }
 }

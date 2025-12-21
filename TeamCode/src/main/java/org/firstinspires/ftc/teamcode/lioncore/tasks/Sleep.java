@@ -1,22 +1,20 @@
 package org.firstinspires.ftc.teamcode.lioncore.tasks;
 
-import com.pedropathing.util.Timer;
-
 public class Sleep extends Task {
 
     private final double seconds;
-    private Timer timer;
+    private long endTime;
 
     public Sleep(double seconds) {
         this.seconds = seconds;
     }
 
     public void init() {
-        this.timer = new Timer();
-        this.timer.resetTimer();
+        long startTime = System.nanoTime();
+        this.endTime = startTime + (long)(this.seconds * 1_000_000_000);
     }
 
     public boolean finished() {
-        return this.timer.getElapsedTimeSeconds() > this.seconds;
+        return System.nanoTime() >= this.endTime;
     }
 }
