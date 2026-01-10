@@ -37,6 +37,9 @@ public abstract class TaskOpMode extends OpMode {
     @Override
     public void init() {
 
+        this.controller1 = new Controller(gamepad1);
+        this.controller2 = new Controller(gamepad2);
+
         this.lastTime = System.nanoTime();
         this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
