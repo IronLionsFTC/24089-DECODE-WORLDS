@@ -47,8 +47,8 @@ public class Shooter extends SystemBase {
     public void init() {
         this.pid = new PID(
                 ShooterPID.P,
-                ShooterPID.P,
-                ShooterPID.P
+                ShooterPID.I,
+                ShooterPID.D
         );
         this.motors.setReversed(MotorConstants.Reversed.leftShooterMotor, MotorConstants.Reversed.rightShooterMotor);
         this.motors.setZPB(MotorConstants.ZPB.shooterMotors);
@@ -58,8 +58,8 @@ public class Shooter extends SystemBase {
     public void update(Telemetry telemetry) {
         this.pid.setConstants(
                 ShooterPID.P,
-                ShooterPID.P,
-                ShooterPID.P
+                ShooterPID.I,
+                ShooterPID.D
         );
 
         double current = this.motors.getVelocity(28.0);
