@@ -19,7 +19,7 @@ public class SwervePod {
      * Optimise the movement of a swerve pod to the position it is suppose to be at to require the least amount of movement.
      * @param target A vector representing the direction the pod should go, with +y as forward and +x as right.
      */
-    private void update(Vector target) {
+    public void update(Vector target) {
 
         double current = servo.getPosition() * (21.0 / 16.0);
         double currentDegrees = (current - 0.5) * ServoConstants.Ratios.swerve * 360;
