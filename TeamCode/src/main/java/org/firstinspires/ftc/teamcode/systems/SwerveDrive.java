@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
+import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
@@ -29,11 +31,22 @@ public class SwerveDrive extends SystemBase {
     private DoubleSupplier joystickY;
     private DoubleSupplier joystickH;
 
+    private double targetHeading;
+    private PID headingController;
+
+    @Config
+    public static class SwervePID {
+        public static double P = 0;
+        public static double I = 0;
+        public static double D = 0;
+    }
+
     public SwerveDrive(Position startPosition) {
         this.startPosition = startPosition;
         this.joystickX = () -> 0;
         this.joystickY = () -> 0;
         this.joystickH = () -> 0;
+        this.headingController = new PID(0, 0, 0);
     }
 
     public SwerveDrive(Position startPosition, DoubleSupplier x, DoubleSupplier y, DoubleSupplier h) {
@@ -41,6 +54,7 @@ public class SwerveDrive extends SystemBase {
         this.joystickX = x;
         this.joystickY = y;
         this.joystickH = h;
+        this.headingController = new PID(0, 0, 0);
     }
 
     @Override
@@ -69,14 +83,32 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.resetPosAndIMU();
         this.pinpoint.setPosition(startPosition.pose());
         this.pinpoint.setHeading(startPosition.heading, AngleUnit.DEGREES);
+        this.targetHeading = startPosition.heading;
     }
 
     @Override
     public void update(Telemetry telemetry) {
 
+        this.headingController.setConstants(
+            SwervePID.P,
+            SwervePID.I,
+            SwervePID.D
+        );
+
+        this.pinpoint.update();
+        double current = this.pinpoint.getHeading(AngleUnit.DEGREES);
+        double error = angleDifference(this.targetHeading, current);
+        double response = this.headingController.calculate(error, 0);
+
         double x = joystickX.getAsDouble();
         double y = joystickY.getAsDouble();
         double h = joystickH.getAsDouble();
+
+        if (h == 0) {
+            h = response;
+        } else {
+            this.targetHeading = current;
+        }
 
         Vector input = Vector.cartesian(x, y);
 
@@ -87,5 +119,16 @@ public class SwerveDrive extends SystemBase {
 
         telemetry.addData("Angle", input.polarDirection());
 
+    }
+
+    /**
+     * Computes shortest angular difference from current to target in degrees.
+     * Result is in range [-180, 180].
+     */
+    public static double angleDifference(double target, double current) {
+        double delta = target - current;
+        while (delta > 180) delta -= 360;
+        while (delta < -180) delta += 360;
+        return delta;
     }
 }
