@@ -27,7 +27,7 @@ public class SwervePod {
      * Optimise the movement of a swerve pod to the position it is suppose to be at to require the least amount of movement.
      * @param target A vector representing the direction the pod should go, with +y as forward and +x as right.
      */
-    public void update(Vector target, double heading, double correction) {
+    public void update(Vector target, double heading) {
 
         double current = servo.getPosition();
         double currentDegrees = (current - 0.5) * ServoConstants.Ratios.swerve * 255.0;
@@ -47,10 +47,10 @@ public class SwervePod {
 
         if (forwardError >= reversedError) {
             servo.setPosition(reversed / (255.0 * ServoConstants.Ratios.swerve) + 0.5);
-            motor.setPower(-finalVelocity.magnitude() - correction);
+            motor.setPower(-finalVelocity.magnitude());
         } else {
             servo.setPosition(forward / (255.0 * ServoConstants.Ratios.swerve) + 0.5);
-            motor.setPower(finalVelocity.magnitude() + correction);
+            motor.setPower(finalVelocity.magnitude());
         }
     }
 }

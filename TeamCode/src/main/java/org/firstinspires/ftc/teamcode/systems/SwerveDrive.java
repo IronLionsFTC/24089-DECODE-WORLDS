@@ -111,21 +111,22 @@ public class SwerveDrive extends SystemBase {
         double h = joystickH.getAsDouble();
 
         if (h != 0 || !turning) {
-            response = 0;
             this.turning = true;
             this.targetHeading = current;
 
             if (Math.abs(pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES)) < 5 && h == 0) {
                 this.turning = false;
             }
+        } else {
+            h = response;
         }
 
         Vector input = Vector.cartesian(x, y);
 
-        this.rightFront.update(input, h, response);
-        this.leftFront.update(input, h, response);
-        this.rightRear.update(input, h, response);
-        this.leftRear.update(input, h, response);
+        this.rightFront.update(input, h);
+        this.leftFront.update(input, h);
+        this.rightRear.update(input, h);
+        this.leftRear.update(input, h);
 
         telemetry.addData("Angle", input.polarDirection());
 
