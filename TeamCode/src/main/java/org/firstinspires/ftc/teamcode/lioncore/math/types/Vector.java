@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.lioncore.math.types;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+
 public class Vector {
     private double x;
     private double y;
@@ -58,5 +62,9 @@ public class Vector {
     public void add_mut(Vector other) {
         this.x += other.x;
         this.y += other.y;
+    }
+
+    public Pose2D pose(double heading) {
+        return new Pose2D(DistanceUnit.MM, this.x, this.y, AngleUnit.DEGREES, heading);
     }
 }
