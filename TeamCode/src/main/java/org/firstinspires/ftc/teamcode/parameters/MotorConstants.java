@@ -15,9 +15,9 @@ public class MotorConstants {
     public static class Reversed {
         public static boolean leftShooterMotor = true;
         public static boolean rightShooterMotor = false;
-        public static boolean rf = false;
+        public static boolean rf = true;
         public static boolean lf = false;
-        public static boolean rr = false;
+        public static boolean rr = true;
         public static boolean lr = false;
     }
 
