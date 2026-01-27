@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
@@ -33,6 +34,7 @@ public class SwerveDrive extends SystemBase {
 
     private double targetHeading;
     private PID headingController;
+    private boolean turning;
 
     @Config
     public static class SwervePID {
@@ -84,6 +86,7 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.setPosition(startPosition.pose());
         this.pinpoint.setHeading(startPosition.heading, AngleUnit.DEGREES);
         this.targetHeading = startPosition.heading;
+        this.turning = false;
     }
 
     @Override
@@ -104,10 +107,15 @@ public class SwerveDrive extends SystemBase {
         double y = joystickY.getAsDouble();
         double h = joystickH.getAsDouble();
 
-        if (h == 0) {
+        if (h == 0 && !turning) {
             h = response;
         } else {
+            this.turning = true;
             this.targetHeading = current;
+
+            if (Math.abs(pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES)) < 5 && h == 0) {
+                this.turning = false;
+            }
         }
 
         Vector input = Vector.cartesian(x, y);
