@@ -58,10 +58,10 @@ public class SwerveDrive extends SystemBase {
         rightRear.setZPB(MotorConstants.ZPB.driveMotors);
         leftRear.setReversed(MotorConstants.Reversed.lr);
         leftRear.setZPB(MotorConstants.ZPB.driveMotors);
-        this.rightFront = new SwervePod(rightFront, LionServo.single(hardwareMap, ServoConstants.Names.rightFront, 0.5));
-        this.leftFront = new SwervePod(leftFront, LionServo.single(hardwareMap, ServoConstants.Names.leftFront, 0.5));
-        this.rightRear = new SwervePod(rightRear, LionServo.single(hardwareMap, ServoConstants.Names.rightRear, 0.5));
-        this.leftRear = new SwervePod(leftRear, LionServo.single(hardwareMap, ServoConstants.Names.leftRear, 0.5));
+        this.rightFront = new SwervePod(rightFront, LionServo.single(hardwareMap, ServoConstants.Names.rightFront, 0.5), Vector.cartesian(1, 1));
+        this.leftFront = new SwervePod(leftFront, LionServo.single(hardwareMap, ServoConstants.Names.leftFront, 0.5), Vector.cartesian(-1, 1));
+        this.rightRear = new SwervePod(rightRear, LionServo.single(hardwareMap, ServoConstants.Names.rightRear, 0.5), Vector.cartesian(1, -1));
+        this.leftRear = new SwervePod(leftRear, LionServo.single(hardwareMap, ServoConstants.Names.leftRear, 0.5), Vector.cartesian(-1, -1));
     }
 
     @Override
@@ -74,11 +74,17 @@ public class SwerveDrive extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
 
-        Vector input = Vector.cartesian(joystickX.getAsDouble(), joystickY.getAsDouble());
-        telemetry.addData("Current", this.rightFront.update(input));
-        this.leftFront.update(input);
-        this.rightRear.update(input);
-        this.leftRear.update(input);
+        double x = joystickX.getAsDouble();
+        double y = joystickY.getAsDouble();
+        double h = joystickH.getAsDouble();
+
+        Vector input = Vector.cartesian(x, y);
+
+        this.rightFront.update(input, h);
+        this.leftFront.update(input, h);
+        this.rightRear.update(input, h);
+        this.leftRear.update(input, h);
+
         telemetry.addData("Angle", input.polarDirection());
 
     }
