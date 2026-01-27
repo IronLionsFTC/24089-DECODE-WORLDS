@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
-import org.firstinspires.ftc.teamcode.systems.SwervePod;
 
 @TeleOp
 public class SwerveTuning extends LinearOpMode {

@@ -44,6 +44,10 @@ public class Vector {
         return Math.atan2(this.y, this.x);
     }
 
+    public double polarDirection() {
+        return Math.toDegrees(Math.atan2(this.x, this.y));
+    }
+
     public double magnitude() { return Math.sqrt(Math.pow(this.x, 2.0) + Math.pow(this.y, 2.0)); }
 
     public Vector multiply(double scalar) {

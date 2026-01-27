@@ -75,10 +75,11 @@ public class SwerveDrive extends SystemBase {
     public void update(Telemetry telemetry) {
 
         Vector input = Vector.cartesian(joystickX.getAsDouble(), joystickY.getAsDouble());
-        this.rightFront.update(input);
+        telemetry.addData("Current", this.rightFront.update(input));
         this.leftFront.update(input);
         this.rightRear.update(input);
         this.leftRear.update(input);
+        telemetry.addData("Angle", input.polarDirection());
 
     }
 }
