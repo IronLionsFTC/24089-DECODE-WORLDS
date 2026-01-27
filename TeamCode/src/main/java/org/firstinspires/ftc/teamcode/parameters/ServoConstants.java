@@ -3,6 +3,10 @@ package org.firstinspires.ftc.teamcode.parameters;
 public class ServoConstants {
     public static class Names {
         public static String hoodServo = "hoodServo";
+        public static String rightFront = "rightFrontServo";
+        public static String leftFront = "leftFrontServo";
+        public static String rightRear = "rightRearServo";
+        public static String leftRear = "leftRearServo";
     }
 
     public static class Zero {

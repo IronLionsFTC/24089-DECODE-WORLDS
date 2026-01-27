@@ -4,6 +4,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class MotorConstants {
     public static class Names {
+        public static String rightFront = "rightFront";
+        public static String leftFront = "leftFront";
+        public static String rightRear = "rightRear";
+        public static String leftRear = "leftRear";
         public static String leftShooterMotor = "leftShooterMotor";
         public static String rightShooterMotor = "rightShooterMotor";
     }
@@ -11,9 +15,14 @@ public class MotorConstants {
     public static class Reversed {
         public static boolean leftShooterMotor = true;
         public static boolean rightShooterMotor = false;
+        public static boolean rf = false;
+        public static boolean lf = false;
+        public static boolean rr = false;
+        public static boolean lr = false;
     }
 
     public static class ZPB {
         public static DcMotor.ZeroPowerBehavior shooterMotors = DcMotor.ZeroPowerBehavior.FLOAT;
+        public static DcMotor.ZeroPowerBehavior driveMotors = DcMotor.ZeroPowerBehavior.FLOAT;
     }
 }
