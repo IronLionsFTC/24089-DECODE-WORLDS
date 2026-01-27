@@ -38,9 +38,9 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class SwervePID {
-        public static double P = 0;
+        public static double P = 0.025;
         public static double I = 0;
-        public static double D = 0;
+        public static double D = 0.002;
     }
 
     public SwerveDrive(Position startPosition) {
@@ -101,15 +101,17 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.update();
         double current = this.pinpoint.getHeading(AngleUnit.DEGREES);
         double error = angleDifference(this.targetHeading, current);
+
+        if (Math.abs(error) < 3) error = 0;
+
         double response = this.headingController.calculate(error, 0);
 
         double x = joystickX.getAsDouble();
         double y = joystickY.getAsDouble();
         double h = joystickH.getAsDouble();
 
-        if (h == 0 && !turning) {
-            h = response;
-        } else {
+        if (h != 0 || !turning) {
+            response = 0;
             this.turning = true;
             this.targetHeading = current;
 
@@ -120,10 +122,10 @@ public class SwerveDrive extends SystemBase {
 
         Vector input = Vector.cartesian(x, y);
 
-        this.rightFront.update(input, h);
-        this.leftFront.update(input, h);
-        this.rightRear.update(input, h);
-        this.leftRear.update(input, h);
+        this.rightFront.update(input, h, response);
+        this.leftFront.update(input, h, response);
+        this.rightRear.update(input, h, response);
+        this.leftRear.update(input, h, response);
 
         telemetry.addData("Angle", input.polarDirection());
 
