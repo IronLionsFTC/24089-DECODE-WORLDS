@@ -38,7 +38,7 @@ public class SwervePod {
         double currentDegrees = (current - 0.5) * ServoConstants.Ratios.swerve * 255.0;
 
         // Normalise option A
-        Vector rotationalVelocity = Vector.cartesian(-heading * offset.y(), heading * offset.x());
+        Vector rotationalVelocity = Vector.cartesian(heading * offset.y(), -heading * offset.x());
         Vector finalVelocity = rotationalVelocity.add(target);
         double forward = finalVelocity.polarDirection();
 

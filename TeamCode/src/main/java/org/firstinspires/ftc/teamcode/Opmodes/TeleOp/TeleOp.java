@@ -15,7 +15,7 @@ public class TeleOp extends TaskOpMode {
             new Position(0, 0, 0),
             () -> gamepad1.left_stick_x,
             () -> -gamepad1.left_stick_y,
-            () -> -gamepad1.right_stick_x * 0.6
+            () -> gamepad1.right_stick_x * 0.6
         );
 
         return Jobs.create()
