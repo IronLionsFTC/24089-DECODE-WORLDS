@@ -38,9 +38,9 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class SwervePID {
-        public static double P = 0.025;
+        public static double P = 0.02;
         public static double I = 0;
-        public static double D = 0.002;
+        public static double D = 0.0005;
     }
 
     public SwerveDrive(Position startPosition) {
@@ -101,8 +101,6 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.update();
         double current = this.pinpoint.getHeading(AngleUnit.DEGREES);
         double error = angleDifference(this.targetHeading, current);
-
-        if (Math.abs(error) < 3) error = 0;
 
         double response = this.headingController.calculate(error, 0);
 
