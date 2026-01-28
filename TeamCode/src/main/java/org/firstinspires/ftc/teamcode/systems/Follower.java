@@ -116,4 +116,12 @@ public class Follower extends SystemBase {
     public double getDistance() {
         return this.path.distanceRemaining();
     }
+
+    public void stop() {
+        this.path = null;
+    }
+
+    public void follow(Path path) {
+        this.path = path;
+    }
 }
