@@ -29,6 +29,11 @@ public class SwervePod {
      */
     public void update(Vector target, double heading) {
 
+        if (target.magnitude() == 0 && heading == 0) {
+            double angle = this.offset.polarDirection();
+            servo.setPosition(angle / (255.0 * ServoConstants.Ratios.swerve) + 0.5);
+        }
+
         double current = servo.getPosition();
         double currentDegrees = (current - 0.5) * ServoConstants.Ratios.swerve * 255.0;
 
