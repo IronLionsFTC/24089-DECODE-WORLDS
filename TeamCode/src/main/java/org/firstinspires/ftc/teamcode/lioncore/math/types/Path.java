@@ -4,17 +4,16 @@ public interface Path {
 
     /**
      * Return the value of the parametric variable 'k' which represents the position along this path from 0->1
-     * @param position The current position of the robot
      * @return
      */
     double getClosestK();
 
     /**
-     * Return the next targetted position on the path
+     * Return the position on the path given by a k value
      * @param k [0, 1]
      * @return
      */
-    Position getTarget(double k);
+    void getTarget(double k, Position output);
 
     /**
      * Return the distance remaining on a path based on the robot position.

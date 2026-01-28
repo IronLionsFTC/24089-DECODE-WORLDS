@@ -21,15 +21,26 @@ public class Follower extends SystemBase {
         }
     }
 
-    private SwerveDrive swerveDrive;
+    private final SwerveDrive swerveDrive;
     private Path path;
     private double lastKValue;
 
     private PID drivePID;
     private PID translationalPID;
 
+    private final Position targetPosition;
+    private final Vector driveVector;
+    private final Vector translationalVector;
+    private final Vector finalVector;
+    private final Position temp;
+
     public Follower(SwerveDrive swerveDrive) {
         this.swerveDrive = swerveDrive;
+        this.targetPosition = new Position(0, 0, 0);
+        this.driveVector = Vector.cartesian(0, 0);
+        this.translationalVector = Vector.cartesian(0, 0);
+        this.temp = new Position(0, 0, 0);
+        this.finalVector = Vector.cartesian(0, 0);
     }
 
     @Override
@@ -41,21 +52,39 @@ public class Follower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
 
-        Vector currentPosition = SwerveDrive.PinpointCache.position.position;
-        double kValue = path.getClosestK(currentPosition);
+        // Calculate the parametric variables and discrete approximation of tangent to the path.
+        double kValue = path.getClosestK();
+        path.getTarget(kValue, targetPosition);
+        path.getTarget(kValue + 0.05, temp);
 
-        Position targetPosition = path.getTarget(kValue);
-        Vector driveVector = path.getTarget(kValue + 0.05).position.sub(targetPosition.position).normalised();
-        Vector translationalVector = targetPosition.position.sub(currentPosition).normalised();
+        // Calculate the raw drive and translational vectors.
+        temp.position.sub_into(targetPosition.position, driveVector);
+        targetPosition.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
+        driveVector.normalise();
+        translationalVector.normalise();
 
-        double remainingDistance = path.distanceRemaining(kValue);
-        double driveResponse = drivePID.calculate(remainingDistance, 0);
+        // Minimise distance remaining and translational error and scale normalised vectors
+        double driveResponse = drivePID.calculate(path.distanceRemaining(), 0);
         double translationResponse = translationalPID.calculate(translationalVector.magnitude(), 0);
+        driveVector.multiply_mut(driveResponse);
+        translationalVector.multiply_mut(translationResponse);
+        driveVector.add_into(translationalVector, finalVector);
 
-        Vector finalVector = (driveVector.multiply(driveResponse).add(translationalVector.multiply(translationResponse))).normalised();
+        // Calculate the target heading
         double targetHeading = targetPosition.heading;
 
+        // Translate the field centric movement back into robot centric inputs
+        double headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
+        double c = Math.cos(headingRadians);
+        double s = Math.sin(headingRadians);
+
+        temp.update(
+                finalVector.x() * c + finalVector.y() * s,
+                -finalVector.x() * s + finalVector.y() * c,
+                0
+        );
+
         swerveDrive.setTargetHeading(targetHeading);
-        swerveDrive.setTargetVector(finalVector);
+        swerveDrive.setTargetVector(temp.position);
     }
 }

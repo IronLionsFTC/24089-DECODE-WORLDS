@@ -101,6 +101,12 @@ public class Vector {
         return new Vector(this.x / this.magnitude(), this.y / this.magnitude());
     }
 
+    public void normalise() {
+        double magnitude = this.magnitude();
+        this.x /= magnitude;
+        this.y /= magnitude;
+    }
+
     public void update(double x, double y) {
         this.x = x;
         this.y = y;

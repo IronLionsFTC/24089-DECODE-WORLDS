@@ -14,7 +14,6 @@ public class Line implements Path {
     private final double length;
     private final Vector to_robot;
     private final Vector temp;
-    public final Position target;
 
     public Line(Position start, Position end) {
         this.start = start;
@@ -24,11 +23,6 @@ public class Line implements Path {
         this.to_robot = Vector.cartesian(0, 0);
         this.length = this.direction.magnitude();
         this.temp = Vector.cartesian(0, 0);
-        this.target = new Position(
-                start.position.x(),
-                start.position.y(),
-                start.heading
-        );
     }
 
     @Override
@@ -39,15 +33,13 @@ public class Line implements Path {
     }
 
     @Override
-    public Position getTarget(double k) {
+    public void getTarget(double k, Position output) {
         direction.multiply_into(k, temp);
         start.position.add_into(temp, temp);
-        this.target.update(
+        output.update(
                 temp.x(), temp.y(),
                 start.heading + (end.heading - start.heading) * k
         );
-
-        return this.target;
     }
 
     @Override
