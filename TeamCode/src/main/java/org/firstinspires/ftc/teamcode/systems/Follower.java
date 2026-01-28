@@ -41,7 +41,7 @@ public class Follower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
 
-        Vector currentPosition = swerveDrive.getPosition().position;
+        Vector currentPosition = SwerveDrive.PinpointCache.position.position;
         double kValue = path.getClosestK(currentPosition);
 
         Position targetPosition = path.getTarget(kValue);

@@ -79,4 +79,9 @@ public class Vector {
     public Vector normalised() {
         return new Vector(this.x / this.magnitude(), this.y / this.magnitude());
     }
+
+    public void update(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
 }

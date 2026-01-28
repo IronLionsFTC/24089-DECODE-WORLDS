@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
@@ -35,6 +36,12 @@ public class SwerveDrive extends SystemBase {
     private double targetHeading;
     private PID headingController;
     private boolean turning;
+
+    public static class PinpointCache {
+        public static Position position;
+        public static Vector velocity;
+        public static double angularVelocity;
+    }
 
     @Config
     public static class SwervePID {
@@ -96,17 +103,29 @@ public class SwerveDrive extends SystemBase {
         );
 
         this.pinpoint.update();
-        double current = this.pinpoint.getHeading(AngleUnit.DEGREES);
-        double error = angleDifference(this.targetHeading, current);
 
+        Pose2D position = this.pinpoint.getPosition();
+        PinpointCache.position.update(
+                position.getX(DistanceUnit.MM),
+                position.getY(DistanceUnit.MM),
+                position.getHeading(AngleUnit.DEGREES)
+        );
+
+        PinpointCache.angularVelocity = this.pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
+        PinpointCache.velocity.update(
+                pinpoint.getVelX(DistanceUnit.MM),
+                pinpoint.getVelY(DistanceUnit.MM)
+        );
+
+        double error = angleDifference(this.targetHeading, PinpointCache.position.heading);
         double h = heading.getAsDouble();
         double response = this.headingController.calculate(error, 0);
 
         if (h != 0 || turning) {
             this.turning = true;
-            this.targetHeading = current;
+            this.targetHeading = PinpointCache.position.heading;
 
-            if (Math.abs(pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES)) < 5 && h == 0) {
+            if (Math.abs(PinpointCache.angularVelocity) < 5 && h == 0) {
                 this.turning = false;
             }
         } else {
@@ -144,17 +163,9 @@ public class SwerveDrive extends SystemBase {
         return delta;
     }
 
-    public Position getPosition() {
-        double x = pinpoint.getPosX(DistanceUnit.MM);
-        double y = pinpoint.getPosY(DistanceUnit.MM);
-        double h = pinpoint.getHeading(AngleUnit.DEGREES);
-        return new Position(x, y, h);
-    }
-
     public void setTargetHeading(double newHeading) {
         this.targetHeading = newHeading;
     }
-
     public void setTargetVector(Vector vector) {
         this.driveVector = vector;
     }

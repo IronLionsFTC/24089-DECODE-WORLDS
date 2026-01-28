@@ -15,4 +15,9 @@ public class Position {
     public Pose2D pose() {
         return this.position.pose(this.heading);
     }
+
+    public void update(double x, double y, double heading) {
+        this.position = Vector.cartesian(x, y);
+        this.heading = heading;
+    }
 }
