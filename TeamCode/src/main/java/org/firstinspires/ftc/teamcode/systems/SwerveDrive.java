@@ -109,7 +109,7 @@ public class SwerveDrive extends SystemBase {
         double y = joystickY.getAsDouble();
         double h = joystickH.getAsDouble();
 
-        if (h != 0 || !turning) {
+        if (h != 0 || turning) {
             this.turning = true;
             this.targetHeading = current;
 

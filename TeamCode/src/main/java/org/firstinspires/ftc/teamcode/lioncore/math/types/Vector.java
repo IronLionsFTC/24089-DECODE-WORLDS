@@ -75,4 +75,8 @@ public class Vector {
     public Pose2D pose(double heading) {
         return new Pose2D(DistanceUnit.MM, this.x, this.y, AngleUnit.DEGREES, heading);
     }
+
+    public Vector normalised() {
+        return new Vector(this.x / this.magnitude(), this.y / this.magnitude());
+    }
 }
