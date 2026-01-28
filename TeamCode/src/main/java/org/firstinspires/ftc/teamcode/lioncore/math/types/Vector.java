@@ -63,6 +63,10 @@ public class Vector {
         return new Vector(this.x + other.x, this.y + other.y);
     }
 
+    public Vector sub(Vector other) {
+        return new Vector(this.x - other.x, this.y - other.y);
+    }
+
     public void add_mut(Vector other) {
         this.x += other.x;
         this.y += other.y;

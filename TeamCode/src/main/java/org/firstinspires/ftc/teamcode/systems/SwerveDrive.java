@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
@@ -139,5 +140,16 @@ public class SwerveDrive extends SystemBase {
         while (delta > 180) delta -= 360;
         while (delta < -180) delta += 360;
         return delta;
+    }
+
+    public Position getPosition() {
+        double x = pinpoint.getPosX(DistanceUnit.MM);
+        double y = pinpoint.getPosY(DistanceUnit.MM);
+        double h = pinpoint.getHeading(AngleUnit.DEGREES);
+        return new Position(x, y, h);
+    }
+
+    public void setTargetHeading(double newHeading) {
+        this.targetHeading = newHeading;
     }
 }
