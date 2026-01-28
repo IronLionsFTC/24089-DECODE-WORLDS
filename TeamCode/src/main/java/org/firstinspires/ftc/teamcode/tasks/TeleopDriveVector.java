@@ -7,20 +7,24 @@ import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 import java.util.function.DoubleSupplier;
 
 public class TeleopDriveVector extends Task {
-    private SwerveDrive swerveDrive;
-    private DoubleSupplier x;
-    private DoubleSupplier y;
+    private final Vector driveVector;
+    private final SwerveDrive swerveDrive;
+    private final DoubleSupplier x;
+    private final DoubleSupplier y;
 
     public TeleopDriveVector(SwerveDrive swerveDrive, DoubleSupplier x, DoubleSupplier y) {
         this.swerveDrive = swerveDrive;
         this.x = x;
         this.y = y;
+        this.driveVector = Vector.cartesian(0, 0);
     }
 
     @Override
     public void run() {
-        this.swerveDrive.setTargetVector(
-                Vector.cartesian(this.x.getAsDouble(), this.y.getAsDouble())
+        driveVector.update(
+                x.getAsDouble(),
+                y.getAsDouble()
         );
+        this.swerveDrive.setTargetVector(driveVector);
     }
 }
