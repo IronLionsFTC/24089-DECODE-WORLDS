@@ -29,9 +29,8 @@ public class SwerveDrive extends SystemBase {
 
     private Position startPosition;
 
-    private DoubleSupplier joystickX;
-    private DoubleSupplier joystickY;
-    private DoubleSupplier joystickH;
+    private Vector driveVector;
+    private DoubleSupplier heading;
 
     private double targetHeading;
     private PID headingController;
@@ -46,18 +45,14 @@ public class SwerveDrive extends SystemBase {
 
     public SwerveDrive(Position startPosition) {
         this.startPosition = startPosition;
-        this.joystickX = () -> 0;
-        this.joystickY = () -> 0;
-        this.joystickH = () -> 0;
         this.headingController = new PID(0, 0, 0);
+        this.heading = () -> 0;
     }
 
-    public SwerveDrive(Position startPosition, DoubleSupplier x, DoubleSupplier y, DoubleSupplier h) {
+    public SwerveDrive(Position startPosition, DoubleSupplier h) {
         this.startPosition = startPosition;
-        this.joystickX = x;
-        this.joystickY = y;
-        this.joystickH = h;
         this.headingController = new PID(0, 0, 0);
+        this.heading = h;
     }
 
     @Override
@@ -88,6 +83,7 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.setHeading(startPosition.heading, AngleUnit.DEGREES);
         this.targetHeading = startPosition.heading;
         this.turning = false;
+        this.driveVector = Vector.cartesian(0, 0);
     }
 
     @Override
@@ -103,11 +99,8 @@ public class SwerveDrive extends SystemBase {
         double current = this.pinpoint.getHeading(AngleUnit.DEGREES);
         double error = angleDifference(this.targetHeading, current);
 
+        double h = heading.getAsDouble();
         double response = this.headingController.calculate(error, 0);
-
-        double x = joystickX.getAsDouble();
-        double y = joystickY.getAsDouble();
-        double h = joystickH.getAsDouble();
 
         if (h != 0 || turning) {
             this.turning = true;
@@ -120,12 +113,10 @@ public class SwerveDrive extends SystemBase {
             h = response;
         }
 
-        Vector input = Vector.cartesian(x, y);
-
-        double a = this.rightFront.update(input, h);
-        double b = this.leftFront.update(input, h);
-        double c = this.rightRear.update(input, h);
-        double d = this.leftRear.update(input, h);
+        double a = this.rightFront.update(driveVector, h);
+        double b = this.leftFront.update(driveVector, h);
+        double c = this.rightRear.update(driveVector, h);
+        double d = this.leftRear.update(driveVector, h);
 
         double maximum = Math.max(Math.max(Math.abs(a), Math.abs(b)), Math.max(Math.abs(c), Math.abs(d)));
 
@@ -140,9 +131,6 @@ public class SwerveDrive extends SystemBase {
         leftFront.set(b);
         rightRear.set(c);
         leftRear.set(d);
-
-        telemetry.addData("Angle", input.polarDirection());
-
     }
 
     /**
@@ -165,5 +153,9 @@ public class SwerveDrive extends SystemBase {
 
     public void setTargetHeading(double newHeading) {
         this.targetHeading = newHeading;
+    }
+
+    public void setTargetVector(Vector vector) {
+        this.driveVector = vector;
     }
 }
