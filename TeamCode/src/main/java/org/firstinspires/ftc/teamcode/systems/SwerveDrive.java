@@ -40,7 +40,7 @@ public class SwerveDrive extends SystemBase {
     public static class SwervePID {
         public static double P = 0.02;
         public static double I = 0;
-        public static double D = 0.0005;
+        public static double D = 0.001;
     }
 
     public SwerveDrive(Position startPosition) {
