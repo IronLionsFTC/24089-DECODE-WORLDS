@@ -4,14 +4,13 @@ public interface Path {
 
     /**
      * Return the value of the parametric variable 'k' which represents the position along this path from 0->1
-     * @return
+     * @return The 'k' value [0, 1]
      */
     double getClosestK();
 
     /**
      * Return the position on the path given by a k value
      * @param k [0, 1]
-     * @return
      */
     void getTarget(double k, Position output);
 
@@ -21,4 +20,9 @@ public interface Path {
      * @return The distance remaining in mm
      */
     double distanceRemaining();
+
+    /**
+     * Modify output in place to contain the vector from the current position to the end of the path.
+     */
+    void set_to_end(Vector output);
 }

@@ -47,4 +47,9 @@ public class Line implements Path {
         end.position.sub_into(SwerveDrive.PinpointCache.position.position, temp);
         return temp.magnitude();
     }
+
+    @Override
+    public void set_to_end(Vector output) {
+        end.position.sub_into(SwerveDrive.PinpointCache.position.position, output);
+    }
 }

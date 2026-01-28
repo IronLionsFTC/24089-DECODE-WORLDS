@@ -19,14 +19,19 @@ public class Follower extends SystemBase {
             public static double I = 0.0;
             public static double D = 0.0;
         }
+
+        public static class DrivePID {
+            public static double P = 0.0;
+            public static double I = 0.0;
+            public static double D = 0.0;
+        }
     }
 
     private final SwerveDrive swerveDrive;
-    private Path path;
-    private double lastKValue;
 
-    private PID drivePID;
-    private PID translationalPID;
+    private Path path;
+    private final PID drivePID;
+    private final PID translationalPID;
 
     private final Position targetPosition;
     private final Vector driveVector;
@@ -41,6 +46,9 @@ public class Follower extends SystemBase {
         this.translationalVector = Vector.cartesian(0, 0);
         this.temp = new Position(0, 0, 0);
         this.finalVector = Vector.cartesian(0, 0);
+
+        this.drivePID = new PID(0, 0, 0);
+        this.translationalPID = new PID(0, 0, 0);
     }
 
     @Override
@@ -51,14 +59,31 @@ public class Follower extends SystemBase {
 
     @Override
     public void update(Telemetry telemetry) {
+        if (path == null) return;
+
+        this.drivePID.setConstants(
+                FollowerConstants.DrivePID.P,
+                FollowerConstants.DrivePID.I,
+                FollowerConstants.DrivePID.D
+        );
+
+        this.translationalPID.setConstants(
+                FollowerConstants.TranslationPID.P,
+                FollowerConstants.TranslationPID.I,
+                FollowerConstants.TranslationPID.D
+        );
 
         // Calculate the parametric variables and discrete approximation of tangent to the path.
         double kValue = path.getClosestK();
         path.getTarget(kValue, targetPosition);
         path.getTarget(kValue + 0.05, temp);
 
-        // Calculate the raw drive and translational vectors.
-        temp.position.sub_into(targetPosition.position, driveVector);
+        // Distance to the end of the path
+        double distance = path.distanceRemaining();
+
+        // Calculate the raw drive and translational vectors. If the drive vector is close to the end, drive there directly.
+        if (distance > 200) temp.position.sub_into(targetPosition.position, driveVector);
+        else path.set_to_end(driveVector);
         targetPosition.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
         driveVector.normalise();
         translationalVector.normalise();
@@ -86,5 +111,9 @@ public class Follower extends SystemBase {
 
         swerveDrive.setTargetHeading(targetHeading);
         swerveDrive.setTargetVector(temp.position);
+    }
+
+    public double getDistance() {
+        return this.path.distanceRemaining();
     }
 }
