@@ -122,10 +122,24 @@ public class SwerveDrive extends SystemBase {
 
         Vector input = Vector.cartesian(x, y);
 
-        this.rightFront.update(input, h);
-        this.leftFront.update(input, h);
-        this.rightRear.update(input, h);
-        this.leftRear.update(input, h);
+        double a = this.rightFront.update(input, h);
+        double b = this.leftFront.update(input, h);
+        double c = this.rightRear.update(input, h);
+        double d = this.leftRear.update(input, h);
+
+        double maximum = Math.max(Math.max(Math.abs(a), Math.abs(b)), Math.max(Math.abs(c), Math.abs(d)));
+
+        if (maximum > 1) {
+            a /= maximum;
+            b /= maximum;
+            c /= maximum;
+            d /= maximum;
+        }
+
+        rightFront.set(a);
+        leftFront.set(b);
+        rightRear.set(c);
+        leftRear.set(d);
 
         telemetry.addData("Angle", input.polarDirection());
 

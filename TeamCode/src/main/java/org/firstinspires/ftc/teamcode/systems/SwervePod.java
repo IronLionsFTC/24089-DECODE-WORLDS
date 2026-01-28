@@ -59,4 +59,8 @@ public class SwervePod {
             return finalVelocity.magnitude();
         }
     }
+
+    public void set(double power) {
+        this.motor.setPower(power);
+    }
 }
