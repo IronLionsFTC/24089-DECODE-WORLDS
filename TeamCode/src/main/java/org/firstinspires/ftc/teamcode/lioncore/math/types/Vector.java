@@ -44,6 +44,10 @@ public class Vector {
         return Math.atan2(this.y, this.x);
     }
 
+    public double dot(Vector other) {
+        return this.x * other.x + this.y * other.y;
+    }
+
     public double polarDirection() {
         return Math.toDegrees(Math.atan2(this.x, this.y));
     }
@@ -52,6 +56,10 @@ public class Vector {
 
     public Vector multiply(double scalar) {
         return new Vector(this.x * scalar, this.y * scalar);
+    }
+
+    public void multiply_into(double scalar, Vector output) {
+        output.update(this.x * scalar, this.y * scalar);
     }
 
     public void multiply_mut(double scalar) {
@@ -65,6 +73,19 @@ public class Vector {
 
     public Vector sub(Vector other) {
         return new Vector(this.x - other.x, this.y - other.y);
+    }
+    public void sub_into(Vector other, Vector output) {
+        output.update(
+                this.x - other.x,
+                this.y - other.y
+        );
+    }
+
+    public void add_into(Vector other, Vector output) {
+        output.update(
+                this.x + other.x,
+                this.y + other.y
+        );
     }
 
     public void add_mut(Vector other) {

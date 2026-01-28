@@ -20,6 +20,8 @@ public abstract class TaskOpMode extends OpMode {
     private List<LynxModule> hubs;
     private List<SystemBase> systems;
 
+    private int telemetryCounter = 0;
+
     /**
      * Create all systems and tasks and return them. Do not initialise the systems.
      * @return Return a "Jobs" item containing task and systems
@@ -68,6 +70,8 @@ public abstract class TaskOpMode extends OpMode {
     @Override
     public void loop() {
 
+        this.telemetryCounter += 1;
+
         long time = System.nanoTime();
         long deltatime = time - lastTime;
         double deltatime_seconds = deltatime / 1_000_000_000.0;
@@ -89,8 +93,12 @@ public abstract class TaskOpMode extends OpMode {
         }
 
         this.mainloop();
-        this.telemetry.addData("Loopfreq", rounded_hz);
-        this.telemetry.update();
+
+        if (this.telemetryCounter == 10) {
+            this.telemetry.addData("Loopfreq", rounded_hz);
+            this.telemetry.update();
+            telemetryCounter = 0;
+        }
 
         // Fully update all sensor values, motor positions, ect, once per loop cycle.
         for (LynxModule hub : this.hubs) {

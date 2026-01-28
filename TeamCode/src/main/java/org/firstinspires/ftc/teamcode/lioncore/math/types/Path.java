@@ -7,7 +7,7 @@ public interface Path {
      * @param position The current position of the robot
      * @return
      */
-    double getClosestK(Vector position);
+    double getClosestK();
 
     /**
      * Return the next targetted position on the path
@@ -17,9 +17,9 @@ public interface Path {
     Position getTarget(double k);
 
     /**
-     * Return the distance remaining on a path given the k value. Used for drive power calculations
-     * @param k The K value defining the point on the curve
+     * Return the distance remaining on a path based on the robot position.
+     * It is at the Path implementations discretion whether this includes the error of the robot from the path.
      * @return The distance remaining in mm
      */
-    double distanceRemaining(double k);
+    double distanceRemaining();
 }
