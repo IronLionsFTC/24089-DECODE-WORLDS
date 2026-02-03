@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 public class SwervePod {
 
     private LionMotor motor;
-    private LionServo servo;
+    private LionCRServo servo;
     private Vector offset;
 
     /**
