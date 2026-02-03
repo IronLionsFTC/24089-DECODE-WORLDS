@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
@@ -77,10 +78,10 @@ public class SwerveDrive extends SystemBase {
         rightRear.setZPB(MotorConstants.ZPB.driveMotors);
         leftRear.setReversed(MotorConstants.Reversed.lr);
         leftRear.setZPB(MotorConstants.ZPB.driveMotors);
-        this.rightFront = new SwervePod(rightFront, LionServo.single(hardwareMap, ServoConstants.Names.rightFront, 0.5), Vector.cartesian(1, 1));
-        this.leftFront = new SwervePod(leftFront, LionServo.single(hardwareMap, ServoConstants.Names.leftFront, 0.5), Vector.cartesian(-1, 1));
-        this.rightRear = new SwervePod(rightRear, LionServo.single(hardwareMap, ServoConstants.Names.rightRear, 0.5), Vector.cartesian(1, -1));
-        this.leftRear = new SwervePod(leftRear, LionServo.single(hardwareMap, ServoConstants.Names.leftRear, 0.5), Vector.cartesian(-1, -1));
+        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1));
+        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1));
+        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1));
+        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1));
     }
 
     @Override
