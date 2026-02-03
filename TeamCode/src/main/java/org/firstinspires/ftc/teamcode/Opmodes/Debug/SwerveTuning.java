@@ -52,6 +52,7 @@ public class SwerveTuning extends LinearOpMode {
             telemetry.addData("leftFront", leftFrontAnalog.position());
             telemetry.addData("rightRear", rightRearAnalog.position());
             telemetry.addData("leftRear", leftRearAnalog.position());
+            telemetry.update();
         }
 
     }
