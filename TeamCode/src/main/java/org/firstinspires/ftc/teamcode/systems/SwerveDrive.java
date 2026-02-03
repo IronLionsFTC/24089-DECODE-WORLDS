@@ -121,6 +121,7 @@ public class SwerveDrive extends SystemBase {
         double h = heading.getAsDouble();
         double response = this.headingController.calculate(error, 0);
 
+        /*
         if (h != 0 || turning) {
             this.turning = true;
             this.targetHeading = PinpointCache.position.heading;
@@ -131,11 +132,19 @@ public class SwerveDrive extends SystemBase {
         } else {
             h = response;
         }
+        */
 
         double a = this.rightFront.update(driveVector, h);
         double b = this.leftFront.update(driveVector, h);
         double c = this.rightRear.update(driveVector, h);
         double d = this.leftRear.update(driveVector, h);
+
+        telemetry.addData("Right Front", a);
+        telemetry.addData("Left Front", b);
+        telemetry.addData("Right Rear", c);
+        telemetry.addData("Left Rear", d);
+
+        /*
 
         double maximum = Math.max(Math.max(Math.abs(a), Math.abs(b)), Math.max(Math.abs(c), Math.abs(d)));
 
@@ -150,6 +159,7 @@ public class SwerveDrive extends SystemBase {
         leftFront.set(b);
         rightRear.set(c);
         leftRear.set(d);
+        */
     }
 
     /**
