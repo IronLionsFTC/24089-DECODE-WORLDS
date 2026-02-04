@@ -132,8 +132,8 @@ public class SwerveDrive extends SystemBase {
 
         Pose2D position = this.pinpoint.getPosition();
         PinpointCache.position.update(
+                -position.getY(DistanceUnit.MM),
                 position.getX(DistanceUnit.MM),
-                position.getY(DistanceUnit.MM),
                 position.getHeading(AngleUnit.DEGREES)
         );
 

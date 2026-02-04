@@ -111,6 +111,10 @@ public class Follower extends SystemBase {
 
         swerveDrive.setTargetHeading(targetHeading);
         swerveDrive.setTargetVector(temp.position);
+
+        telemetry.addData("DISTANCE REMAINING", distance);
+        telemetry.addData("X POSITION", SwerveDrive.PinpointCache.position.position.x());
+        telemetry.addData("Y POSITION", SwerveDrive.PinpointCache.position.position.y());
     }
 
     public double getDistance() {
