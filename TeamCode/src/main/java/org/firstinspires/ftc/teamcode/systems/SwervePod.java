@@ -47,7 +47,15 @@ public class SwervePod {
         );
 
         if (target.magnitude() < 1e-6 && Math.abs(heading) < 1e-6) {
-            servo.setPower(angleController.calculate(podAngle, podAngle));
+            double option_a = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() + 90), podAngle));
+            double option_b = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() - 90), podAngle));
+
+            if (Math.abs(podAngle - option_a) <= Math.abs(podAngle - option_b)) {
+                servo.setPower(angleController.calculate(podAngle, option_a));
+            } else {
+                servo.setPower(angleController.calculate(podAngle, option_b));
+            }
+
             return 0.0;
         }
 
@@ -57,11 +65,19 @@ public class SwervePod {
 
         // Guard against near-zero direction noise
         if (finalVelocity.magnitude() < 1e-6) {
-            servo.setPower(angleController.calculate(podAngle, podAngle));
+            double option_a = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() + 90), podAngle));
+            double option_b = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() - 90), podAngle));
+
+            if (Math.abs(podAngle - option_a) <= Math.abs(podAngle - option_b)) {
+                servo.setPower(angleController.calculate(podAngle, option_a));
+            } else {
+                servo.setPower(angleController.calculate(podAngle, option_b));
+            }
+
             return 0.0;
         }
 
-        double rawDesired = finalVelocity.polarDirection();
+        double rawDesired = -finalVelocity.polarDirection();
 
         // Compute both options RELATIVE to current angle
         double forwardAngle  = closestEquivalentAngle(rawDesired, podAngle);

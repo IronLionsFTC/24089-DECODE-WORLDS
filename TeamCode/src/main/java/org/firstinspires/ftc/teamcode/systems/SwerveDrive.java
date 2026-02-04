@@ -54,7 +54,7 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class SwervePID {
-        public static double P = 0;
+        public static double P = 0.01;
         public static double I = 0;
         public static double D = 0;
     }
@@ -147,7 +147,6 @@ public class SwerveDrive extends SystemBase {
         double h = heading.getAsDouble();
         double response = this.headingController.calculate(error, 0);
 
-        /*
         if (h != 0 || turning) {
             this.turning = true;
             this.targetHeading = PinpointCache.position.heading;
@@ -158,7 +157,6 @@ public class SwerveDrive extends SystemBase {
         } else {
             h = response;
         }
-        */
 
         double a = this.rightFront.update(driveVector, h);
         double b = this.leftFront.update(driveVector, h);
