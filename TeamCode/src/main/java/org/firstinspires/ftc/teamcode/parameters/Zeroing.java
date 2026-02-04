@@ -9,10 +9,10 @@ public class Zeroing {
     }
 
     public static class ZeroPositions {
-        public static double rightFront = 1.537;
-        public static double leftFront = 3.135;
-        public static double rightRear = 2.844;
-        public static double leftRear = 2.492;
+        public static double rightFront = 1.609;
+        public static double leftFront = 3.134;
+        public static double rightRear = 2.853;
+        public static double leftRear = 2.481;
     }
 
     public static class Constants {
