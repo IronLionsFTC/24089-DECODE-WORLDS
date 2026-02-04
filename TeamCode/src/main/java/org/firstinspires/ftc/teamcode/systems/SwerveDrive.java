@@ -111,6 +111,8 @@ public class SwerveDrive extends SystemBase {
 
     @Override
     public void init() {
+        this.pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        this.pinpoint.setOffsets(125, 0, DistanceUnit.MM);
         this.pinpoint.resetPosAndIMU();
         this.pinpoint.setPosition(startPosition.pose());
         this.pinpoint.setHeading(startPosition.heading, AngleUnit.DEGREES);
