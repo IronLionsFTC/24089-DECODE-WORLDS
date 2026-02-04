@@ -4,7 +4,6 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
-import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 public class SwervePod {
@@ -14,8 +13,6 @@ public class SwervePod {
     private Vector offset;
 
     private double podAngle;
-    private double podTarget;
-
     private PID angleController;
 
     /**
@@ -48,7 +45,7 @@ public class SwervePod {
 
         if (target.magnitude() == 0 && heading == 0) {
             double angle = this.offset.polarDirection();
-            this.podTarget = angle / (255.0 * ServoConstants.Ratios.swerve) + 0.5;
+            servo.setPower(angleController.calculate(podAngle, angle));
             return 0.0;
         }
 

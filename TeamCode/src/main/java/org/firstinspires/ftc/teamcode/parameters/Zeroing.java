@@ -21,7 +21,7 @@ public class Zeroing {
     }
 
     public static double podAngle(double voltage, double zeroPosition) {
-        double unwrapped = (voltage - zeroPosition) * Zeroing.Constants.scale;
+        double unwrapped = (zeroPosition - voltage) * Zeroing.Constants.scale;
         while (unwrapped < -180) unwrapped += 360;
         while (unwrapped > 180) unwrapped -= 360;
         return unwrapped;
