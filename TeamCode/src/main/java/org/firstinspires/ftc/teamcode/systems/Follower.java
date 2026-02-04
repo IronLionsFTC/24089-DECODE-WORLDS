@@ -80,16 +80,17 @@ public class Follower extends SystemBase {
         // Distance to the end of the path
         double distance = path.distanceRemaining();
 
-        // Calculate the raw drive and translational vectors. If the drive vector is close to the end, drive there directly.
-        if (distance > 200) temp.position.sub_into(targetPosition.position, driveVector);
-        else path.set_to_end(driveVector);
+        // Calculate the raw drive and translational vectors.
+        temp.position.sub_into(targetPosition.position, driveVector);
         targetPosition.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
         driveVector.normalise();
+
+        double translationalMagnitude = translationalVector.magnitude();
         translationalVector.normalise();
 
         // Minimise distance remaining and translational error and scale normalised vectors
-        double driveResponse = drivePID.calculate(path.distanceRemaining(), 0);
-        double translationResponse = translationalPID.calculate(translationalVector.magnitude(), 0);
+        double driveResponse = -drivePID.calculate(distance, 0);
+        double translationResponse = -translationalPID.calculate(translationalMagnitude, 0);
         driveVector.multiply_mut(driveResponse);
         translationalVector.multiply_mut(translationResponse);
         driveVector.add_into(translationalVector, finalVector);
@@ -109,7 +110,7 @@ public class Follower extends SystemBase {
         );
 
         swerveDrive.setTargetHeading(targetHeading);
-        if (!temp.position.is_poisoned()) swerveDrive.setTargetVector(temp.position);
+        swerveDrive.setTargetVector(temp.position);
     }
 
     public double getDistance() {

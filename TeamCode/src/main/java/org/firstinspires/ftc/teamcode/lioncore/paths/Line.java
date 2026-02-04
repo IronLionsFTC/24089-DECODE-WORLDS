@@ -14,6 +14,7 @@ public class Line implements Path {
     private final double length;
     private final Vector to_robot;
     private final Vector temp;
+    private final Position tempPosition;
 
     public Line(Position start, Position end) {
         this.start = start;
@@ -23,6 +24,7 @@ public class Line implements Path {
         this.to_robot = Vector.cartesian(0, 0);
         this.length = this.direction.magnitude();
         this.temp = Vector.cartesian(0, 0);
+        this.tempPosition = new Position(0, 0, 0);
     }
 
     @Override
@@ -34,6 +36,7 @@ public class Line implements Path {
 
     @Override
     public void getTarget(double k, Position output) {
+        k = Math.min(1, Math.max(0, k));
         direction.multiply_into(k, temp);
         start.position.add_into(temp, temp);
         output.update(
@@ -44,7 +47,9 @@ public class Line implements Path {
 
     @Override
     public double distanceRemaining() {
-        end.position.sub_into(SwerveDrive.PinpointCache.position.position, temp);
+        double k = getClosestK();
+        getTarget(k, tempPosition);
+        end.position.sub_into(tempPosition.position, temp);
         return temp.magnitude();
     }
 
