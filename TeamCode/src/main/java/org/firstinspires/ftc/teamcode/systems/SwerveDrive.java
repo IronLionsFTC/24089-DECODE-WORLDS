@@ -176,6 +176,10 @@ public class SwerveDrive extends SystemBase {
         leftFront.set(b);
         rightRear.set(c);
         leftRear.set(d);
+
+        telemetry.addData("X POSITION", SwerveDrive.PinpointCache.position.position.x());
+        telemetry.addData("Y POSITION", SwerveDrive.PinpointCache.position.position.y());
+        telemetry.addData("HEADING", PinpointCache.position.heading);
     }
 
     /**
