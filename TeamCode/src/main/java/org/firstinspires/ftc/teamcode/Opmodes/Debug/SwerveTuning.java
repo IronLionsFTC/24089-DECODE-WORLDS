@@ -85,6 +85,11 @@ public class SwerveTuning extends LinearOpMode {
             telemetry.addData("rightRear", Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear));
             telemetry.addData("leftRear", Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear));
 
+            telemetry.addData("rightFrontAbs", rightFrontAnalog.position());
+            telemetry.addData("leftFrontAbs", leftFrontAnalog.position());
+            telemetry.addData("rightRearAbs", rightRearAnalog.position());
+            telemetry.addData("leftRearAbs", leftRearAnalog.position());
+
             telemetry.addData("rightFrontQuadrature", Zeroing.polarQuadrature(rightFront.getPosition()));
             telemetry.addData("leftFrontQuadrature", Zeroing.polarQuadrature(leftFront.getPosition()));
             telemetry.addData("rightRearQuadrature", Zeroing.polarQuadrature(rightRear.getPosition()));
