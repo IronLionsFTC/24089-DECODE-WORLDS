@@ -12,6 +12,7 @@ public class LionMotor {
     private double position;
     private double virtualOffset = 0;
     private double power;
+    private boolean reverseEncoder = false;
 
     private LionMotor(HardwareMap hardwareMap, String... names) {
         this.motors = new ArrayList<>();
@@ -28,6 +29,10 @@ public class LionMotor {
 
     public static LionMotor withEncoder(HardwareMap hardwareMap, String name) {
         return new LionMotor(hardwareMap, name);
+    }
+
+    public void setReverseEncoder(boolean reversed) {
+        this.reverseEncoder = reversed;
     }
 
     /**
@@ -52,9 +57,16 @@ public class LionMotor {
         return this.power;
     }
 
+    private double readEncoder() {
+        if (this.motors.isEmpty()) return 0.0;
+        this.position = this.motors.get(0).getCurrentPosition();
+        if (reverseEncoder) return -position;
+        else return position;
+    }
+
     public double getPosition() {
         if (this.motors.isEmpty()) return 0.0;
-        this.position = this.motors.get(0).getCurrentPosition() + this.virtualOffset;
+        this.position = this.readEncoder() + this.virtualOffset;
         return this.cachedPosition();
     }
 
@@ -79,7 +91,7 @@ public class LionMotor {
     }
 
     public void resetPositionTo(double currentPosition) {
-        this.resetPosition();
+        this.virtualOffset = 0;
         this.virtualOffset = currentPosition - this.getPosition();
     }
 

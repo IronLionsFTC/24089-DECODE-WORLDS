@@ -56,6 +56,8 @@ public class SwerveTuning extends LinearOpMode {
         rightRear.setZPB(MotorConstants.ZPB.driveMotors);
         leftRear.setReversed(MotorConstants.Reversed.lr);
         leftRear.setZPB(MotorConstants.ZPB.driveMotors);
+        rightFront.setReverseEncoder(true);
+        rightRear.setReverseEncoder(true);
 
         rightFrontAnalog.read();
         leftFrontAnalog.read();

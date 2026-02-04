@@ -30,50 +30,77 @@ public class SwervePod {
     }
 
     /**
-     * Optimise the movement of a swerve pod to the position it is suppose to be at to require the least amount of movement.
-     * @param target A vector representing the direction the pod should go, with +y as forward and +x as right.
+     * Updates swerve pod angle and returns drive power.
+     *
+     * @param target  Desired translation vector (+y forward, +x right)
+     * @param heading Desired rotational velocity
+     * @return drive motor power (-1 to 1)
      */
     public double update(Vector target, double heading) {
 
-        this.podAngle = Zeroing.polarQuadrature(this.motor.getPosition());
+        double podAngle = wrapDeg(Zeroing.polarQuadrature(motor.getPosition()));
 
-        this.angleController.setConstants(
+        angleController.setConstants(
                 SwerveDrive.SwervePID.P,
                 SwerveDrive.SwervePID.I,
                 SwerveDrive.SwervePID.D
         );
 
-        if (target.magnitude() == 0 && heading == 0) {
-            double angle = this.offset.polarDirection();
-            servo.setPower(angleController.calculate(podAngle, angle));
+        if (target.magnitude() < 1e-6 && Math.abs(heading) < 1e-6) {
+            servo.setPower(angleController.calculate(podAngle, podAngle));
             return 0.0;
         }
 
-        // Normalise option A
-        Vector rotationalVelocity = Vector.cartesian(heading * offset.y(), -heading * offset.x());
-        Vector finalVelocity = rotationalVelocity.add(target);
-        double forward = finalVelocity.polarDirection();
+        Vector rotationalVelocity =
+                Vector.cartesian(heading * offset.y(), -heading * offset.x());
+        Vector finalVelocity = target.add(rotationalVelocity);
 
-        // Normalise option B
-        double reversed = forward + 180;
-        while (reversed > 180) reversed -= 360;
-        while (reversed < -180) reversed += 360;
-
-        double forwardError = ((forward - podAngle + 180) % 360) - 180;
-        double reversedError = ((reversed - podAngle + 180) % 360) - 180;
-
-        if (Math.abs(forwardError) > Math.abs(reversedError)) {
-            double response = angleController.calculate(forwardError, 0);
-            this.servo.setPower(response);
-            return finalVelocity.magnitude();
-        } else {
-            double response = angleController.calculate(reversedError, 0);
-            this.servo.setPower(response);
-            return -finalVelocity.magnitude();
+        // Guard against near-zero direction noise
+        if (finalVelocity.magnitude() < 1e-6) {
+            servo.setPower(angleController.calculate(podAngle, podAngle));
+            return 0.0;
         }
+
+        double rawDesired = finalVelocity.polarDirection();
+
+        // Compute both options RELATIVE to current angle
+        double forwardAngle  = closestEquivalentAngle(rawDesired, podAngle);
+        double reversedAngle = closestEquivalentAngle(rawDesired + 180.0, podAngle);
+
+        double forwardError  = Math.abs(forwardAngle - podAngle);
+        double reversedError = Math.abs(reversedAngle - podAngle);
+
+        double angleSetpoint;
+        double drivePower;
+
+        if (forwardError <= reversedError) {
+            angleSetpoint = forwardAngle;
+            drivePower = finalVelocity.magnitude();
+        } else {
+            angleSetpoint = reversedAngle;
+            drivePower = -finalVelocity.magnitude();
+        }
+
+        servo.setPower(angleController.calculate(podAngle, angleSetpoint));
+        return drivePower;
     }
 
     public void set(double power) {
         this.motor.setPower(power);
+    }
+
+    private static double wrapDeg(double angle) {
+        angle %= 360.0;
+        if (angle <= -180) angle += 360;
+        if (angle > 180) angle -= 360;
+        return angle;
+    }
+
+    private static double angleError(double target, double current) {
+        return wrapDeg(target - current);
+    }
+
+    private static double closestEquivalentAngle(double target, double reference) {
+        return reference + wrapDeg(target - reference);
     }
 }

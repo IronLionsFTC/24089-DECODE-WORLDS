@@ -100,11 +100,13 @@ public class SwerveDrive extends SystemBase {
         rightRear.setZPB(MotorConstants.ZPB.driveMotors);
         leftRear.setReversed(MotorConstants.Reversed.lr);
         leftRear.setZPB(MotorConstants.ZPB.driveMotors);
+        rightFront.setReverseEncoder(true);
+        rightRear.setReverseEncoder(true);
 
-        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1), rightFrontAnalog.position());
-        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1), leftFrontAnalog.position());
-        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1), rightRearAnalog.position());
-        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1), leftRearAnalog.position());
+        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront));
+        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront));
+        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear));
+        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear));
     }
 
     @Override
