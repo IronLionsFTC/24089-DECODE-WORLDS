@@ -10,6 +10,7 @@ public class SwervePod {
     private LionMotor motor;
     private LionCRServo servo;
     private Vector offset;
+    private double startDegrees;
     private double podTarget;
 
     /**
@@ -18,10 +19,12 @@ public class SwervePod {
      * @param servo
      * @param offset X (right) and y (forward) position of the pod from the center of the robot
      */
-    public SwervePod(LionMotor motor, LionCRServo servo, Vector offset) {
+    public SwervePod(LionMotor motor, LionCRServo servo, Vector offset, double startDegrees) {
         this.motor = motor;
         this.servo = servo;
         this.offset = offset;
+        this.startDegrees = startDegrees;
+        this.motor.resetPositionTo(startDegrees);
     }
 
     /**

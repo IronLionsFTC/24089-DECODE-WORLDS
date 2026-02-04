@@ -9,15 +9,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
-import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
+import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 import java.util.function.DoubleSupplier;
 
@@ -45,10 +46,17 @@ public class SwerveDrive extends SystemBase {
     }
 
     @Config
-    public static class SwervePID {
+    public static class HeadingPID {
         public static double P = 0.02;
         public static double I = 0;
         public static double D = 0.001;
+    }
+
+    @Config
+    public static class SwervePID {
+        public static double P = 0;
+        public static double I = 0;
+        public static double D = 0;
     }
 
     public SwerveDrive(Position startPosition) {
@@ -65,11 +73,22 @@ public class SwerveDrive extends SystemBase {
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
+
+        AbsoluteEncoder rightFrontAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightFrontAnalog, Zeroing.ZeroPositions.rightFront);
+        AbsoluteEncoder leftFrontAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.leftFrontAnalog, Zeroing.ZeroPositions.leftFront);
+        AbsoluteEncoder rightRearAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightRearAnalog, Zeroing.ZeroPositions.rightRear);
+        AbsoluteEncoder leftRearAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.leftRearAnalog, Zeroing.ZeroPositions.leftRear);
+
+        rightFrontAnalog.read();
+        leftFrontAnalog.read();
+        rightRearAnalog.read();
+        leftRearAnalog.read();
+
         this.pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-        LionMotor rightFront = LionMotor.withoutEncoder(hardwareMap, MotorConstants.Names.rightFront);
-        LionMotor leftFront = LionMotor.withoutEncoder(hardwareMap, MotorConstants.Names.leftFront);
-        LionMotor rightRear = LionMotor.withoutEncoder(hardwareMap, MotorConstants.Names.rightRear);
-        LionMotor leftRear = LionMotor.withoutEncoder(hardwareMap, MotorConstants.Names.leftRear);
+        LionMotor rightFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightFront);
+        LionMotor leftFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftFront);
+        LionMotor rightRear = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightRear);
+        LionMotor leftRear = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftRear);
         rightFront.setReversed(MotorConstants.Reversed.rf);
         rightFront.setZPB(MotorConstants.ZPB.driveMotors);
         leftFront.setReversed(MotorConstants.Reversed.lf);
@@ -78,10 +97,11 @@ public class SwerveDrive extends SystemBase {
         rightRear.setZPB(MotorConstants.ZPB.driveMotors);
         leftRear.setReversed(MotorConstants.Reversed.lr);
         leftRear.setZPB(MotorConstants.ZPB.driveMotors);
-        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1));
-        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1));
-        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1));
-        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1));
+
+        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1), rightFrontAnalog.position());
+        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1), leftFrontAnalog.position());
+        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1), rightRearAnalog.position());
+        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1), leftRearAnalog.position());
     }
 
     @Override
@@ -98,9 +118,9 @@ public class SwerveDrive extends SystemBase {
     public void update(Telemetry telemetry) {
 
         this.headingController.setConstants(
-            SwervePID.P,
-            SwervePID.I,
-            SwervePID.D
+            HeadingPID.P,
+            HeadingPID.I,
+            HeadingPID.D
         );
 
         this.pinpoint.update();
