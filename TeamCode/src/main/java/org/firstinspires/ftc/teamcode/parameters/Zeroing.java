@@ -30,7 +30,7 @@ public class Zeroing {
     public static double polarQuadrature(double rawTicks) {
         double degrees = rawTicks * (360.0 / 4096.0);
         while (degrees < -180) degrees += 360;
-        while (degrees > 180) degrees += 360;
+        while (degrees > 180) degrees -= 360;
         return degrees;
     }
 }
