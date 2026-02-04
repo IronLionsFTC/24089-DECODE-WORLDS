@@ -98,11 +98,13 @@ public class Vector {
     }
 
     public Vector normalised() {
+        if (this.magnitude() == 0) return this;
         return new Vector(this.x / this.magnitude(), this.y / this.magnitude());
     }
 
     public void normalise() {
         double magnitude = this.magnitude();
+        if (magnitude == 0) return;
         this.x /= magnitude;
         this.y /= magnitude;
     }
