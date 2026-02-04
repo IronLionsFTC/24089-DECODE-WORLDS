@@ -9,9 +9,21 @@ public class Zeroing {
     }
 
     public static class ZeroPositions {
-        public static double rightFront = 0;
-        public static double leftFront = 0;
-        public static double rightRear = 0;
-        public static double leftRear = 0;
+        public static double rightFront = 1.537;
+        public static double leftFront = 3.174;
+        public static double rightRear = 2.492;
+        public static double leftRear = 2.492;
+    }
+
+    public static class Constants {
+        public static double voltageRange = 3.3;
+        public static double scale = 360 / voltageRange;
+    }
+
+    public static double podAngle(double voltage, double zeroPosition) {
+        double unwrapped = (voltage - zeroPosition) * Zeroing.Constants.scale;
+        while (unwrapped < 180) unwrapped += 360;
+        while (unwrapped > 180) unwrapped -= 360;
+        return unwrapped;
     }
 }

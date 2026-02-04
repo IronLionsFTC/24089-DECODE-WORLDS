@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Opmodes.Debug;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -27,6 +29,9 @@ public class SwerveTuning extends LinearOpMode {
 
         if (isStopRequested()) return;
         waitForStart();
+
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         LionCRServo rightFrontServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightFront);
         LionCRServo leftFrontServo = new LionCRServo(hardwareMap, ServoConstants.Names.leftFront);
         LionCRServo rightRearServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightRear);
@@ -48,10 +53,10 @@ public class SwerveTuning extends LinearOpMode {
             rightRearAnalog.read();
             leftRearAnalog.read();
 
-            telemetry.addData("rightFront", rightFrontAnalog.position());
-            telemetry.addData("leftFront", leftFrontAnalog.position());
-            telemetry.addData("rightRear", rightRearAnalog.position());
-            telemetry.addData("leftRear", leftRearAnalog.position());
+            telemetry.addData("rightFront", Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront));
+            telemetry.addData("leftFront", Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront));
+            telemetry.addData("rightRear", Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear));
+            telemetry.addData("leftRear", Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear));
             telemetry.update();
         }
 
