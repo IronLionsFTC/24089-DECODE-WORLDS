@@ -2,16 +2,21 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
+import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
+import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 public class SwervePod {
 
     private LionMotor motor;
     private LionCRServo servo;
     private Vector offset;
-    private double startDegrees;
+
+    private double podAngle;
     private double podTarget;
+
+    private PID angleController;
 
     /**
      *
@@ -23,8 +28,8 @@ public class SwervePod {
         this.motor = motor;
         this.servo = servo;
         this.offset = offset;
-        this.startDegrees = startDegrees;
-        this.motor.resetPositionTo(startDegrees);
+        this.motor.resetPositionTo(startDegrees * (4096.0 / 360.0));
+        this.angleController = new PID(0, 0, 0);
     }
 
     /**
@@ -33,14 +38,19 @@ public class SwervePod {
      */
     public double update(Vector target, double heading) {
 
+        this.podAngle = Zeroing.polarQuadrature(this.motor.getPosition());
+
+        this.angleController.setConstants(
+                SwerveDrive.SwervePID.P,
+                SwerveDrive.SwervePID.I,
+                SwerveDrive.SwervePID.D
+        );
+
         if (target.magnitude() == 0 && heading == 0) {
             double angle = this.offset.polarDirection();
-            podTarget = angle / (255.0 * ServoConstants.Ratios.swerve) + 0.5;
+            this.podTarget = angle / (255.0 * ServoConstants.Ratios.swerve) + 0.5;
             return 0.0;
         }
-
-        // TODO - ACCOUNT FOR OFFSET ETC
-        double currentDegrees = motor.getPosition();
 
         // Normalise option A
         Vector rotationalVelocity = Vector.cartesian(heading * offset.y(), -heading * offset.x());
@@ -52,7 +62,18 @@ public class SwervePod {
         while (reversed > 180) reversed -= 360;
         while (reversed < -180) reversed += 360;
 
-        return currentDegrees;
+        double forwardError = ((forward - podAngle + 180) % 360) - 180;
+        double reversedError = ((reversed - podAngle + 180) % 360) - 180;
+
+        if (Math.abs(forwardError) > Math.abs(reversedError)) {
+            double response = angleController.calculate(forwardError, 0);
+            this.servo.setPower(response);
+            return finalVelocity.magnitude();
+        } else {
+            double response = angleController.calculate(reversedError, 0);
+            this.servo.setPower(response);
+            return -finalVelocity.magnitude();
+        }
     }
 
     public void set(double power) {

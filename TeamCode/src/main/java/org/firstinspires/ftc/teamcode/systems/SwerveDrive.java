@@ -85,6 +85,9 @@ public class SwerveDrive extends SystemBase {
         leftRearAnalog.read();
 
         this.pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        PinpointCache.position = new Position(0, 0, 0);
+        PinpointCache.velocity = Vector.cartesian(0, 0);
+        PinpointCache.angularVelocity = 0;
         LionMotor rightFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightFront);
         LionMotor leftFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftFront);
         LionMotor rightRear = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightRear);
@@ -160,13 +163,6 @@ public class SwerveDrive extends SystemBase {
         double c = this.rightRear.update(driveVector, h);
         double d = this.leftRear.update(driveVector, h);
 
-        telemetry.addData("Right Front", a);
-        telemetry.addData("Left Front", b);
-        telemetry.addData("Right Rear", c);
-        telemetry.addData("Left Rear", d);
-
-        /*
-
         double maximum = Math.max(Math.max(Math.abs(a), Math.abs(b)), Math.max(Math.abs(c), Math.abs(d)));
 
         if (maximum > 1) {
@@ -180,7 +176,6 @@ public class SwerveDrive extends SystemBase {
         leftFront.set(b);
         rightRear.set(c);
         leftRear.set(d);
-        */
     }
 
     /**

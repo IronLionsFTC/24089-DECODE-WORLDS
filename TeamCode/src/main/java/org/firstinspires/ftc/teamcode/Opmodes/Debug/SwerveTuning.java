@@ -62,15 +62,10 @@ public class SwerveTuning extends LinearOpMode {
         rightRearAnalog.read();
         leftRearAnalog.read();
 
-        rightFront.resetPosition();
-        leftFront.resetPosition();
-        rightRear.resetPosition();
-        leftRear.resetPosition();
-
-        rightFront.resetPositionTo(Zeroing.podAngle(rightFrontAnalog.position() * (4096.0 / 360.0), Zeroing.ZeroPositions.rightFront));
-        leftFront.resetPositionTo(Zeroing.podAngle(leftFrontAnalog.position() * (4096.0 / 360.0), Zeroing.ZeroPositions.leftFront));
-        rightRear.resetPositionTo(Zeroing.podAngle(rightRearAnalog.position() * (4096.0 / 360.0), Zeroing.ZeroPositions.rightRear));
-        leftRear.resetPositionTo(Zeroing.podAngle(leftRearAnalog.position() * (4096.0 / 360.0), Zeroing.ZeroPositions.leftRear));
+        rightFront.resetPositionTo(Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront) * (4096.0 / 360.0));
+        leftFront.resetPositionTo(Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront) * (4096.0 / 360.0));
+        rightRear.resetPositionTo(Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear) * (4096.0 / 360.0));
+        leftRear.resetPositionTo(Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear) * (4096.0 / 360.0));
 
         while (opModeIsActive()) {
             rightFrontServo.setPower(SwerveConstants.rfp);
