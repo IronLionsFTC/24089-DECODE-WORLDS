@@ -13,18 +13,17 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 public class Follower extends SystemBase {
 
     @Config
-    public static class FollowerConstants {
-        public static class TranslationPID {
-            public static double P = 0.0;
-            public static double I = 0.0;
-            public static double D = 0.0;
-        }
+    public static class TranslationPID {
+        public static double P = 0.0;
+        public static double I = 0.0;
+        public static double D = 0.0;
+    }
 
-        public static class DrivePID {
-            public static double P = 0.0;
-            public static double I = 0.0;
-            public static double D = 0.0;
-        }
+    @Config
+    public static class DrivePID {
+        public static double P = 0.0;
+        public static double I = 0.0;
+        public static double D = 0.0;
     }
 
     private final SwerveDrive swerveDrive;
@@ -62,15 +61,15 @@ public class Follower extends SystemBase {
         if (path == null) return;
 
         this.drivePID.setConstants(
-                FollowerConstants.DrivePID.P,
-                FollowerConstants.DrivePID.I,
-                FollowerConstants.DrivePID.D
+                DrivePID.P,
+                DrivePID.I,
+                DrivePID.D
         );
 
         this.translationalPID.setConstants(
-                FollowerConstants.TranslationPID.P,
-                FollowerConstants.TranslationPID.I,
-                FollowerConstants.TranslationPID.D
+                TranslationPID.P,
+                TranslationPID.I,
+                TranslationPID.D
         );
 
         // Calculate the parametric variables and discrete approximation of tangent to the path.
