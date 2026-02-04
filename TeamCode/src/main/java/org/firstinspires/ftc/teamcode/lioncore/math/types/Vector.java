@@ -111,4 +111,8 @@ public class Vector {
         this.x = x;
         this.y = y;
     }
+
+    public boolean is_poisoned() {
+        return Double.isNaN(this.x) || Double.isNaN(this.y);
+    }
 }

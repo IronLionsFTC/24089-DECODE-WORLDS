@@ -109,7 +109,7 @@ public class Follower extends SystemBase {
         );
 
         swerveDrive.setTargetHeading(targetHeading);
-        swerveDrive.setTargetVector(temp.position);
+        if (!temp.position.is_poisoned()) swerveDrive.setTargetVector(temp.position);
     }
 
     public double getDistance() {
