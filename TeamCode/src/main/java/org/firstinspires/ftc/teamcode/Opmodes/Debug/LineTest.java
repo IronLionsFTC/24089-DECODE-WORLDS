@@ -19,10 +19,16 @@ public class LineTest extends TaskOpMode {
         Follower follower = new Follower();
 
         return Jobs.create()
-                .addSeries(new Follow(follower, new Line(
-                        new Position(0, 0, 0),
-                        new Position(0, 1000, 180)
-                ), true))
+                .addSeries(
+                        new Follow(follower, new Line(
+                            new Position(0, 0, 0),
+                            new Position(400, 2000, 90)
+                        ), false),
+                        new Follow(follower, new Line(
+                                new Position(400, 2000, 90),
+                                new Position(0, 0, 0)
+                        ), false)
+                )
                 .registerSystem(follower);
     }
 }

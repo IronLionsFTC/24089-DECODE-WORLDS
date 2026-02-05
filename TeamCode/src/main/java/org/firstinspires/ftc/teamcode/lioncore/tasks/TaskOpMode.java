@@ -40,6 +40,7 @@ public abstract class TaskOpMode extends OpMode {
 
     public static class Runtime {
         public static double voltageCompensation = 1;
+        public static double deltaTime = 0.02;
     }
 
     @Override
@@ -81,12 +82,13 @@ public abstract class TaskOpMode extends OpMode {
         this.telemetryCounter += 1;
 
         long time = System.nanoTime();
-        long deltatime = time - lastTime;
-        double deltatime_seconds = deltatime / 1_000_000_000.0;
-        double frequency_hz = 1 / deltatime_seconds;
+        long deltaTime = time - lastTime;
+        double deltaTime_seconds = deltaTime / 1_000_000_000.0;
+        double frequency_hz = 1 / deltaTime_seconds;
         double rounded_hz = Math.round(frequency_hz);
 
         Runtime.voltageCompensation = 12 / voltageSensor.getVoltage();
+        Runtime.deltaTime = deltaTime_seconds;
 
         this.controller1.update(gamepad1);
         this.controller2.update(gamepad2);

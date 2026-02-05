@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.lioncore.math.types.Path;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 
 public class Follower extends SystemBase {
 
@@ -25,10 +26,9 @@ public class Follower extends SystemBase {
 
     @Config
     public static class FollowerConstants {
-        public static double translationP = 0;
-        public static double maxSpeed = 400;
-        public static double minSpeed = 100;
-        public static double deceleration = 100;
+        public static double translationP = 0.001;
+        public static double maxSpeed = 1500;
+        public static double acceleration = 500;
     }
 
     public Follower() {
@@ -53,24 +53,39 @@ public class Follower extends SystemBase {
 
     @Override
     public void update(Telemetry telemetry) {
-        if (path == null) return;
+        if (path == null) {
+            this.drivetrain.update(telemetry);
+            return;
+        }
 
         // Compute current position and next position for discrete derivative evaluation
         double k = this.path.getClosestK();
         this.path.getTarget(k, this.closest);
-        this.path.getTarget(k + 0.01, this.discreteStep);
+        this.path.getTarget(k + 0.05, this.discreteStep);
 
         // Compute tangent and normal to the path at the current point
         this.discreteStep.position.sub_into(this.closest.position, this.tangent);
         this.closest.position.sub_into(SwerveDrive.PinpointCache.position.position, this.normal);
         this.tangent.normalise();
 
-        // Computer feedforward tangent velocity
-        // The velocity if the robot were perfectly on the path
-        double distance = path.distanceRemaining();
-        double stoppingDistance = Math.pow(SwerveDrive.PinpointCache.velocity.magnitude(), 2) / (2 * FollowerConstants.deceleration);
-        if (distance > stoppingDistance) this.tangent.multiply_mut(FollowerConstants.maxSpeed);
-        else this.tangent.multiply_mut(FollowerConstants.minSpeed);
+        // Compute trapezoidal velocity profile along the path
+        double distanceRemaining = path.distanceRemaining();
+        double currentSpeed = SwerveDrive.PinpointCache.velocity.magnitude();
+
+        // max velocity and acceleration constants
+        double vmax = FollowerConstants.maxSpeed;
+        double a = FollowerConstants.acceleration;
+        double stoppingDistance = Math.pow(currentSpeed, 2) / (2 * a);
+        double targetSpeed;
+        if (distanceRemaining > stoppingDistance) {
+            // Accelerate up to max
+            targetSpeed = Math.min(currentSpeed + a * TaskOpMode.Runtime.deltaTime, vmax);
+        } else {
+            // Decelerate smoothly to stop at path end
+            targetSpeed = Math.max(currentSpeed - a * TaskOpMode.Runtime.deltaTime, 0.0);
+        }
+
+        this.tangent.multiply_mut(targetSpeed);
 
         // Compute error, perpendicular to tangential motion
         this.corrective.update(-tangent.y(), tangent.x());
