@@ -23,9 +23,8 @@ public class VelocityFollower extends SystemBase {
         public static double P = 0.0005;
         public static double I = 0.0;
         public static double D = 0.0;
-        public static double F = 0.15;
         public static double kS = 0.1;
-        public static double kV = 0.005;
+        public static double kV = 0.0004;
     }
 
     public VelocityFollower() {
@@ -72,7 +71,7 @@ public class VelocityFollower extends SystemBase {
         double targetVelocity = targetRobotCentricVelocity.magnitude();
         double response = velocityController.calculate(SwerveDrive.PinpointCache.velocity.magnitude(), targetVelocity);
         double feedforward = VelocityPID.kS * Math.signum(targetVelocity) + VelocityPID.kV * targetVelocity;
-        response = Math.max(0, Math.min(1, response + feedforward));
+        response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
 
         targetRobotCentricVelocity.normalise();
         targetRobotCentricVelocity.multiply_mut(response);
