@@ -21,9 +21,9 @@ public class Follower extends SystemBase {
 
     @Config
     public static class DrivePID {
-        public static double P = 0.0;
+        public static double P = 0.003;
         public static double I = 0.0;
-        public static double D = 0.0;
+        public static double D = 0.0003;
     }
 
     private final SwerveDrive swerveDrive;
@@ -89,8 +89,8 @@ public class Follower extends SystemBase {
         translationalVector.normalise();
 
         // Minimise distance remaining and translational error and scale normalised vectors
-        double driveResponse = -drivePID.calculate(distance, 0);
-        double translationResponse = -translationalPID.calculate(translationalMagnitude, 0);
+        double driveResponse = Math.max(-0.5, Math.min(0.5, -drivePID.calculate(distance, 0)));
+        double translationResponse = Math.max(-0.5, Math.min(0.5, -translationalPID.calculate(translationalMagnitude, 0)));
         driveVector.multiply_mut(driveResponse);
         translationalVector.multiply_mut(translationResponse);
         driveVector.add_into(translationalVector, finalVector);
