@@ -16,15 +16,13 @@ public class LineTest extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        SwerveDrive swerveDrive = new SwerveDrive(new Position(0, 0, 0), false);
-        Follower follower = new Follower(swerveDrive);
+        Follower follower = new Follower();
 
         return Jobs.create()
                 .addSeries(new Follow(follower, new Line(
                         new Position(0, 0, 0),
                         new Position(0, 1000, 180)
                 ), true))
-                .registerSystem(swerveDrive)
                 .registerSystem(follower);
     }
 }

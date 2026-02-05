@@ -84,6 +84,7 @@ public class Follower extends SystemBase {
         // Apply into the velocityFollower
         this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
         this.drivetrain.setTargetHeading(this.closest.heading);
+        this.drivetrain.update(telemetry);
     }
 
     public double getDistance() {
