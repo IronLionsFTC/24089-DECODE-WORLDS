@@ -143,8 +143,8 @@ public class SwerveDrive extends SystemBase {
 
         PinpointCache.angularVelocity = this.pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
         PinpointCache.velocity.update(
-                pinpoint.getVelX(DistanceUnit.MM),
-                pinpoint.getVelY(DistanceUnit.MM)
+                -pinpoint.getVelY(DistanceUnit.MM),
+                pinpoint.getVelX(DistanceUnit.MM)
         );
 
         double error = angleDifference(this.targetHeading, PinpointCache.position.heading);
