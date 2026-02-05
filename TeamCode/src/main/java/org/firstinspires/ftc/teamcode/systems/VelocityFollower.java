@@ -12,7 +12,8 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 public class VelocityFollower extends SystemBase {
 
     private final SwerveDrive swerveDrive;
-    private final PID velocityController;
+    private final PID velocityControllerX;
+    private final PID velocityControllerY;
 
     private final Vector targetFieldCentricVelocity;
     private final Vector targetRobotCentricVelocity;
@@ -32,7 +33,13 @@ public class VelocityFollower extends SystemBase {
     }
 
     public VelocityFollower() {
-        this.velocityController = new PID(
+        this.velocityControllerX = new PID(
+                VelocityPID.P,
+                VelocityPID.I,
+                VelocityPID.D
+        );
+
+        this.velocityControllerY = new PID(
                 VelocityPID.P,
                 VelocityPID.I,
                 VelocityPID.D
@@ -56,7 +63,13 @@ public class VelocityFollower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
 
-        this.velocityController.setConstants(
+        this.velocityControllerX.setConstants(
+                VelocityPID.P,
+                VelocityPID.I,
+                VelocityPID.D
+        );
+
+        this.velocityControllerY.setConstants(
                 VelocityPID.P,
                 VelocityPID.I,
                 VelocityPID.D
@@ -72,8 +85,8 @@ public class VelocityFollower extends SystemBase {
         double currentVx = SwerveDrive.PinpointCache.velocity.x();
         double currentVy = SwerveDrive.PinpointCache.velocity.y();
 
-        double pidVx = velocityController.calculate(currentVx, targetRx);
-        double pidVy = velocityController.calculate(currentVy, targetRy);
+        double pidVx = velocityControllerX.calculate(currentVx, targetRx);
+        double pidVy = velocityControllerY.calculate(currentVy, targetRy);
 
         pidVx = Math.max(-1, Math.min(1, pidVx));
         pidVy = Math.max(-1, Math.min(1, pidVy));
