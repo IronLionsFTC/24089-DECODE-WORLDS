@@ -153,7 +153,7 @@ public class SwerveDrive extends SystemBase {
 
         double error = angleDifference(this.targetHeading, PinpointCache.position.heading);
         double h = heading.getAsDouble();
-        double response = this.headingController.calculate(error, 0);
+        double response = Math.min(0.5, Math.max(-0.5, this.headingController.calculate(error, 0)));
 
         if (h != 0 || turning) {
             this.turning = true;

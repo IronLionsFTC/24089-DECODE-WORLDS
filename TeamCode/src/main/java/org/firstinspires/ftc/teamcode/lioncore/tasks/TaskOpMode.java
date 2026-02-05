@@ -3,6 +3,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.lioncore.control.Controller;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
@@ -19,6 +20,7 @@ public abstract class TaskOpMode extends OpMode {
     private long lastTime;
     private List<LynxModule> hubs;
     private List<SystemBase> systems;
+    private VoltageSensor voltageSensor;
 
     private int telemetryCounter = 0;
 
@@ -34,6 +36,10 @@ public abstract class TaskOpMode extends OpMode {
      */
     public void mainloop() {
 
+    }
+
+    public static class Runtime {
+        public static double voltageCompensation = 1;
     }
 
     @Override
@@ -56,6 +62,8 @@ public abstract class TaskOpMode extends OpMode {
             system.init();
         }
 
+        this.voltageSensor = hardwareMap.voltageSensor.iterator().next();
+
         // Bulk hardware operations
         this.hubs = hardwareMap.getAll(LynxModule.class);
 
@@ -77,6 +85,8 @@ public abstract class TaskOpMode extends OpMode {
         double deltatime_seconds = deltatime / 1_000_000_000.0;
         double frequency_hz = 1 / deltatime_seconds;
         double rounded_hz = Math.round(frequency_hz);
+
+        Runtime.voltageCompensation = 12 / voltageSensor.getVoltage();
 
         this.controller1.update(gamepad1);
         this.controller2.update(gamepad2);

@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 
 public class VelocityFollower extends SystemBase {
 
@@ -23,6 +24,8 @@ public class VelocityFollower extends SystemBase {
         public static double I = 0.0;
         public static double D = 0.0;
         public static double F = 0.15;
+        public static double kS = 0.1;
+        public static double kV = 0.005;
     }
 
     public VelocityFollower() {
@@ -66,9 +69,10 @@ public class VelocityFollower extends SystemBase {
                 -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
         );
 
-        double response = velocityController.calculate(SwerveDrive.PinpointCache.velocity.magnitude(), targetRobotCentricVelocity.magnitude());
-        if (response != 0) response += VelocityPID.F;
-        response = Math.max(0, Math.min(1, response));
+        double targetVelocity = targetRobotCentricVelocity.magnitude();
+        double response = velocityController.calculate(SwerveDrive.PinpointCache.velocity.magnitude(), targetVelocity);
+        double feedforward = VelocityPID.kS * Math.signum(targetVelocity) + VelocityPID.kV * targetVelocity;
+        response = Math.max(0, Math.min(1, response + feedforward));
 
         targetRobotCentricVelocity.normalise();
         targetRobotCentricVelocity.multiply_mut(response);
