@@ -82,11 +82,17 @@ public class Follower extends SystemBase {
 
         // Calculate the raw drive and translational vectors.
         temp.position.sub_into(targetPosition.position, driveVector);
-        targetPosition.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
+        temp.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
         driveVector.normalise();
 
         double translationalMagnitude = translationalVector.magnitude();
         translationalVector.normalise();
+
+        double along = translationalVector.dot(driveVector);
+        translationalVector.sub_into(
+                driveVector.multiply(along),
+                translationalVector
+        );
 
         // Minimise distance remaining and translational error and scale normalised vectors
         double driveResponse = Math.max(-0.5, Math.min(0.5, -drivePID.calculate(distance, 0)));
