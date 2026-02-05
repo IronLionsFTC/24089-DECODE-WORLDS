@@ -12,114 +12,78 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 
 public class Follower extends SystemBase {
 
-    @Config
-    public static class TranslationPID {
-        public static double P = 0.0;
-        public static double I = 0.0;
-        public static double D = 0.0;
-    }
-
-    @Config
-    public static class DrivePID {
-        public static double P = 0.003;
-        public static double I = 0.0;
-        public static double D = 0.0003;
-    }
-
-    private final SwerveDrive swerveDrive;
-
+    private final VelocityFollower drivetrain;
     private Path path;
-    private final PID drivePID;
-    private final PID translationalPID;
 
-    private final Position targetPosition;
-    private final Vector driveVector;
-    private final Vector translationalVector;
-    private final Vector finalVector;
-    private final Position temp;
+    // Mutable vectors
+    private final Position closest;
+    private final Position discreteStep;
+    private final Vector tangent;
+    private final Vector normal;
+    private final Vector corrective;
+    private final Vector targetVelocity;
 
-    public Follower(SwerveDrive swerveDrive) {
-        this.swerveDrive = swerveDrive;
-        this.targetPosition = new Position(0, 0, 0);
-        this.driveVector = Vector.cartesian(0, 0);
-        this.translationalVector = Vector.cartesian(0, 0);
-        this.temp = new Position(0, 0, 0);
-        this.finalVector = Vector.cartesian(0, 0);
-        this.drivePID = new PID(0, 0, 0);
-        this.translationalPID = new PID(0, 0, 0);
+    @Config
+    public static class FollowerConstants {
+        public static double translationP = 0;
+        public static double maxSpeed = 400;
+        public static double minSpeed = 100;
+        public static double deceleration = 100;
+    }
+
+    public Follower() {
+        this.drivetrain = new VelocityFollower();
+        this.closest = new Position(0, 0, 0);
+        this.discreteStep = new Position(0, 0, 0);
+        this.tangent = Vector.cartesian(0, 0);
+        this.normal = Vector.cartesian(0, 0);
+        this.corrective = Vector.cartesian(0, 0);
+        this.targetVelocity = Vector.cartesian(0, 0);
     }
 
     @Override
-    public void loadHardware(HardwareMap hardwareMap) {}
+    public void loadHardware(HardwareMap hardwareMap) {
+        this.drivetrain.loadHardware(hardwareMap);
+    }
 
     @Override
-    public void init() {}
+    public void init() {
+        this.drivetrain.init();
+    }
 
     @Override
     public void update(Telemetry telemetry) {
         if (path == null) return;
 
-        this.drivePID.setConstants(
-                DrivePID.P,
-                DrivePID.I,
-                DrivePID.D
-        );
+        // Compute current position and next position for discrete derivative evaluation
+        double k = this.path.getClosestK();
+        this.path.getTarget(k, this.closest);
+        this.path.getTarget(k + 0.01, this.discreteStep);
 
-        this.translationalPID.setConstants(
-                TranslationPID.P,
-                TranslationPID.I,
-                TranslationPID.D
-        );
+        // Compute tangent and normal to the path at the current point
+        this.discreteStep.position.sub_into(this.closest.position, this.tangent);
+        this.closest.position.sub_into(SwerveDrive.PinpointCache.position.position, this.normal);
+        this.tangent.normalise();
 
-        // Calculate the parametric variables and discrete approximation of tangent to the path.
-        double kValue = path.getClosestK();
-        path.getTarget(kValue, targetPosition);
-        path.getTarget(kValue + 0.05, temp);
-
-        // Distance to the end of the path
+        // Computer feedforward tangent velocity
+        // The velocity if the robot were perfectly on the path
         double distance = path.distanceRemaining();
+        double stoppingDistance = Math.pow(SwerveDrive.PinpointCache.velocity.magnitude(), 2) / (2 * FollowerConstants.deceleration);
+        if (distance > stoppingDistance) this.tangent.multiply_mut(FollowerConstants.maxSpeed);
+        else this.tangent.multiply_mut(FollowerConstants.minSpeed);
 
-        // Calculate the raw drive and translational vectors.
-        temp.position.sub_into(targetPosition.position, driveVector);
-        targetPosition.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
-        driveVector.normalise();
+        // Compute error, perpendicular to tangential motion
+        this.corrective.update(-tangent.y(), tangent.x());
+        double lateralError = normal.dot(corrective);
+        this.corrective.normalise();
+        this.corrective.multiply_mut(lateralError * FollowerConstants.translationP);
 
-        double translationalMagnitude = translationalVector.magnitude();
-        translationalVector.normalise();
-        translationalVector.multiply_mut(0.5);
+        // Combine target velocities
+        this.tangent.add_into(this.corrective, this.targetVelocity);
 
-        double along = translationalVector.dot(driveVector);
-        translationalVector.sub_into(
-                driveVector.multiply(along),
-                translationalVector
-        );
-
-        // Minimise distance remaining and translational error and scale normalised vectors
-        double driveResponse = Math.max(-0.5, Math.min(0.5, -drivePID.calculate(distance, 0)));
-        double translationResponse = Math.max(-0.5, Math.min(0.5, -translationalPID.calculate(translationalMagnitude, 0)));
-        driveVector.multiply_mut(driveResponse);
-        translationalVector.multiply_mut(translationResponse);
-        driveVector.add_into(translationalVector, finalVector);
-
-        // Calculate the target heading
-        double targetHeading = targetPosition.heading;
-
-        // Translate the field centric movement back into robot centric inputs
-        double headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
-        double c = Math.cos(headingRadians);
-        double s = Math.sin(headingRadians);
-
-        temp.update(
-                finalVector.x() * c + finalVector.y() * s,
-                -finalVector.x() * s + finalVector.y() * c,
-                0
-        );
-
-        swerveDrive.setTargetHeading(targetHeading);
-        swerveDrive.setTargetVector(temp.position);
-
-        telemetry.addData("DISTANCE REMAINING", distance);
-        telemetry.addData("K", kValue);
+        // Apply into the velocityFollower
+        this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
+        this.drivetrain.setTargetHeading(this.closest.heading);
     }
 
     public double getDistance() {
