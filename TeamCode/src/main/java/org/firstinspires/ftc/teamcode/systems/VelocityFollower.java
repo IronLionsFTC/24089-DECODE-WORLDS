@@ -82,6 +82,9 @@ public class VelocityFollower extends SystemBase {
         double targetRx = targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s;
         double targetRy = -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c;
 
+        if (Math.abs(targetRx) < 5) targetRx = 0;
+        if (Math.abs(targetRy) < 5) targetRy = 0;
+
         double currentVx = SwerveDrive.PinpointCache.velocity.x();
         double currentVy = SwerveDrive.PinpointCache.velocity.y();
 
