@@ -45,7 +45,6 @@ public class Follower extends SystemBase {
         this.translationalVector = Vector.cartesian(0, 0);
         this.temp = new Position(0, 0, 0);
         this.finalVector = Vector.cartesian(0, 0);
-
         this.drivePID = new PID(0, 0, 0);
         this.translationalPID = new PID(0, 0, 0);
     }
@@ -82,11 +81,12 @@ public class Follower extends SystemBase {
 
         // Calculate the raw drive and translational vectors.
         temp.position.sub_into(targetPosition.position, driveVector);
-        temp.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
+        targetPosition.position.sub_into(SwerveDrive.PinpointCache.position.position, translationalVector);
         driveVector.normalise();
 
         double translationalMagnitude = translationalVector.magnitude();
         translationalVector.normalise();
+        translationalVector.multiply_mut(0.5);
 
         double along = translationalVector.dot(driveVector);
         translationalVector.sub_into(

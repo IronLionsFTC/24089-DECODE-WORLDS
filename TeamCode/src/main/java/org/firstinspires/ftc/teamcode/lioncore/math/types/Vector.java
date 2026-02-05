@@ -117,4 +117,9 @@ public class Vector {
     public boolean is_poisoned() {
         return Double.isNaN(this.x) || Double.isNaN(this.y);
     }
+
+    public void copy(Vector other) {
+        this.x = other.x;
+        this.y = other.y;
+    }
 }
