@@ -39,6 +39,8 @@ public class SwerveDrive extends SystemBase {
     private PID headingController;
     private boolean turning;
 
+    private final boolean xPattern;
+
     public static class PinpointCache {
         public static Position position;
         public static Vector velocity;
@@ -59,16 +61,18 @@ public class SwerveDrive extends SystemBase {
         public static double D = 0;
     }
 
-    public SwerveDrive(Position startPosition) {
+    public SwerveDrive(Position startPosition, boolean xPattern) {
         this.startPosition = startPosition;
         this.headingController = new PID(0, 0, 0);
         this.heading = () -> 0;
+        this.xPattern = xPattern;
     }
 
-    public SwerveDrive(Position startPosition, DoubleSupplier h) {
+    public SwerveDrive(Position startPosition, DoubleSupplier h, boolean xPattern) {
         this.startPosition = startPosition;
         this.headingController = new PID(0, 0, 0);
         this.heading = h;
+        this.xPattern = xPattern;
     }
 
     @Override
@@ -107,10 +111,10 @@ public class SwerveDrive extends SystemBase {
         rightFront.setReverseEncoder(true);
         rightRear.setReverseEncoder(true);
 
-        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront));
-        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront));
-        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear));
-        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear));
+        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront), xPattern);
+        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront), xPattern);
+        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear), xPattern);
+        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear), xPattern);
     }
 
     @Override

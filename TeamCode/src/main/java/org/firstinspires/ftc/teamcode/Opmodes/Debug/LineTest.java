@@ -16,7 +16,7 @@ public class LineTest extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        SwerveDrive swerveDrive = new SwerveDrive(new Position(0, 0, 0));
+        SwerveDrive swerveDrive = new SwerveDrive(new Position(0, 0, 0), false);
         Follower follower = new Follower(swerveDrive);
 
         return Jobs.create()

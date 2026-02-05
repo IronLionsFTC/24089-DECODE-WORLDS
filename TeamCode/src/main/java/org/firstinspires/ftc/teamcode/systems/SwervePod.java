@@ -15,18 +15,21 @@ public class SwervePod {
     private double podAngle;
     private PID angleController;
 
+    private final boolean xPattern;
+
     /**
      *
      * @param motor
      * @param servo
      * @param offset X (right) and y (forward) position of the pod from the center of the robot
      */
-    public SwervePod(LionMotor motor, LionCRServo servo, Vector offset, double startDegrees) {
+    public SwervePod(LionMotor motor, LionCRServo servo, Vector offset, double startDegrees, boolean xPattern) {
         this.motor = motor;
         this.servo = servo;
         this.offset = offset;
         this.motor.resetPositionTo(startDegrees * (4096.0 / 360.0));
         this.angleController = new PID(0, 0, 0);
+        this.xPattern = xPattern;
     }
 
     /**
@@ -47,13 +50,18 @@ public class SwervePod {
         );
 
         if (target.magnitude() < 1e-6 && Math.abs(heading) < 1e-6) {
-            double option_a = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() + 90), podAngle));
-            double option_b = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() - 90), podAngle));
 
-            if (Math.abs(podAngle - option_a) <= Math.abs(podAngle - option_b)) {
-                servo.setPower(angleController.calculate(podAngle, option_a));
+            if (xPattern) {
+                double option_a = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() + 90), podAngle));
+                double option_b = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() - 90), podAngle));
+
+                if (Math.abs(podAngle - option_a) <= Math.abs(podAngle - option_b)) {
+                    servo.setPower(angleController.calculate(podAngle, option_a));
+                } else {
+                    servo.setPower(angleController.calculate(podAngle, option_b));
+                }
             } else {
-                servo.setPower(angleController.calculate(podAngle, option_b));
+                servo.setPower(angleController.calculate(podAngle, podAngle));
             }
 
             return 0.0;
@@ -65,13 +73,17 @@ public class SwervePod {
 
         // Guard against near-zero direction noise
         if (finalVelocity.magnitude() < 1e-6) {
-            double option_a = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() + 90), podAngle));
-            double option_b = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() - 90), podAngle));
+            if (xPattern) {
+                double option_a = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() + 90), podAngle));
+                double option_b = wrapDeg(closestEquivalentAngle(wrapDeg(offset.polarDirection() - 90), podAngle));
 
-            if (Math.abs(podAngle - option_a) <= Math.abs(podAngle - option_b)) {
-                servo.setPower(angleController.calculate(podAngle, option_a));
+                if (Math.abs(podAngle - option_a) <= Math.abs(podAngle - option_b)) {
+                    servo.setPower(angleController.calculate(podAngle, option_a));
+                } else {
+                    servo.setPower(angleController.calculate(podAngle, option_b));
+                }
             } else {
-                servo.setPower(angleController.calculate(podAngle, option_b));
+                servo.setPower(angleController.calculate(podAngle, podAngle));
             }
 
             return 0.0;

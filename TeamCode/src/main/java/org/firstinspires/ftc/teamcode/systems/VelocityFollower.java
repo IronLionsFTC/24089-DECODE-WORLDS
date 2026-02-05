@@ -12,34 +12,21 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 public class VelocityFollower extends SystemBase {
 
     private final SwerveDrive swerveDrive;
-    private final PID velocityControllerX;
-    private final PID velocityControllerY;
+    private final PID velocityController;
 
     private final Vector targetFieldCentricVelocity;
     private final Vector targetRobotCentricVelocity;
 
     @Config
     public static class VelocityPID {
-        public static double P = 0.0;
+        public static double P = 0.0005;
         public static double I = 0.0;
         public static double D = 0.0;
-    }
-
-    @Config
-    public static class FollowerHeadingPID {
-        public static double P = 0.0;
-        public static double I = 0.0;
-        public static double D = 0.0;
+        public static double F = 0.15;
     }
 
     public VelocityFollower() {
-        this.velocityControllerX = new PID(
-                VelocityPID.P,
-                VelocityPID.I,
-                VelocityPID.D
-        );
-
-        this.velocityControllerY = new PID(
+        this.velocityController = new PID(
                 VelocityPID.P,
                 VelocityPID.I,
                 VelocityPID.D
@@ -47,7 +34,7 @@ public class VelocityFollower extends SystemBase {
 
         this.targetFieldCentricVelocity = Vector.cartesian(0, 0);
         this.targetRobotCentricVelocity = Vector.cartesian(0, 0);
-        this.swerveDrive = new SwerveDrive(new Position(0, 0, 0));
+        this.swerveDrive = new SwerveDrive(new Position(0, 0, 0), false);
     }
 
     @Override
@@ -63,48 +50,38 @@ public class VelocityFollower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
 
-        this.velocityControllerX.setConstants(
+        this.velocityController.setConstants(
                 VelocityPID.P,
                 VelocityPID.I,
                 VelocityPID.D
         );
 
-        this.velocityControllerY.setConstants(
-                VelocityPID.P,
-                VelocityPID.I,
-                VelocityPID.D
-        );
-
+        // Translate the field centric movement back into robot centric
         double headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
         double c = Math.cos(headingRadians);
         double s = Math.sin(headingRadians);
 
-        double targetRx = targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s;
-        double targetRy = -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c;
+        targetRobotCentricVelocity.update(
+                targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s,
+                -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
+        );
 
-        if (Math.abs(targetRx) < 5) targetRx = 0;
-        if (Math.abs(targetRy) < 5) targetRy = 0;
+        double response = velocityController.calculate(SwerveDrive.PinpointCache.velocity.magnitude(), targetRobotCentricVelocity.magnitude());
+        if (response != 0) response += VelocityPID.F;
+        response = Math.max(0, Math.min(1, response));
 
-        double currentVx = SwerveDrive.PinpointCache.velocity.x();
-        double currentVy = SwerveDrive.PinpointCache.velocity.y();
+        targetRobotCentricVelocity.normalise();
+        targetRobotCentricVelocity.multiply_mut(response);
 
-        double pidVx = velocityControllerX.calculate(currentVx, targetRx);
-        double pidVy = velocityControllerY.calculate(currentVy, targetRy);
-
-        pidVx = Math.max(-1, Math.min(1, pidVx));
-        pidVy = Math.max(-1, Math.min(1, pidVy));
-
-        Vector robotVelocityCommand = Vector.cartesian(pidVx, pidVy);
-
-        swerveDrive.setTargetVector(robotVelocityCommand);
+        swerveDrive.setTargetVector(targetRobotCentricVelocity);
         swerveDrive.update(telemetry);
 
-        telemetry.addData("Current VX", currentVx);
-        telemetry.addData("Current VY", currentVy);
-        telemetry.addData("Target FX", targetFieldCentricVelocity.x());
-        telemetry.addData("Target FY", targetFieldCentricVelocity.y());
-        telemetry.addData("Command RX", pidVx);
-        telemetry.addData("Command RY", pidVy);
+        telemetry.addData("XV", SwerveDrive.PinpointCache.velocity.x());
+        telemetry.addData("YV", SwerveDrive.PinpointCache.velocity.y());
+        telemetry.addData("FX", targetFieldCentricVelocity.x());
+        telemetry.addData("FY", targetFieldCentricVelocity.y());
+        telemetry.addData("RX", targetRobotCentricVelocity.x());
+        telemetry.addData("RY", targetRobotCentricVelocity.y());
     }
 
     public void setTargetFieldCentricVelocity(Vector targetFieldCentricVelocity) {
