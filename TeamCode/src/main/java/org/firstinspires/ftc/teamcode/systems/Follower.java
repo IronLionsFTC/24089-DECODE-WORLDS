@@ -28,7 +28,8 @@ public class Follower extends SystemBase {
     public static class FollowerConstants {
         public static double translationP = 0.001;
         public static double maxSpeed = 1500;
-        public static double acceleration = 500;
+        public static double acceleration = 1500;
+        public static double deceleration = 800;
     }
 
     public Follower() {
@@ -54,6 +55,8 @@ public class Follower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
         if (path == null) {
+            this.targetVelocity.update(0, 0);
+            this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
             this.drivetrain.update(telemetry);
             return;
         }
@@ -74,15 +77,14 @@ public class Follower extends SystemBase {
 
         // max velocity and acceleration constants
         double vmax = FollowerConstants.maxSpeed;
-        double a = FollowerConstants.acceleration;
-        double stoppingDistance = Math.pow(currentSpeed, 2) / (2 * a);
+        double stoppingDistance = Math.pow(currentSpeed, 2) / (2 * FollowerConstants.deceleration);
         double targetSpeed;
         if (distanceRemaining > stoppingDistance) {
             // Accelerate up to max
-            targetSpeed = Math.min(currentSpeed + a * TaskOpMode.Runtime.deltaTime, vmax);
+            targetSpeed = Math.min(currentSpeed + FollowerConstants.acceleration * TaskOpMode.Runtime.deltaTime, vmax);
         } else {
             // Decelerate smoothly to stop at path end
-            targetSpeed = Math.max(currentSpeed - a * TaskOpMode.Runtime.deltaTime, 0.0);
+            targetSpeed = Math.max(currentSpeed - FollowerConstants.deceleration * TaskOpMode.Runtime.deltaTime, 100);
         }
 
         this.tangent.multiply_mut(targetSpeed);
