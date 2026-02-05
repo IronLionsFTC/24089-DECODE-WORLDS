@@ -110,6 +110,7 @@ public class SwervePod {
         }
 
         servo.setPower(angleController.calculate(podAngle, angleSetpoint));
+        if (Math.abs(angleSetpoint - podAngle) > 10) return 0.0;
         return drivePower;
     }
 
@@ -122,10 +123,6 @@ public class SwervePod {
         if (angle <= -180) angle += 360;
         if (angle > 180) angle -= 360;
         return angle;
-    }
-
-    private static double angleError(double target, double current) {
-        return wrapDeg(target - current);
     }
 
     private static double closestEquivalentAngle(double target, double reference) {

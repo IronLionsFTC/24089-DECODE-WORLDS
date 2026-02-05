@@ -81,10 +81,10 @@ public class Follower extends SystemBase {
         double targetSpeed;
         if (distanceRemaining > stoppingDistance) {
             // Accelerate up to max
-            targetSpeed = Math.min(currentSpeed + FollowerConstants.acceleration * TaskOpMode.Runtime.deltaTime, vmax);
+            targetSpeed = Math.min(currentSpeed + FollowerConstants.acceleration, vmax);
         } else {
             // Decelerate smoothly to stop at path end
-            targetSpeed = Math.max(currentSpeed - FollowerConstants.deceleration * TaskOpMode.Runtime.deltaTime, 100);
+            targetSpeed = Math.max(currentSpeed - FollowerConstants.deceleration, 100);
         }
 
         this.tangent.multiply_mut(targetSpeed);
