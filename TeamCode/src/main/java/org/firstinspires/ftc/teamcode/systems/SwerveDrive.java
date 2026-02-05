@@ -85,6 +85,10 @@ public class SwerveDrive extends SystemBase {
         leftRearAnalog.read();
 
         this.pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        this.pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        this.pinpoint.setOffsets(134.857, 0, DistanceUnit.MM);
+        this.pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+
         PinpointCache.position = new Position(0, 0, 0);
         PinpointCache.velocity = Vector.cartesian(0, 0);
         PinpointCache.angularVelocity = 0;
@@ -111,8 +115,6 @@ public class SwerveDrive extends SystemBase {
 
     @Override
     public void init() {
-        this.pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        this.pinpoint.setOffsets(125, 0, DistanceUnit.MM);
         this.pinpoint.resetPosAndIMU();
         this.pinpoint.setPosition(startPosition.pose());
         this.pinpoint.setHeading(startPosition.heading, AngleUnit.DEGREES);
@@ -182,6 +184,10 @@ public class SwerveDrive extends SystemBase {
         telemetry.addData("X POSITION", SwerveDrive.PinpointCache.position.position.x());
         telemetry.addData("Y POSITION", SwerveDrive.PinpointCache.position.position.y());
         telemetry.addData("HEADING", PinpointCache.position.heading);
+
+        telemetry.addData("RAW HEADING", pinpoint.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("RAW X", pinpoint.getPosX(DistanceUnit.MM));
+        telemetry.addData("RAW Y", pinpoint.getPosY(DistanceUnit.MM));
     }
 
     /**

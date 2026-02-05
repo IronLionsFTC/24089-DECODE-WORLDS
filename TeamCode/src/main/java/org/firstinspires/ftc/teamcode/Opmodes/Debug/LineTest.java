@@ -22,7 +22,7 @@ public class LineTest extends TaskOpMode {
         return Jobs.create()
                 .addSeries(new Follow(follower, new Line(
                         new Position(0, 0, 0),
-                        new Position(0, 25, 180)
+                        new Position(0, 1000, 180)
                 )))
                 .registerSystem(swerveDrive)
                 .registerSystem(follower);
