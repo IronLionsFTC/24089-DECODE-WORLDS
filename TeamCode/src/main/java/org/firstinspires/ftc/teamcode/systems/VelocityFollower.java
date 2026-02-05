@@ -56,22 +56,39 @@ public class VelocityFollower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
 
-        // Translate the field centric movement back into robot centric
+        this.velocityController.setConstants(
+                VelocityPID.P,
+                VelocityPID.I,
+                VelocityPID.D
+        );
+
         double headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
         double c = Math.cos(headingRadians);
         double s = Math.sin(headingRadians);
 
-        targetRobotCentricVelocity.update(
-                targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s,
-                -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
-        );
+        double targetRx = targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s;
+        double targetRy = -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c;
 
-        double response = velocityController.calculate(SwerveDrive.PinpointCache.velocity.magnitude(), targetRobotCentricVelocity.magnitude());
-        targetRobotCentricVelocity.normalise();
-        targetRobotCentricVelocity.multiply_mut(Math.max(-1, Math.min(1, response)));
+        double currentVx = SwerveDrive.PinpointCache.velocity.x();
+        double currentVy = SwerveDrive.PinpointCache.velocity.y();
 
-        swerveDrive.setTargetVector(targetRobotCentricVelocity);
+        double pidVx = velocityController.calculate(currentVx, targetRx);
+        double pidVy = velocityController.calculate(currentVy, targetRy);
+
+        pidVx = Math.max(-1, Math.min(1, pidVx));
+        pidVy = Math.max(-1, Math.min(1, pidVy));
+
+        Vector robotVelocityCommand = Vector.cartesian(pidVx, pidVy);
+
+        swerveDrive.setTargetVector(robotVelocityCommand);
         swerveDrive.update(telemetry);
+
+        telemetry.addData("Current VX", currentVx);
+        telemetry.addData("Current VY", currentVy);
+        telemetry.addData("Target FX", targetFieldCentricVelocity.x());
+        telemetry.addData("Target FY", targetFieldCentricVelocity.y());
+        telemetry.addData("Command RX", pidVx);
+        telemetry.addData("Command RY", pidVy);
     }
 
     public void setTargetFieldCentricVelocity(Vector targetFieldCentricVelocity) {
