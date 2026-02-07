@@ -29,10 +29,10 @@ public class Follower extends SystemBase {
 
     @Config
     public static class FollowerConstants {
-        public static double translationP = 0.002;
+        public static double translationP = 0.0025;
         public static double maxSpeed = 3000;
-        public static double acceleration = 10000;
-        public static double deceleration = 10000;
+        public static double acceleration = 5000;
+        public static double deceleration = 5000;
     }
 
     public Follower() {
@@ -86,10 +86,12 @@ public class Follower extends SystemBase {
         if (distanceRemaining > stoppingDistance) {
             targetSpeed += TaskOpMode.Runtime.deltaTime * FollowerConstants.acceleration;
             if (targetSpeed > vmax) targetSpeed = vmax;
-        } else {
+        } else if (distanceRemaining > 0){
             // Decelerate smoothly to stop at path end
             targetSpeed -= TaskOpMode.Runtime.deltaTime * FollowerConstants.deceleration;
-            if (targetSpeed < 400) targetSpeed = 400;
+            if (targetSpeed < 100) targetSpeed = 100;
+        } else {
+            targetSpeed = 0;
         }
 
         this.tangent.multiply_mut(targetSpeed);
