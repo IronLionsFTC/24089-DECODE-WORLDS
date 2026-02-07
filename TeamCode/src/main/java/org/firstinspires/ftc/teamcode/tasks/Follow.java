@@ -7,22 +7,24 @@ import org.firstinspires.ftc.teamcode.systems.Follower;
 public class Follow extends Task {
     private final Follower follower;
     private final Path path;
-    private final boolean holdEnd;
+
+    private double previousMaximumSpeed = 0;
+    private double maxSpeed = Follower.FollowerConstants.maxSpeed;
 
     public Follow(Follower follower, Path path) {
         this.follower = follower;
         this.path = path;
-        this.holdEnd = false;
     }
 
-    public Follow(Follower follower, Path path, boolean holdEnd) {
-        this.follower = follower;
-        this.path = path;
-        this.holdEnd = holdEnd;
+    public Follow setMaxSpeed(double speed) {
+        this.maxSpeed = speed;
+        return this;
     }
 
     @Override
     public void init() {
+        this.previousMaximumSpeed = Follower.FollowerConstants.maxSpeed;
+        Follower.FollowerConstants.maxSpeed = this.maxSpeed;
         follower.follow(path);
     }
 
@@ -34,6 +36,7 @@ public class Follow extends Task {
 
     @Override
     public void end(boolean i) {
-        if (i || !holdEnd) follower.stop();
+        follower.stop();
+        Follower.FollowerConstants.maxSpeed = this.previousMaximumSpeed;
     }
 }

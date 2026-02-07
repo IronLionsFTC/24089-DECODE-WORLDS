@@ -23,15 +23,15 @@ public class LineTest extends TaskOpMode {
                         new Follow(follower, new Line(
                             new Position(0, 0, 0),
                             new Position(400, 2000, 90)
-                        ), false),
+                        )),
                         new Follow(follower, new Line(
                                 new Position(400, 2000, 90),
                                 new Position(800, 1600, 180)
-                        ), false),
+                        )).setMaxSpeed(600),
                         new Follow(follower, new Line(
                                 new Position(800, 1600, 180),
                                 new Position(0, 0, 0)
-                        ), false)
+                        ))
                 )
                 .registerSystem(follower);
     }
