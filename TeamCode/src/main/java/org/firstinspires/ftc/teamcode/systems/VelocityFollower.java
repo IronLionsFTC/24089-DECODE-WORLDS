@@ -14,9 +14,17 @@ public class VelocityFollower extends SystemBase {
 
     private final SwerveDrive swerveDrive;
     private final PID velocityController;
-
+    private final PID holdpointController;
     private final Vector targetFieldCentricVelocity;
     private final Vector targetRobotCentricVelocity;
+    private final Position holdpoint;
+
+    public State state;
+
+    public enum State {
+        Velocity,
+        Holdpoint
+    }
 
     @Config
     public static class VelocityPID {
@@ -27,6 +35,15 @@ public class VelocityFollower extends SystemBase {
         public static double kV = 0.0004;
     }
 
+    @Config
+    public static class HoldpointPID {
+        public static double P = 0.0;
+        public static double I = 0.0;
+        public static double D = 0.0;
+        public static double kS = 0.1;
+        public static double kV = 0.0;
+    }
+
     public VelocityFollower() {
         this.velocityController = new PID(
                 VelocityPID.P,
@@ -34,9 +51,17 @@ public class VelocityFollower extends SystemBase {
                 VelocityPID.D
         );
 
+        this.holdpointController = new PID(
+                HoldpointPID.P,
+                HoldpointPID.I,
+                HoldpointPID.D
+        );
+
         this.targetFieldCentricVelocity = Vector.cartesian(0, 0);
         this.targetRobotCentricVelocity = Vector.cartesian(0, 0);
-        this.swerveDrive = new SwerveDrive(new Position(0, 0, 0), false);
+        this.swerveDrive = new SwerveDrive(new Position(0, 0, 0), true);
+        this.holdpoint = new Position(0, 0, 0);
+        this.state = State.Velocity;
     }
 
     @Override
@@ -52,29 +77,70 @@ public class VelocityFollower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
 
-        this.velocityController.setConstants(
-                VelocityPID.P,
-                VelocityPID.I,
-                VelocityPID.D
-        );
+        double headingRadians;
+        double c;
+        double s;
+        double response;
+        double feedforward;
 
-        // Translate the field centric movement back into robot centric
-        double headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
-        double c = Math.cos(headingRadians);
-        double s = Math.sin(headingRadians);
+        switch (this.state) {
 
-        targetRobotCentricVelocity.update(
-                targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s,
-                -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
-        );
+            case Velocity:
+                this.velocityController.setConstants(
+                        VelocityPID.P,
+                        VelocityPID.I,
+                        VelocityPID.D
+                );
 
-        double targetVelocity = targetRobotCentricVelocity.magnitude();
-        double response = velocityController.calculate(SwerveDrive.PinpointCache.velocity.magnitude(), targetVelocity);
-        double feedforward = VelocityPID.kS * Math.signum(targetVelocity) + VelocityPID.kV * targetVelocity;
-        response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
+                // Translate the field centric movement back into robot centric
+                headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
+                c = Math.cos(headingRadians);
+                s = Math.sin(headingRadians);
 
-        targetRobotCentricVelocity.normalise();
-        targetRobotCentricVelocity.multiply_mut(response);
+                targetRobotCentricVelocity.update(
+                        targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s,
+                        -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
+                );
+
+                double targetVelocity = targetRobotCentricVelocity.magnitude();
+                response = velocityController.calculate(SwerveDrive.PinpointCache.velocity.magnitude(), targetVelocity);
+                feedforward = VelocityPID.kS * Math.signum(targetVelocity) + VelocityPID.kV * targetVelocity;
+                response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
+
+                targetRobotCentricVelocity.normalise();
+                targetRobotCentricVelocity.multiply_mut(response);
+                break;
+
+            case Holdpoint:
+                this.holdpointController.setConstants(
+                        HoldpointPID.P,
+                        HoldpointPID.I,
+                        HoldpointPID.D
+                );
+
+                this.holdpoint.position.sub_into(SwerveDrive.PinpointCache.position.position, this.targetFieldCentricVelocity);
+                double distance = this.targetFieldCentricVelocity.magnitude();
+                this.targetFieldCentricVelocity.normalise();
+
+                response = holdpointController.calculate(-distance, 0);
+                feedforward = HoldpointPID.kS;
+                response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
+
+                // Translate the field centric movement back into robot centric
+                headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
+                c = Math.cos(headingRadians);
+                s = Math.sin(headingRadians);
+
+                targetRobotCentricVelocity.update(
+                        targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s,
+                        -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
+                );
+
+                targetRobotCentricVelocity.normalise();
+                targetRobotCentricVelocity.multiply_mut(response);
+                this.swerveDrive.setTargetHeading(holdpoint.heading);
+                break;
+        }
 
         swerveDrive.setTargetVector(targetRobotCentricVelocity);
         swerveDrive.update(telemetry);
@@ -93,5 +159,10 @@ public class VelocityFollower extends SystemBase {
 
     public void setTargetHeading(double targetHeading) {
         this.swerveDrive.setTargetHeading(targetHeading);
+    }
+
+    public void setHoldpoint(Position holdpoint) {
+        this.holdpoint.position.copy(holdpoint.position);
+        this.holdpoint.heading = holdpoint.heading;
     }
 }

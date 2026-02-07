@@ -81,7 +81,7 @@ public class Follower extends SystemBase {
 
         // max velocity and acceleration constants
         double vmax = FollowerConstants.maxSpeed;
-        double stoppingDistance = Math.pow(vmax, 2) / (2 * FollowerConstants.deceleration);
+        double stoppingDistance = Math.pow(vmax * 1.1, 2) / (2 * FollowerConstants.deceleration);
 
         if (distanceRemaining > stoppingDistance) {
             targetSpeed += TaskOpMode.Runtime.deltaTime * FollowerConstants.acceleration;
@@ -89,7 +89,7 @@ public class Follower extends SystemBase {
         } else if (distanceRemaining > 0){
             // Decelerate smoothly to stop at path end
             targetSpeed -= TaskOpMode.Runtime.deltaTime * FollowerConstants.deceleration;
-            if (targetSpeed < 100) targetSpeed = 100;
+            if (targetSpeed < 0) targetSpeed = 0;
         } else {
             targetSpeed = 0;
         }
@@ -105,9 +105,18 @@ public class Follower extends SystemBase {
         // Combine target velocities
         this.tangent.add_into(this.corrective, this.targetVelocity);
 
-        // Apply into the velocityFollower
-        this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
-        this.drivetrain.setTargetHeading(this.closest.heading);
+        if (k < 0.9) {
+            // Apply into the velocityFollower
+            this.drivetrain.state = VelocityFollower.State.Velocity;
+            this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
+            this.drivetrain.setTargetHeading(this.closest.heading);
+        } else {
+            // Holdpoint
+            this.drivetrain.state = VelocityFollower.State.Holdpoint;
+            this.path.getTarget(1, this.closest);
+            this.drivetrain.setHoldpoint(closest);
+        }
+
         this.drivetrain.update(telemetry);
     }
 
