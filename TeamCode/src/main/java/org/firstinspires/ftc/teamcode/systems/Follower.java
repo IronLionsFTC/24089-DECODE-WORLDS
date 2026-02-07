@@ -29,10 +29,10 @@ public class Follower extends SystemBase {
 
     @Config
     public static class FollowerConstants {
-        public static double translationP = 0.001;
-        public static double maxSpeed = 2000;
-        public static double acceleration = 1000;
-        public static double deceleration = 5000;
+        public static double translationP = 0.002;
+        public static double maxSpeed = 3000;
+        public static double acceleration = 10000;
+        public static double deceleration = 10000;
     }
 
     public Follower() {
