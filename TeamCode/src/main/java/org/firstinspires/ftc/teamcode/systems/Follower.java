@@ -24,6 +24,9 @@ public class Follower extends SystemBase {
     private final Vector corrective;
     private final Vector targetVelocity;
 
+    // Speed
+    private double currentSpeed;
+
     @Config
     public static class FollowerConstants {
         public static double translationP = 0.001;
@@ -40,6 +43,7 @@ public class Follower extends SystemBase {
         this.normal = Vector.cartesian(0, 0);
         this.corrective = Vector.cartesian(0, 0);
         this.targetVelocity = Vector.cartesian(0, 0);
+        this.currentSpeed = 0;
     }
 
     @Override
@@ -55,6 +59,7 @@ public class Follower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
         if (path == null) {
+            this.currentSpeed = 0;
             this.targetVelocity.update(0, 0);
             this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
             this.drivetrain.update(telemetry);
@@ -77,18 +82,18 @@ public class Follower extends SystemBase {
 
         // max velocity and acceleration constants
         double vmax = FollowerConstants.maxSpeed;
-        double stoppingDistance = Math.pow(currentSpeed, 2) / (2 * FollowerConstants.deceleration);
-        double targetSpeed;
+        double stoppingDistance = Math.pow(vmax, 2) / (2 * FollowerConstants.deceleration);
 
         if (distanceRemaining > stoppingDistance) {
-            // Accelerate up to max
-            targetSpeed = Math.min(currentSpeed + FollowerConstants.acceleration * TaskOpMode.Runtime.deltaTime, vmax);
+            currentSpeed += TaskOpMode.Runtime.deltaTime * FollowerConstants.acceleration;
+            if (currentSpeed > vmax) currentSpeed = vmax;
         } else {
             // Decelerate smoothly to stop at path end
-            targetSpeed = Math.max(currentSpeed - FollowerConstants.deceleration * TaskOpMode.Runtime.deltaTime, 500);
+            currentSpeed -= TaskOpMode.Runtime.deltaTime * FollowerConstants.deceleration;
+            if (currentSpeed < 400) currentSpeed = 400;
         }
 
-        this.tangent.multiply_mut(targetSpeed);
+        this.tangent.multiply_mut(currentSpeed);
 
         // Compute error, perpendicular to tangential motion
         this.corrective.update(-tangent.y(), tangent.x());
@@ -114,6 +119,7 @@ public class Follower extends SystemBase {
     }
 
     public void follow(Path path) {
+        this.currentSpeed = 0;
         this.path = path;
     }
 }
