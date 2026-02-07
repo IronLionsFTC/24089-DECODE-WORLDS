@@ -29,10 +29,8 @@ public class Follower extends SystemBase {
 
     @Config
     public static class FollowerConstants {
-        public static double translationP = 0.0025;
+        public static double translationP = 0.003;
         public static double maxSpeed = 3000;
-        public static double acceleration = 5000;
-        public static double deceleration = 5000;
     }
 
     public Follower() {
@@ -76,24 +74,8 @@ public class Follower extends SystemBase {
         this.closest.position.sub_into(SwerveDrive.PinpointCache.position.position, this.normal);
         this.tangent.normalise();
 
-        // Compute trapezoidal velocity profile along the path
-        double distanceRemaining = path.distanceRemaining();
-
         // max velocity and acceleration constants
-        double vmax = FollowerConstants.maxSpeed;
-        double stoppingDistance = Math.pow(vmax * 1.1, 2) / (2 * FollowerConstants.deceleration);
-
-        if (distanceRemaining > stoppingDistance) {
-            targetSpeed += TaskOpMode.Runtime.deltaTime * FollowerConstants.acceleration;
-            if (targetSpeed > vmax) targetSpeed = vmax;
-        } else if (distanceRemaining > 0){
-            // Decelerate smoothly to stop at path end
-            targetSpeed -= TaskOpMode.Runtime.deltaTime * FollowerConstants.deceleration;
-            if (targetSpeed < 0) targetSpeed = 0;
-        } else {
-            targetSpeed = 0;
-        }
-
+        targetSpeed = FollowerConstants.maxSpeed;
         this.tangent.multiply_mut(targetSpeed);
 
         // Compute error, perpendicular to tangential motion
@@ -105,7 +87,7 @@ public class Follower extends SystemBase {
         // Combine target velocities
         this.tangent.add_into(this.corrective, this.targetVelocity);
 
-        if (k < 0.9) {
+        if (path.distanceRemaining() > 500) {
             // Apply into the velocityFollower
             this.drivetrain.state = VelocityFollower.State.Velocity;
             this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
