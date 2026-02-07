@@ -25,7 +25,7 @@ public class Follower extends SystemBase {
     private final Vector targetVelocity;
 
     // Speed
-    private double currentSpeed;
+    private double targetSpeed;
 
     @Config
     public static class FollowerConstants {
@@ -43,7 +43,7 @@ public class Follower extends SystemBase {
         this.normal = Vector.cartesian(0, 0);
         this.corrective = Vector.cartesian(0, 0);
         this.targetVelocity = Vector.cartesian(0, 0);
-        this.currentSpeed = 0;
+        this.targetSpeed = 0;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class Follower extends SystemBase {
     @Override
     public void update(Telemetry telemetry) {
         if (path == null) {
-            this.currentSpeed = 0;
+            this.targetSpeed = 0;
             this.targetVelocity.update(0, 0);
             this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
             this.drivetrain.update(telemetry);
@@ -78,22 +78,21 @@ public class Follower extends SystemBase {
 
         // Compute trapezoidal velocity profile along the path
         double distanceRemaining = path.distanceRemaining();
-        double currentSpeed = SwerveDrive.PinpointCache.velocity.magnitude();
 
         // max velocity and acceleration constants
         double vmax = FollowerConstants.maxSpeed;
         double stoppingDistance = Math.pow(vmax, 2) / (2 * FollowerConstants.deceleration);
 
         if (distanceRemaining > stoppingDistance) {
-            currentSpeed += TaskOpMode.Runtime.deltaTime * FollowerConstants.acceleration;
-            if (currentSpeed > vmax) currentSpeed = vmax;
+            targetSpeed += TaskOpMode.Runtime.deltaTime * FollowerConstants.acceleration;
+            if (targetSpeed > vmax) targetSpeed = vmax;
         } else {
             // Decelerate smoothly to stop at path end
-            currentSpeed -= TaskOpMode.Runtime.deltaTime * FollowerConstants.deceleration;
-            if (currentSpeed < 400) currentSpeed = 400;
+            targetSpeed -= TaskOpMode.Runtime.deltaTime * FollowerConstants.deceleration;
+            if (targetSpeed < 400) targetSpeed = 400;
         }
 
-        this.tangent.multiply_mut(currentSpeed);
+        this.tangent.multiply_mut(targetSpeed);
 
         // Compute error, perpendicular to tangential motion
         this.corrective.update(-tangent.y(), tangent.x());
@@ -119,7 +118,7 @@ public class Follower extends SystemBase {
     }
 
     public void follow(Path path) {
-        this.currentSpeed = 0;
+        this.targetSpeed = 0;
         this.path = path;
     }
 }
