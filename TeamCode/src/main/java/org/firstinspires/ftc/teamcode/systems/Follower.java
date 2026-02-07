@@ -27,9 +27,9 @@ public class Follower extends SystemBase {
     @Config
     public static class FollowerConstants {
         public static double translationP = 0.001;
-        public static double maxSpeed = 1500;
-        public static double acceleration = 1500;
-        public static double deceleration = 800;
+        public static double maxSpeed = 2000;
+        public static double acceleration = 1000;
+        public static double deceleration = 5000;
     }
 
     public Follower() {
@@ -79,12 +79,13 @@ public class Follower extends SystemBase {
         double vmax = FollowerConstants.maxSpeed;
         double stoppingDistance = Math.pow(currentSpeed, 2) / (2 * FollowerConstants.deceleration);
         double targetSpeed;
+
         if (distanceRemaining > stoppingDistance) {
             // Accelerate up to max
-            targetSpeed = Math.min(currentSpeed + FollowerConstants.acceleration, vmax);
+            targetSpeed = Math.min(currentSpeed + FollowerConstants.acceleration * TaskOpMode.Runtime.deltaTime, vmax);
         } else {
             // Decelerate smoothly to stop at path end
-            targetSpeed = Math.max(currentSpeed - FollowerConstants.deceleration, 100);
+            targetSpeed = Math.max(currentSpeed - FollowerConstants.deceleration * TaskOpMode.Runtime.deltaTime, 500);
         }
 
         this.tangent.multiply_mut(targetSpeed);
