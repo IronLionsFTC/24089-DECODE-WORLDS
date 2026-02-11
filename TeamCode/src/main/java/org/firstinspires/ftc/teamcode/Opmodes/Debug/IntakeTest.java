@@ -15,11 +15,13 @@ public class IntakeTest extends OpMode{
     public static class VelocityTuning {
         public static double power = 0;
     }
+
     public void init(){
 
     }
 
-    @Override
+    public void loop() {
 
+    }
 
 }
