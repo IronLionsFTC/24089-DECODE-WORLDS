@@ -10,11 +10,13 @@ public class MotorConstants {
         public static String leftRear = "leftRear";
         public static String leftShooterMotor = "leftShooterMotor";
         public static String rightShooterMotor = "rightShooterMotor";
+        public static String intakeMotor = "intakeMotor";
     }
 
     public static class Reversed {
         public static boolean leftShooterMotor = true;
         public static boolean rightShooterMotor = false;
+        public static boolean intakeMotor = false;
         public static boolean rf = true;
         public static boolean lf = false;
         public static boolean rr = true;

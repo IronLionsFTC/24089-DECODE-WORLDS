@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 
@@ -30,11 +31,13 @@ public class Shooter extends SystemBase {
     // PID constants
     @Config
     public static class ShooterPID {
-        public static double P = 0;
+        public static double P = 0.003;
         public static double I = 0;
-        public static double D = 0;
-        public static double F = 0;
+        public static double D = 0.00003;
+        public static double kS = 0.07;
+        public static double kV = 0.00017;
         public static double targetOverride = 0;
+        public static double targetHood = 0;
     }
 
     @Override
@@ -65,7 +68,14 @@ public class Shooter extends SystemBase {
         double current = this.motors.getVelocity(28.0);
         telemetry.addData("Flywheel RPM", current);
         double target = (ShooterPID.targetOverride == 0) ? targetRPM : ShooterPID.targetOverride;
-        double response = this.pid.calculate(current, target) + ((target == 0) ? 0 : ShooterPID.F);
+        double response = this.pid.calculate(current, target);
+
+        double feedforward = ShooterPID.kS * Math.signum(target) + ShooterPID.kV * target;
+        feedforward *= TaskOpMode.Runtime.voltageCompensation;
+
+        if (target != 0) response += feedforward;
+
         this.motors.setPower(response);
+        this.hoodServo.setPosition(ShooterPID.targetHood);
     }
 }
