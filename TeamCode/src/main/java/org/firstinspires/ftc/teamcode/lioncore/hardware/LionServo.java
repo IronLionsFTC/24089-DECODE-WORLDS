@@ -37,7 +37,7 @@ public class LionServo {
     }
 
     public void setPosition(double position) {
-        if (Math.abs(this.position - position) < 0.02) return;
+        if (Math.abs(this.position - position) < 0.005) return;
         this.position = position;
         this.hardware.setPosition(this.position);
         if (this.hasSecond) {
