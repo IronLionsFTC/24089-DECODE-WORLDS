@@ -4,11 +4,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
-public class Vector {
+public class Vector2 {
     private double x;
     private double y;
 
-    private Vector(double x, double y) {
+    private Vector2(double x, double y) {
         this.x = x;
         this.y = y;
     }
@@ -19,8 +19,8 @@ public class Vector {
      * @param y y component
      * @return Component vector
      */
-    public static Vector cartesian(double x, double y) {
-        return new Vector(x, y);
+    public static Vector2 cartesian(double x, double y) {
+        return new Vector2(x, y);
     }
 
     /**
@@ -29,8 +29,8 @@ public class Vector {
      * @param d Direction in RADIANS
      * @return Component vector
      */
-    public static Vector polar(double m, double d) {
-        return new Vector(Math.cos(d), Math.sin(d)).multiply(m);
+    public static Vector2 polar(double m, double d) {
+        return new Vector2(Math.cos(d), Math.sin(d)).multiply(m);
     }
 
     public double x() { return this.x; }
@@ -44,7 +44,7 @@ public class Vector {
         return Math.atan2(this.y, this.x);
     }
 
-    public double dot(Vector other) {
+    public double dot(Vector2 other) {
         return this.x * other.x + this.y * other.y;
     }
 
@@ -54,11 +54,11 @@ public class Vector {
 
     public double magnitude() { return Math.sqrt(Math.pow(this.x, 2.0) + Math.pow(this.y, 2.0)); }
 
-    public Vector multiply(double scalar) {
-        return new Vector(this.x * scalar, this.y * scalar);
+    public Vector2 multiply(double scalar) {
+        return new Vector2(this.x * scalar, this.y * scalar);
     }
 
-    public void multiply_into(double scalar, Vector output) {
+    public void multiply_into(double scalar, Vector2 output) {
         output.update(this.x * scalar, this.y * scalar);
     }
 
@@ -67,28 +67,28 @@ public class Vector {
         this.y *= scalar;
     }
 
-    public Vector add(Vector other) {
-        return new Vector(this.x + other.x, this.y + other.y);
+    public Vector2 add(Vector2 other) {
+        return new Vector2(this.x + other.x, this.y + other.y);
     }
 
-    public Vector sub(Vector other) {
-        return new Vector(this.x - other.x, this.y - other.y);
+    public Vector2 sub(Vector2 other) {
+        return new Vector2(this.x - other.x, this.y - other.y);
     }
-    public void sub_into(Vector other, Vector output) {
+    public void sub_into(Vector2 other, Vector2 output) {
         output.update(
                 this.x - other.x,
                 this.y - other.y
         );
     }
 
-    public void add_into(Vector other, Vector output) {
+    public void add_into(Vector2 other, Vector2 output) {
         output.update(
                 this.x + other.x,
                 this.y + other.y
         );
     }
 
-    public void add_mut(Vector other) {
+    public void add_mut(Vector2 other) {
         this.x += other.x;
         this.y += other.y;
     }
@@ -97,9 +97,9 @@ public class Vector {
         return new Pose2D(DistanceUnit.MM, this.x, this.y, AngleUnit.DEGREES, heading);
     }
 
-    public Vector normalised() {
+    public Vector2 normalised() {
         if (this.magnitude() == 0) return this;
-        return new Vector(this.x / this.magnitude(), this.y / this.magnitude());
+        return new Vector2(this.x / this.magnitude(), this.y / this.magnitude());
     }
 
     public void normalise() {
@@ -118,7 +118,7 @@ public class Vector {
         return Double.isNaN(this.x) || Double.isNaN(this.y);
     }
 
-    public void copy(Vector other) {
+    public void copy(Vector2 other) {
         this.x = other.x;
         this.y = other.y;
     }

@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 
@@ -15,8 +15,8 @@ public class VelocityFollower extends SystemBase {
     private final SwerveDrive swerveDrive;
     private final PID velocityController;
     private final PID holdpointController;
-    private final Vector targetFieldCentricVelocity;
-    private final Vector targetRobotCentricVelocity;
+    private final Vector2 targetFieldCentricVelocity;
+    private final Vector2 targetRobotCentricVelocity;
     private final Position holdpoint;
 
     public State state;
@@ -57,8 +57,8 @@ public class VelocityFollower extends SystemBase {
                 HoldpointPID.D
         );
 
-        this.targetFieldCentricVelocity = Vector.cartesian(0, 0);
-        this.targetRobotCentricVelocity = Vector.cartesian(0, 0);
+        this.targetFieldCentricVelocity = Vector2.cartesian(0, 0);
+        this.targetRobotCentricVelocity = Vector2.cartesian(0, 0);
         this.swerveDrive = new SwerveDrive(new Position(0, 0, 0), true);
         this.holdpoint = new Position(0, 0, 0);
         this.state = State.Velocity;
@@ -153,7 +153,7 @@ public class VelocityFollower extends SystemBase {
         telemetry.addData("RY", targetRobotCentricVelocity.y());
     }
 
-    public void setTargetFieldCentricVelocity(Vector targetFieldCentricVelocity) {
+    public void setTargetFieldCentricVelocity(Vector2 targetFieldCentricVelocity) {
         this.targetFieldCentricVelocity.copy(targetFieldCentricVelocity);
     }
 

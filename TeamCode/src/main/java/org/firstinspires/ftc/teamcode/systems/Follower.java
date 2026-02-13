@@ -4,12 +4,10 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Path;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
-import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 
 public class Follower extends SystemBase {
 
@@ -19,10 +17,10 @@ public class Follower extends SystemBase {
     // Mutable vectors
     private final Position closest;
     private final Position discreteStep;
-    private final Vector tangent;
-    private final Vector normal;
-    private final Vector corrective;
-    private final Vector targetVelocity;
+    private final Vector2 tangent;
+    private final Vector2 normal;
+    private final Vector2 corrective;
+    private final Vector2 targetVelocity;
 
     // Speed
     private double targetSpeed;
@@ -37,10 +35,10 @@ public class Follower extends SystemBase {
         this.drivetrain = new VelocityFollower();
         this.closest = new Position(0, 0, 0);
         this.discreteStep = new Position(0, 0, 0);
-        this.tangent = Vector.cartesian(0, 0);
-        this.normal = Vector.cartesian(0, 0);
-        this.corrective = Vector.cartesian(0, 0);
-        this.targetVelocity = Vector.cartesian(0, 0);
+        this.tangent = Vector2.cartesian(0, 0);
+        this.normal = Vector2.cartesian(0, 0);
+        this.corrective = Vector2.cartesian(0, 0);
+        this.targetVelocity = Vector2.cartesian(0, 0);
         this.targetSpeed = 0;
     }
 

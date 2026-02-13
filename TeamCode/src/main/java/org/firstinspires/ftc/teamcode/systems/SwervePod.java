@@ -3,14 +3,14 @@ package org.firstinspires.ftc.teamcode.systems;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 public class SwervePod {
 
     private LionMotor motor;
     private LionCRServo servo;
-    private Vector offset;
+    private Vector2 offset;
 
     private double podAngle;
     private PID angleController;
@@ -23,7 +23,7 @@ public class SwervePod {
      * @param servo
      * @param offset X (right) and y (forward) position of the pod from the center of the robot
      */
-    public SwervePod(LionMotor motor, LionCRServo servo, Vector offset, double startDegrees, boolean xPattern) {
+    public SwervePod(LionMotor motor, LionCRServo servo, Vector2 offset, double startDegrees, boolean xPattern) {
         this.motor = motor;
         this.servo = servo;
         this.offset = offset;
@@ -39,7 +39,7 @@ public class SwervePod {
      * @param heading Desired rotational velocity
      * @return drive motor power (-1 to 1)
      */
-    public double update(Vector target, double heading) {
+    public double update(Vector2 target, double heading) {
 
         double podAngle = wrapDeg(Zeroing.polarQuadrature(motor.getPosition()));
 
@@ -67,9 +67,9 @@ public class SwervePod {
             return 0.0;
         }
 
-        Vector rotationalVelocity =
-                Vector.cartesian(heading * offset.y(), -heading * offset.x());
-        Vector finalVelocity = target.add(rotationalVelocity);
+        Vector2 rotationalVelocity =
+                Vector2.cartesian(heading * offset.y(), -heading * offset.x());
+        Vector2 finalVelocity = target.add(rotationalVelocity);
 
         // Guard against near-zero direction noise
         if (finalVelocity.magnitude() < 1e-6) {

@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
@@ -32,7 +32,7 @@ public class SwerveDrive extends SystemBase {
 
     private Position startPosition;
 
-    private Vector driveVector;
+    private Vector2 driveVector;
     private DoubleSupplier heading;
 
     private double targetHeading;
@@ -43,7 +43,7 @@ public class SwerveDrive extends SystemBase {
 
     public static class PinpointCache {
         public static Position position;
-        public static Vector velocity;
+        public static Vector2 velocity;
         public static double angularVelocity;
     }
 
@@ -94,7 +94,7 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
         PinpointCache.position = new Position(0, 0, 0);
-        PinpointCache.velocity = Vector.cartesian(0, 0);
+        PinpointCache.velocity = Vector2.cartesian(0, 0);
         PinpointCache.angularVelocity = 0;
         LionMotor rightFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightFront);
         LionMotor leftFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftFront);
@@ -111,10 +111,10 @@ public class SwerveDrive extends SystemBase {
         rightFront.setReverseEncoder(true);
         rightRear.setReverseEncoder(true);
 
-        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront), xPattern);
-        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront), xPattern);
-        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear), xPattern);
-        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear), xPattern);
+        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector2.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront), xPattern);
+        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector2.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront), xPattern);
+        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector2.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear), xPattern);
+        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector2.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear), xPattern);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.setHeading(startPosition.heading, AngleUnit.DEGREES);
         this.targetHeading = startPosition.heading;
         this.turning = false;
-        this.driveVector = Vector.cartesian(0, 0);
+        this.driveVector = Vector2.cartesian(0, 0);
     }
 
     @Override
@@ -207,7 +207,7 @@ public class SwerveDrive extends SystemBase {
     public void setTargetHeading(double newHeading) {
         this.targetHeading = newHeading;
     }
-    public void setTargetVector(Vector vector) {
+    public void setTargetVector(Vector2 vector) {
         this.driveVector = vector;
     }
 }

@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.Opmodes.Debug;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Forever;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
@@ -23,7 +23,7 @@ public class FieldCentricVelocityTest extends TaskOpMode {
         VelocityFollower follower = new VelocityFollower();
         return Jobs.create()
                 .addTask(new Forever(
-                        () -> follower.setTargetFieldCentricVelocity(Vector.cartesian(VelocityTuning.xVelocity, VelocityTuning.yVelocity))
+                        () -> follower.setTargetFieldCentricVelocity(Vector2.cartesian(VelocityTuning.xVelocity, VelocityTuning.yVelocity))
                 ))
                 .registerSystem(follower);
     }

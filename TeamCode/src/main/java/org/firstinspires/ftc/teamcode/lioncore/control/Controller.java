@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.lioncore.control;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
 
 public class Controller {
@@ -146,8 +146,8 @@ public class Controller {
             this.button.update(gamepad.touchpad);
         }
 
-        public Vector position() {
-            return Vector.cartesian(this.gamepad.touchpad_finger_1_x, this.gamepad.touchpad_finger_1_y);
+        public Vector2 position() {
+            return Vector2.cartesian(this.gamepad.touchpad_finger_1_x, this.gamepad.touchpad_finger_1_y);
         }
 
         private boolean pressed() {

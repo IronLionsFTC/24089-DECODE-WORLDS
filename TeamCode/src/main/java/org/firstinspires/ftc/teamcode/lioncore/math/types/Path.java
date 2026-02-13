@@ -24,5 +24,5 @@ public interface Path {
     /**
      * Modify output in place to contain the vector from the current position to the end of the path.
      */
-    void set_to_end(Vector output);
+    void set_to_end(Vector2 output);
 }

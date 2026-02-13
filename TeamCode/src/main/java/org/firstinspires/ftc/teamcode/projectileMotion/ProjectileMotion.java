@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode.projectileMotion;
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 
 public class ProjectileMotion {
+
+    public static class ProjMotConstants {
+        public static Vector3 shooterOffset = new Vector3(0, -20, 300);
+    }
 
     public double flat = 0;
     public double arc = 0;
@@ -22,7 +27,7 @@ public class ProjectileMotion {
         this.arcPossible = arcPossible;
     }
 
-    public ProjectileMotion calculate(double launchVelocity, Vector position) {
+    public static ProjectileMotion calculate(double launchVelocity, Vector2 position) {
         double v2 = Math.pow(launchVelocity, 2);
         double determinant = Math.pow(launchVelocity, 4) - G * (G * Math.pow(position.x(), 2) + 2 * position.y() * v2);
 

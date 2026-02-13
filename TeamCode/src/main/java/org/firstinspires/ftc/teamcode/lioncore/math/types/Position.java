@@ -4,11 +4,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public class Position {
 
-    public Vector position;
+    public Vector2 position;
     public double heading;
 
     public Position(double x, double y, double heading) {
-        this.position = Vector.cartesian(x, y);
+        this.position = Vector2.cartesian(x, y);
         this.heading = heading;
     }
 
@@ -17,7 +17,7 @@ public class Position {
     }
 
     public void update(double x, double y, double heading) {
-        this.position = Vector.cartesian(x, y);
+        this.position = Vector2.cartesian(x, y);
         this.heading = heading;
     }
 }

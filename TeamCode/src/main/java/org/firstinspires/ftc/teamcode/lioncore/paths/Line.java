@@ -2,18 +2,18 @@ package org.firstinspires.ftc.teamcode.lioncore.paths;
 
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Path;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 
 public class Line implements Path {
 
     private final Position start;
     private final Position end;
-    private final Vector direction;
-    private final Vector normalisedDirection;
+    private final Vector2 direction;
+    private final Vector2 normalisedDirection;
     private final double length;
-    private final Vector to_robot;
-    private final Vector temp;
+    private final Vector2 to_robot;
+    private final Vector2 temp;
     private final Position tempPosition;
 
     public Line(Position start, Position end) {
@@ -21,9 +21,9 @@ public class Line implements Path {
         this.end = end;
         this.direction = this.end.position.sub(this.start.position);
         this.normalisedDirection = direction.normalised();
-        this.to_robot = Vector.cartesian(0, 0);
+        this.to_robot = Vector2.cartesian(0, 0);
         this.length = this.direction.magnitude();
-        this.temp = Vector.cartesian(0, 0);
+        this.temp = Vector2.cartesian(0, 0);
         this.tempPosition = new Position(0, 0, 0);
     }
 
@@ -54,7 +54,7 @@ public class Line implements Path {
     }
 
     @Override
-    public void set_to_end(Vector output) {
+    public void set_to_end(Vector2 output) {
         end.position.sub_into(SwerveDrive.PinpointCache.position.position, output);
     }
 }
