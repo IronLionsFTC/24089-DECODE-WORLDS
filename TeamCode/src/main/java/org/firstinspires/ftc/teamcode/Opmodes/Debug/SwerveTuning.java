@@ -24,6 +24,11 @@ public class SwerveTuning extends LinearOpMode {
         public static double rrp = 0;
         public static double lrp = 0;
 
+        public static double rfmp = 0;
+        public static double lfmp = 0;
+        public static double rrmp = 0;
+        public static double lrmp = 0;
+
     }
 
     @Override
@@ -48,6 +53,7 @@ public class SwerveTuning extends LinearOpMode {
         LionMotor leftFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftFront);
         LionMotor rightRear = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightRear);
         LionMotor leftRear = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftRear);
+
         rightFront.setReversed(MotorConstants.Reversed.rf);
         rightFront.setZPB(MotorConstants.ZPB.driveMotors);
         leftFront.setReversed(MotorConstants.Reversed.lf);
@@ -79,6 +85,11 @@ public class SwerveTuning extends LinearOpMode {
             leftFrontAnalog.read();
             rightRearAnalog.read();
             leftRearAnalog.read();
+
+            rightFront.setPower(SwerveConstants.rfmp);
+            leftFront.setPower(SwerveConstants.lfmp);
+            rightRear.setPower(SwerveConstants.rrmp);
+            leftRear.setPower(SwerveConstants.lrmp);
 
             telemetry.addData("rightFront", Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront));
             telemetry.addData("leftFront", Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront));

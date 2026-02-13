@@ -7,13 +7,20 @@ public class ServoConstants {
         public static String leftFront = "leftFrontServo";
         public static String rightRear = "rightRearServo";
         public static String leftRear = "leftRearServo";
+
+        public static String leftTurretServo = "leftTurretServo";
+        public static String rightTurretServo = "rightTurretServo";
+
+        public static String blocker = "blocker";
     }
 
     public static class Zero {
         public static double hood = 0;
+        public static double turret = 0.5;
     }
 
-    public static class Ratios {
-        public static double swerve = 25.0 / 16.0;
+    public static class Positions {
+        public static double blockerOpen = 0.0;
+        public static double blockerClosed = 0.2;
     }
 }
