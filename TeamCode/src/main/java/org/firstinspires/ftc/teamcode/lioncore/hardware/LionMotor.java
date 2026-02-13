@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,7 @@ public class LionMotor {
 
     public void setPower(double power) {
         if (power != 0 && Math.abs(power - this.power) < 0.02) { return; }
+        if (power == this.power) return;
         this.power = power;
         for (DcMotorEx motor : this.motors) {
             motor.setPower(power);
@@ -107,5 +110,14 @@ public class LionMotor {
         for (DcMotorEx motor : this.motors) {
             motor.setZeroPowerBehavior(zpb);
         }
+    }
+
+    public double getAmps() {
+        if (this.motors.isEmpty()) return 0;
+        double sum = 0;
+        for (DcMotorEx motor : this.motors) {
+            sum += motor.getCurrent(CurrentUnit.AMPS);
+        }
+        return sum / (this.motors.size());
     }
 }

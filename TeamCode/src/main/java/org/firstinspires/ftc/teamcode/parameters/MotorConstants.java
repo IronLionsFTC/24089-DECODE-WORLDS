@@ -18,7 +18,7 @@ public class MotorConstants {
         public static boolean leftShooterMotor = true;
         public static boolean rightShooterMotor = false;
         public static boolean intakeMotor = false;
-        public static boolean transferMotor = false;
+        public static boolean transferMotor = true;
         public static boolean rf = true;
         public static boolean lf = false;
         public static boolean rr = true;

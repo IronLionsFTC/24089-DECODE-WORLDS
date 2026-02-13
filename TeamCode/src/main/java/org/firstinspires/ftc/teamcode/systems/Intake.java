@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
+import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 
 public class Intake extends SystemBase {
 
@@ -18,7 +21,13 @@ public class Intake extends SystemBase {
 
     private LionMotor intakeMotor;
     private LionMotor transferMotor;
+    private LionServo blocker;
     private State state;
+
+    @Config
+    public static class IntakeConstants {
+        public static double currentThreshold = 5;
+    }
 
     public Intake() {
         this.state = State.Off;
@@ -32,6 +41,7 @@ public class Intake extends SystemBase {
         this.transferMotor.setReversed(MotorConstants.Reversed.transferMotor);
         this.intakeMotor.setZPB(MotorConstants.ZPB.intakeMotors);
         this.transferMotor.setZPB(MotorConstants.ZPB.intakeMotors);
+        this.blocker = LionServo.single(hardwareMap, ServoConstants.Names.blocker, ServoConstants.Positions.blockerOpen);
     }
 
     @Override
@@ -41,6 +51,44 @@ public class Intake extends SystemBase {
 
     @Override
     public void update(Telemetry telemetry) {
+        telemetry.addData("CURRENT", transferMotor.getAmps());
 
+        switch (this.state) {
+            case Off:
+                this.intakeMotor.setPower(0);
+                this.transferMotor.setPower(0);
+                this.blocker.setPosition(ServoConstants.Positions.blockerClosed);
+                break;
+
+            case Shooting:
+                this.intakeMotor.setPower(1);
+                this.transferMotor.setPower(1);
+                this.blocker.setPosition(ServoConstants.Positions.blockerOpen);
+                break;
+
+            case IntakeOnly:
+                this.intakeMotor.setPower(1);
+                this.transferMotor.setPower(0);
+                this.blocker.setPosition(ServoConstants.Positions.blockerClosed);
+                break;
+
+            case IntakingEmpty:
+                this.intakeMotor.setPower(1);
+                this.transferMotor.setPower(1);
+                this.blocker.setPosition(ServoConstants.Positions.blockerClosed);
+
+                double current = transferMotor.getAmps();
+                if (current > IntakeConstants.currentThreshold) this.state = State.IntakeOnly;
+
+                break;
+        }
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public State getState() {
+        return this.state;
     }
 }
