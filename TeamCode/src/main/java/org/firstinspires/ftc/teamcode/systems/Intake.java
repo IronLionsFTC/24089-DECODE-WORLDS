@@ -51,7 +51,8 @@ public class Intake extends SystemBase {
 
     @Override
     public void update(Telemetry telemetry) {
-        telemetry.addData("CURRENT", transferMotor.getAmps());
+
+        double current;
 
         switch (this.state) {
             case Off:
@@ -70,6 +71,10 @@ public class Intake extends SystemBase {
                 this.intakeMotor.setPower(1);
                 this.transferMotor.setPower(0);
                 this.blocker.setPosition(ServoConstants.Positions.blockerClosed);
+
+                current = intakeMotor.getAmps();
+                if (current > IntakeConstants.currentThreshold) this.state = State.Off;
+
                 break;
 
             case IntakingEmpty:
@@ -77,7 +82,7 @@ public class Intake extends SystemBase {
                 this.transferMotor.setPower(1);
                 this.blocker.setPosition(ServoConstants.Positions.blockerClosed);
 
-                double current = transferMotor.getAmps();
+                current = transferMotor.getAmps();
                 if (current > IntakeConstants.currentThreshold) this.state = State.IntakeOnly;
 
                 break;

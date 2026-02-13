@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
@@ -37,7 +38,7 @@ public class Shooter extends SystemBase {
         public static double kS = 0.07;
         public static double kV = 0.00017;
         public static double targetOverride = 0;
-        public static double targetHood = 0;
+        public static double targetHood = 23;
     }
 
     @Override
@@ -76,6 +77,14 @@ public class Shooter extends SystemBase {
         if (target != 0) response += feedforward;
 
         this.motors.setPower(response);
-        this.hoodServo.setPosition(ShooterPID.targetHood);
+        this.hoodServo.setPosition(calculateHoodAngleForDegrees(ShooterPID.targetHood));
+    }
+
+    public double getHoodAngleDegrees() {
+        return this.hoodServo.getPosition() * ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle + ServoConstants.Ratios.hoodZeroAngle;
+    }
+
+    public double calculateHoodAngleForDegrees(double degrees) {
+        return (degrees - ServoConstants.Ratios.hoodZeroAngle) / (ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle);
     }
 }

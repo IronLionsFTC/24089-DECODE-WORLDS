@@ -23,4 +23,10 @@ public class ServoConstants {
         public static double blockerOpen = 0.0;
         public static double blockerClosed = 0.25;
     }
+
+    public static class Ratios {
+        public static double hoodRatio = (40.0 / 15.0) * (15.0 / 164.0);
+        public static double hoodAngle = 255;
+        public static double hoodZeroAngle = 23;
+    }
 }
