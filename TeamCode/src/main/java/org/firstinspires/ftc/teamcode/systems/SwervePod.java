@@ -110,7 +110,7 @@ public class SwervePod {
         }
 
         servo.setPower(angleController.calculate(podAngle, angleSetpoint));
-        if (Math.abs(angleSetpoint - podAngle) > 10) return 0.0;
+        if (Math.abs(angleSetpoint - podAngle) > 10 && !xPattern) return 0.0;
         return drivePower;
     }
 

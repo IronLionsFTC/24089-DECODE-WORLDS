@@ -11,7 +11,7 @@ public class Zeroing {
     public static class ZeroPositions {
         public static double rightFront = 0.578;
         public static double leftFront = 0.492;
-        public static double rightRear = 0.981;
+        public static double rightRear = 0.532;
         public static double leftRear = 2.765;
     }
 

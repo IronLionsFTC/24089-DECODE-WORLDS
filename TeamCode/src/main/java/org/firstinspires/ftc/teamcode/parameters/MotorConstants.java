@@ -11,12 +11,14 @@ public class MotorConstants {
         public static String leftShooterMotor = "leftShooterMotor";
         public static String rightShooterMotor = "rightShooterMotor";
         public static String intakeMotor = "intakeMotor";
+        public static String transferMotor = "transferMotor";
     }
 
     public static class Reversed {
         public static boolean leftShooterMotor = true;
         public static boolean rightShooterMotor = false;
         public static boolean intakeMotor = false;
+        public static boolean transferMotor = false;
         public static boolean rf = true;
         public static boolean lf = false;
         public static boolean rr = true;
@@ -26,5 +28,6 @@ public class MotorConstants {
     public static class ZPB {
         public static DcMotor.ZeroPowerBehavior shooterMotors = DcMotor.ZeroPowerBehavior.FLOAT;
         public static DcMotor.ZeroPowerBehavior driveMotors = DcMotor.ZeroPowerBehavior.FLOAT;
+        public static DcMotor.ZeroPowerBehavior intakeMotors = DcMotor.ZeroPowerBehavior.BRAKE;
     }
 }

@@ -16,7 +16,7 @@ public class TeleOp extends TaskOpMode {
         SwerveDrive drivetrain = new SwerveDrive(
             new Position(0, 0, 0),
             () -> gamepad1.right_stick_x,
-            false
+            true
         );
 
         return Jobs.create()
