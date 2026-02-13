@@ -106,7 +106,7 @@ public abstract class TaskOpMode extends OpMode {
 
         this.mainloop();
 
-        if (this.telemetryCounter == 10) {
+        if (this.telemetryCounter == 20) {
             this.telemetry.addData("Loopfreq", rounded_hz);
             this.telemetry.update();
             telemetryCounter = 0;

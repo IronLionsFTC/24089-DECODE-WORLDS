@@ -22,14 +22,14 @@ public class LineTest extends TaskOpMode {
                 .addSeries(
                         new Follow(follower, new Line(
                             new Position(0, 0, 0),
-                            new Position(400, 2000, 90)
+                            new Position(-400, 2000, 90)
                         )),
                         new Follow(follower, new Line(
-                                new Position(400, 2000, 90),
-                                new Position(800, 1600, 180)
-                        )).setMaxSpeed(600),
+                                new Position(-400, 2000, 90),
+                                new Position(800, 1600, 135)
+                        )).setMaxSpeed(300),
                         new Follow(follower, new Line(
-                                new Position(800, 1600, 180),
+                                new Position(800, 1600, 135),
                                 new Position(0, 0, 0)
                         ))
                 )

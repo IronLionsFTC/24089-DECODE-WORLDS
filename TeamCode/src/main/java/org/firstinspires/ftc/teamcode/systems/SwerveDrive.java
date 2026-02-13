@@ -156,6 +156,7 @@ public class SwerveDrive extends SystemBase {
         double response = Math.min(0.5, Math.max(-0.5, this.headingController.calculate(error, 0)));
 
         response *= PinpointCache.velocity.magnitude() * -0.0004 + 1.0;
+        if (PinpointCache.velocity.magnitude() < 500 && this.driveVector.magnitude() > 0.5) response *= 0.5;
 
         if (h != 0 || turning) {
             this.turning = true;
