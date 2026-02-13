@@ -21,6 +21,6 @@ public class ServoConstants {
 
     public static class Positions {
         public static double blockerOpen = 0.0;
-        public static double blockerClosed = 0.2;
+        public static double blockerClosed = 0.25;
     }
 }
