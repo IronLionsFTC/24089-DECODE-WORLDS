@@ -87,4 +87,12 @@ public class Shooter extends SystemBase {
     public double calculateHoodAngleForDegrees(double degrees) {
         return (degrees - ServoConstants.Ratios.hoodZeroAngle) / (ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle);
     }
+
+    /**
+     * Convert instantaneous RPM into launch velocity
+     * @return velocity (mm/s)
+     */
+    public double rpmToVelocity(double rpm) {
+        return (rpm * 0.00125699 + 2.15515) * 1000;
+    }
 }
