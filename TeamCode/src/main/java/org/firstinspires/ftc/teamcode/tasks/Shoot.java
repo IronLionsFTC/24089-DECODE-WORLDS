@@ -2,20 +2,24 @@ package org.firstinspires.ftc.teamcode.tasks;
 
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
 import org.firstinspires.ftc.teamcode.systems.Intake;
+import org.firstinspires.ftc.teamcode.systems.Shooter;
 
 public class Shoot extends Task {
 
-    private Intake intake;
+    private final Intake intake;
+    private final Shooter shooter;
     private long initTime;
 
-    public Shoot(Intake intake) {
+    public Shoot(Intake intake, Shooter shooter) {
         this.intake = intake;
+        this.shooter = shooter;
     }
 
     @Override
     public void init() {
         this.initTime = System.nanoTime();
         this.intake.setState(Intake.State.Shooting);
+        this.shooter.state = Shooter.State.Shooting;
     }
 
     @Override
@@ -26,5 +30,6 @@ public class Shoot extends Task {
     @Override
     public void end(boolean i) {
         this.intake.setState(Intake.State.Off);
+        this.shooter.state = Shooter.State.Cruising;
     }
 }

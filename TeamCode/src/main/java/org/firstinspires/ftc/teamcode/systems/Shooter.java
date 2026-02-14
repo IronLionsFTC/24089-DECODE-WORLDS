@@ -4,7 +4,6 @@ import static org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion.P
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
@@ -20,6 +19,13 @@ import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 
 public class Shooter extends SystemBase {
 
+    public enum State {
+        Cruising,
+        Shooting
+    }
+
+    public State state = State.Cruising;
+
     // Hardware
     private LionMotor motors;
     private LionServo hoodServo;
@@ -27,14 +33,18 @@ public class Shooter extends SystemBase {
     // Control
     private PID pid;
     public final Vector3 target;
-    public double targetRPM = 0;
+    public double targetVelocity = 0;
     public double targetHood = 0 ;
 
     public Shooter() {
-        this.targetRPM = 0;
+        this.targetVelocity = 0;
         this.targetHood = 0;
         this.target = new Vector3(0, 2000, 800);
     }
+
+    public static final double a = -9.93382e-8;
+    public static final double b = 0.00188771;
+    public static final double c = 1.04499;
 
     // PID constants
     @Config
@@ -45,10 +55,12 @@ public class Shooter extends SystemBase {
         public static double kS = 0.07;
         public static double kV = 0.00017;
 
+        public static double velocity = 0;
+
         // +x = right, +y = forward, +z = up
-        public static double targetX = 0;
+        public static double targetX = -2550;
         public static double targetY = 0;
-        public static double targetZ = 0;
+        public static double targetZ = 1300;
 
         public static boolean flatShot = false;
     }
@@ -82,11 +94,6 @@ public class Shooter extends SystemBase {
         double current = this.motors.getVelocity(28.0);
         telemetry.addData("Flywheel RPM", current);
 
-        double response = this.pid.calculate(current, targetRPM);
-
-        double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
-        feedforward *= TaskOpMode.Runtime.voltageCompensation;
-        if (targetRPM != 0) response += feedforward;
 
         // Solve for position of the turret
         double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
@@ -102,27 +109,41 @@ public class Shooter extends SystemBase {
                 rotatedShooterZ
         );
 
-        double launchVelocity = rpmToVelocity(current);
+        double launchVelocity = ProjectileMotion.calculateAverageSpeedFromLaunchVelocity(rpmToVelocity(current), 0.7);
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
         Vector2 cartesianTarget = Vector2.cartesian(Math.hypot(relativeTarget.getX(), relativeTarget.getY()), relativeTarget.getZ());
         ProjectileMotion solution = ProjectileMotion.calculate(launchVelocity, cartesianTarget);
 
-        this.motors.setPower(response);
-
         double hoodTarget;
+        double tof;
         if (solution.flatPossible && ShooterPID.flatShot) {
             hoodTarget = solution.flat;
+            tof = solution.flatTimeOfFlight;
         } else if (solution.arcPossible && !ShooterPID.flatShot) {
             hoodTarget = solution.arc;
+            tof = solution.arcTimeOfFlight;
         } else {
             hoodTarget = 75;
+            tof = 1;
         }
 
+        this.targetVelocity = ShooterPID.velocity;
+        this.targetVelocity = ProjectileMotion.calculateRequiredLaunchVelocity(this.targetVelocity, tof);
+        double response = this.pid.calculate(current, targetVelocity);
+        double targetRPM = this.velocityToRPM(targetVelocity);
+        double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
+        feedforward *= TaskOpMode.Runtime.voltageCompensation;
+        if (targetRPM != 0) response += feedforward;
+
+        if (this.state == State.Cruising) this.motors.setPower(response);
+        else this.motors.setPower(1);
         this.hoodServo.setPosition(calculateHoodAngleForDegrees(hoodTarget));
 
         this.target.setX(ShooterPID.targetX);
         this.target.setY(ShooterPID.targetY);
         this.target.setZ(ShooterPID.targetZ);
+
+        telemetry.addData("hoodTarget", hoodTarget);
     }
 
     public double getHoodAngleDegrees() {
@@ -138,6 +159,11 @@ public class Shooter extends SystemBase {
      * @return velocity (mm/s)
      */
     public double rpmToVelocity(double rpm) {
-        return (rpm * 0.00125699 + 2.15515) * 1000;
+        return (a * rpm * rpm + b * rpm + c) * 1000;
+    }
+
+    public double velocityToRPM(double velocity) {
+        double d = c - velocity / 1000;
+        return (-b - Math.sqrt(b * b - 4 * a * d)) / (2 * a);
     }
 }
