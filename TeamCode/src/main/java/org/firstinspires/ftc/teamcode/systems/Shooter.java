@@ -29,6 +29,7 @@ public class Shooter extends SystemBase {
     // Hardware
     private LionMotor motors;
     private LionServo hoodServo;
+    private LionServo turret;
 
     // Control
     private PID pid;
@@ -42,9 +43,8 @@ public class Shooter extends SystemBase {
         this.target = new Vector3(0, 2000, 800);
     }
 
-    public static final double a = -9.93382e-8;
-    public static final double b = 0.00188771;
-    public static final double c = 1.04499;
+    public static final double a = 0.00137115;
+    public static final double b = 1.66917;
 
     // PID constants
     @Config
@@ -67,9 +67,9 @@ public class Shooter extends SystemBase {
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
-
         this.motors = LionMotor.masterSlaves(hardwareMap, MotorConstants.Names.leftShooterMotor, MotorConstants.Names.rightShooterMotor);
         this.hoodServo = LionServo.single(hardwareMap, ServoConstants.Names.hoodServo, ServoConstants.Zero.hood);
+        this.turret = LionServo.mirrored(hardwareMap, ServoConstants.Names.leftTurretServo, ServoConstants.Names.rightTurretServo, 0.5);
     }
 
     @Override
@@ -111,6 +111,12 @@ public class Shooter extends SystemBase {
 
         double launchVelocity = ProjectileMotion.calculateAverageSpeedFromLaunchVelocity(rpmToVelocity(current), 0.7);
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
+
+        Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY());
+        double direction = 180 + (groundPlane.polarDirection() + SwerveDrive.PinpointCache.position.heading);
+        while (direction < -180) direction += 360;
+        while (direction >  180) direction -= 360;
+
         Vector2 cartesianTarget = Vector2.cartesian(Math.hypot(relativeTarget.getX(), relativeTarget.getY()), relativeTarget.getZ());
         ProjectileMotion solution = ProjectileMotion.calculate(launchVelocity, cartesianTarget);
 
@@ -143,7 +149,8 @@ public class Shooter extends SystemBase {
         this.target.setY(ShooterPID.targetY);
         this.target.setZ(ShooterPID.targetZ);
 
-        telemetry.addData("hoodTarget", hoodTarget);
+        double turretPosition = ServoConstants.Zero.turret + direction / (ServoConstants.Ratios.turret * ServoConstants.Ratios.turretRange);
+        this.turret.setPosition(turretPosition);
     }
 
     public double getHoodAngleDegrees() {
@@ -159,11 +166,10 @@ public class Shooter extends SystemBase {
      * @return velocity (mm/s)
      */
     public double rpmToVelocity(double rpm) {
-        return (a * rpm * rpm + b * rpm + c) * 1000;
+        return (a * rpm + b);
     }
 
     public double velocityToRPM(double velocity) {
-        double d = c - velocity / 1000;
-        return (-b - Math.sqrt(b * b - 4 * a * d)) / (2 * a);
+        return (velocity - b) / a;
     }
 }
