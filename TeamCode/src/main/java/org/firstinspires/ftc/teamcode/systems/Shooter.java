@@ -33,8 +33,8 @@ public class Shooter extends SystemBase {
     // Control
     private PID pid;
     public final Vector3 target;
-    public double targetVelocity = 0;
-    public double targetHood = 0 ;
+    public double targetVelocity;
+    public double targetHood;
 
     public Shooter() {
         this.targetVelocity = 0;

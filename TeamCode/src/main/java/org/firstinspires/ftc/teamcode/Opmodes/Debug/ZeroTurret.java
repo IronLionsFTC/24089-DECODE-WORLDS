@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.Opmodes.Debug;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
+import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 
@@ -13,15 +16,35 @@ import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 public class ZeroTurret extends OpMode {
 
     private AbsoluteEncoder absolute;
-    private LionMotor rightShooterMotor;
     private Encoder quadrature;
+    private PID pid;
+
+    private LionCRServo leftTurretServo;
+    private LionCRServo rightTurretServo;
+
+    @Config
+    public static class TurretPID {
+        public static double P = 0.0;
+        public static double I = 0.0;
+        public static double D = 0.0;
+        public static double kS = 0.0;
+        public static double power = 0.0;
+        public static double target = 0.0;
+    }
 
     @Override
     public void init() {
+
+        this.pid = new PID(
+                TurretPID.P,
+                TurretPID.I,
+                TurretPID.D
+        );
+
         this.absolute = new AbsoluteEncoder(hardwareMap, "turretAbsolute");
-        this.rightShooterMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightShooterMotor);
-        this.rightShooterMotor.setReversed(MotorConstants.Reversed.rightShooterMotor);
-        this.rightShooterMotor.setReverseEncoder(true);
+        LionMotor rightShooterMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightShooterMotor);
+        rightShooterMotor.setReversed(MotorConstants.Reversed.rightShooterMotor);
+        rightShooterMotor.setReverseEncoder(true);
         this.quadrature = new Encoder(rightShooterMotor);
 
         absolute.read();
@@ -32,10 +55,20 @@ public class ZeroTurret extends OpMode {
 
         double inTicks = absolutePosition / 360 * 4096;
         quadrature.setPosition(inTicks);
+
+        this.leftTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.leftTurretServo);
+        this.rightTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightTurretServo);
+
     }
 
     @Override
     public void loop() {
+
+        this.pid.setConstants(
+                TurretPID.P,
+                TurretPID.I,
+                TurretPID.D
+        );
 
         absolute.read();
         telemetry.addData("Voltage", absolute.position());
@@ -53,5 +86,11 @@ public class ZeroTurret extends OpMode {
 
         telemetry.update();
 
+        double response = pid.calculate(quadraturePosition, TurretPID.target);
+        if (Math.abs(response) > 0.05) response += TurretPID.kS * Math.signum(response);
+        if (TurretPID.power != 0) response = TurretPID.power;
+
+        this.leftTurretServo.setPower(-response);
+        this.rightTurretServo.setPower(response);
     }
 }
