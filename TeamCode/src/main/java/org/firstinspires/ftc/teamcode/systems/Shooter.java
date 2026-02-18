@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Opmodes.Debug.ZeroTurret;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
@@ -98,6 +99,11 @@ public class Shooter extends SystemBase {
                 ShooterPID.P,
                 ShooterPID.I,
                 ShooterPID.D
+        );
+        this.turretpid = new PID(
+                ZeroTurret.TurretPID.P,
+                ZeroTurret.TurretPID.I,
+                ZeroTurret.TurretPID.D
         );
         this.motors.setReversed(MotorConstants.Reversed.leftShooterMotor, MotorConstants.Reversed.rightShooterMotor);
         this.motors.setZPB(MotorConstants.ZPB.shooterMotors);
