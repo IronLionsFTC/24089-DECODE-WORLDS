@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LionMotor {
@@ -25,12 +26,23 @@ public class LionMotor {
         this.power = 0;
     }
 
+    private LionMotor(DcMotorEx... motors) {
+        this.motors = new ArrayList<>();
+        this.motors.addAll(Arrays.asList(motors));
+        this.position = 0;
+        this.power = 0;
+    }
+
     public static LionMotor withoutEncoder(HardwareMap hardwareMap, String name) {
         return new LionMotor(hardwareMap, name);
     }
 
     public static LionMotor withEncoder(HardwareMap hardwareMap, String name) {
         return new LionMotor(hardwareMap, name);
+    }
+
+    public static LionMotor withEncoder(DcMotorEx hardware) {
+        return new LionMotor(hardware);
     }
 
     public void setReverseEncoder(boolean reversed) {
@@ -119,5 +131,9 @@ public class LionMotor {
             sum += motor.getCurrent(CurrentUnit.AMPS);
         }
         return sum / (this.motors.size());
+    }
+
+    public Encoder yieldEncoder(int n) {
+        return new Encoder(LionMotor.withEncoder(this.motors.get(n)));
     }
 }

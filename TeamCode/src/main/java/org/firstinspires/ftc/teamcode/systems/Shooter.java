@@ -6,6 +6,9 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
@@ -29,9 +32,13 @@ public class Shooter extends SystemBase {
     // Hardware
     private LionMotor motors;
     private LionServo hoodServo;
+    private LionCRServo leftTurretServo;
+    private LionCRServo rightTurretServo;
+    private Encoder quadrature;
 
     // Control
     private PID pid;
+    private PID turretpid;
     public final Vector3 target;
     public double targetVelocity;
     public double targetHood;
@@ -68,6 +75,21 @@ public class Shooter extends SystemBase {
     public void loadHardware(HardwareMap hardwareMap) {
         this.motors = LionMotor.masterSlaves(hardwareMap, MotorConstants.Names.leftShooterMotor, MotorConstants.Names.rightShooterMotor);
         this.hoodServo = LionServo.single(hardwareMap, ServoConstants.Names.hoodServo, ServoConstants.Zero.hood);
+
+        AbsoluteEncoder absolute = new AbsoluteEncoder(hardwareMap, "turretAbsolute");
+        this.quadrature = motors.yieldEncoder(1);
+
+        absolute.read();
+        double absolutePosition = ((absolute.position() - ServoConstants.Zero.turret) / 3.3) * 360;
+        while (absolutePosition < -180.0) absolutePosition += 360;
+        while (absolutePosition >  180.0) absolutePosition -= 360;
+
+        double inTicks = absolutePosition / 360 * 4096;
+        quadrature.setPosition(inTicks);
+
+        this.leftTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.leftTurretServo);
+        this.rightTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightTurretServo);
+        this.leftTurretServo.setReversed(true);
     }
 
     @Override
@@ -91,7 +113,6 @@ public class Shooter extends SystemBase {
 
         double current = this.motors.getVelocity(28.0);
         telemetry.addData("Flywheel RPM", current);
-
 
         // Solve for position of the turret
         double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
@@ -149,6 +170,10 @@ public class Shooter extends SystemBase {
         this.target.setX(ShooterPID.targetX);
         this.target.setY(ShooterPID.targetY);
         this.target.setZ(ShooterPID.targetZ);
+
+        response = this.turretpid.calculate(quadrature.getPosition(), direction);
+        this.leftTurretServo.setPower(response);
+        this.rightTurretServo.setPower(response);
     }
 
     public double getHoodAngleDegrees() {

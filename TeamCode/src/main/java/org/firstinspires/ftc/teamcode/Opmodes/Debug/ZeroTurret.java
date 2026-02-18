@@ -24,12 +24,10 @@ public class ZeroTurret extends OpMode {
 
     @Config
     public static class TurretPID {
-        public static double P = 0.0;
+        public static double P = 0.018;
         public static double I = 0.0;
-        public static double D = 0.0;
+        public static double D = 0.0008;
         public static double kS = 0.0;
-        public static double power = 0.0;
-        public static double target = 0.0;
     }
 
     @Override
@@ -86,9 +84,8 @@ public class ZeroTurret extends OpMode {
 
         telemetry.update();
 
-        double response = pid.calculate(quadraturePosition, TurretPID.target);
+        double response = pid.calculate(quadraturePosition, 0);
         if (Math.abs(response) > 0.05) response += TurretPID.kS * Math.signum(response);
-        if (TurretPID.power != 0) response = TurretPID.power;
 
         this.leftTurretServo.setPower(-response);
         this.rightTurretServo.setPower(response);
