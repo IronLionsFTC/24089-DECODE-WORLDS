@@ -62,11 +62,9 @@ public class Shooter extends SystemBase {
         public static double kS = 0.07;
         public static double kV = 0.00017;
 
-        public static double velocity = 3900;
-
         // +x = right, +y = forward, +z = up
         public static double targetX = -1000;
-        public static double targetY = -2900;
+        public static double targetY = 2900;
         public static double targetZ = 1600;
 
         public static boolean flatShot = false;
@@ -159,7 +157,7 @@ public class Shooter extends SystemBase {
             tof = 1;
         }
 
-        this.targetVelocity = groundPlane.magnitude() * 1.3;
+        this.targetVelocity = 2000 + groundPlane.magnitude() * 0.5;
         this.targetVelocity = ProjectileMotion.calculateRequiredLaunchVelocity(targetVelocity, tof);
         double response = this.pid.calculate(current, targetVelocity);
         double targetRPM = this.velocityToRPM(targetVelocity);
@@ -179,8 +177,6 @@ public class Shooter extends SystemBase {
         this.target.setZ(ShooterPID.targetZ);
 
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;
-        while (quadraturePosition < -180.0) quadraturePosition += 360;
-        while (quadraturePosition >  180.0) quadraturePosition -= 360;
         response = this.turretpid.calculate(quadraturePosition, direction);
         this.leftTurretServo.setPower(response);
         this.rightTurretServo.setPower(response);
