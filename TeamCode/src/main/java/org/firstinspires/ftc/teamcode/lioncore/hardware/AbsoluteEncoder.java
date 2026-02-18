@@ -4,10 +4,10 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class AbsoluteEncoder {
-    private AnalogInput analogSensor;
+    private final AnalogInput analogSensor;
     private double position;
 
-    public AbsoluteEncoder(HardwareMap hardwareMap, String name, double zeroPosition) {
+    public AbsoluteEncoder(HardwareMap hardwareMap, String name) {
         this.analogSensor = hardwareMap.get(AnalogInput.class, name);
     }
 

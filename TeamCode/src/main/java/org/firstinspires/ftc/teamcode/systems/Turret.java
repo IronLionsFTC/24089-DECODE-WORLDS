@@ -20,7 +20,7 @@ public class Turret extends SystemBase {
         this.leftTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.leftTurretServo);
         this.rightTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightTurretServo);
 
-        AbsoluteEncoder readZero = new AbsoluteEncoder(hardwareMap, "turretAbsolute", ServoConstants.Zero.turret);
+        AbsoluteEncoder readZero = new AbsoluteEncoder(hardwareMap, "turretAbsolute");
     }
 
     @Override
