@@ -79,6 +79,7 @@ public class Shooter extends SystemBase {
 
         AbsoluteEncoder absolute = new AbsoluteEncoder(hardwareMap, "turretAbsolute");
         this.quadrature = motors.yieldEncoder(1);
+        this.quadrature.reverse();
 
         absolute.read();
         double absolutePosition = ((absolute.position() - ServoConstants.Zero.turret) / 3.3) * 360;

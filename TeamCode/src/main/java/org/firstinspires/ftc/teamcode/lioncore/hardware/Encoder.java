@@ -14,4 +14,8 @@ public class Encoder {
     public void setPosition(double position) {
         this.source.resetPositionTo(position);
     }
+
+    public void reverse() {
+        this.source.setReverseEncoder(true);
+    }
 }
