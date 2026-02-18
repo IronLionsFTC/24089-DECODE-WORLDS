@@ -16,7 +16,7 @@ public class ServoConstants {
 
     public static class Zero {
         public static double hood = 0;
-        public static double turret = 0.48;
+        public static double turret = 0.0;
     }
 
     public static class Positions {
@@ -29,7 +29,6 @@ public class ServoConstants {
         public static double hoodAngle = 255;
         public static double hoodZeroAngle = 23;
 
-        public static double turret = (60.0 / 20.0) * (21.0 / 13.0) * (24.0 / 86.0);
-        public static double turretRange = 255;
+        public static double turret = 24.0 / 86.0;
     }
 }

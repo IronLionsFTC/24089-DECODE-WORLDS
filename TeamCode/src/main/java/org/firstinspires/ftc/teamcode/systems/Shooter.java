@@ -55,12 +55,12 @@ public class Shooter extends SystemBase {
         public static double kS = 0.07;
         public static double kV = 0.00017;
 
-        public static double velocity = 0;
+        public static double velocity = 3900;
 
         // +x = right, +y = forward, +z = up
-        public static double targetX = -2550;
-        public static double targetY = 0;
-        public static double targetZ = 1300;
+        public static double targetX = -1500;
+        public static double targetY = -3100;
+        public static double targetZ = 1500;
 
         public static boolean flatShot = false;
     }
@@ -134,7 +134,7 @@ public class Shooter extends SystemBase {
         }
 
         this.targetVelocity = ShooterPID.velocity;
-        this.targetVelocity = ProjectileMotion.calculateRequiredLaunchVelocity(this.targetVelocity, tof);
+        this.targetVelocity = ProjectileMotion.calculateRequiredLaunchVelocity(targetVelocity, tof);
         double response = this.pid.calculate(current, targetVelocity);
         double targetRPM = this.velocityToRPM(targetVelocity);
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
@@ -142,7 +142,10 @@ public class Shooter extends SystemBase {
         if (targetRPM != 0) response += feedforward;
 
         if (this.state == State.Cruising) this.motors.setPower(response);
-        else this.motors.setPower(1);
+        else {
+            if (current < targetVelocity) this.motors.setPower(1);
+            else this.motors.setPower(0);
+        }
         this.hoodServo.setPosition(calculateHoodAngleForDegrees(hoodTarget));
 
         this.target.setX(ShooterPID.targetX);
@@ -166,10 +169,10 @@ public class Shooter extends SystemBase {
      * @return velocity (mm/s)
      */
     public double rpmToVelocity(double rpm) {
-        return (a * rpm + b);
+        return (a * rpm + b) * 1000;
     }
 
     public double velocityToRPM(double velocity) {
-        return (velocity - b) / a;
+        return (velocity / 1000 - b) / a;
     }
 }
