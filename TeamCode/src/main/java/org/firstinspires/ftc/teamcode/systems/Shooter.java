@@ -177,7 +177,10 @@ public class Shooter extends SystemBase {
         this.target.setY(ShooterPID.targetY);
         this.target.setZ(ShooterPID.targetZ);
 
-        response = this.turretpid.calculate(quadrature.getPosition(), direction);
+        double quadraturePosition = quadrature.getPosition() / 4096 * 360;
+        while (quadraturePosition < -180.0) quadraturePosition += 360;
+        while (quadraturePosition >  180.0) quadraturePosition -= 360;
+        response = this.turretpid.calculate(quadraturePosition, direction);
         this.leftTurretServo.setPower(response);
         this.rightTurretServo.setPower(response);
     }
