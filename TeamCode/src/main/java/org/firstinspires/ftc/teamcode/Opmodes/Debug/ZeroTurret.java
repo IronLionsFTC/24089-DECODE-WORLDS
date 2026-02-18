@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Opmodes.Debug;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
@@ -8,6 +9,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 
+@TeleOp
 public class ZeroTurret extends OpMode {
 
     private AbsoluteEncoder absolute;

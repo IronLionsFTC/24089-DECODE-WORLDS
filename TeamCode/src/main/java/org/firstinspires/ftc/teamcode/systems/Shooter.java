@@ -29,7 +29,6 @@ public class Shooter extends SystemBase {
     // Hardware
     private LionMotor motors;
     private LionServo hoodServo;
-    private LionServo turret;
 
     // Control
     private PID pid;
@@ -69,7 +68,6 @@ public class Shooter extends SystemBase {
     public void loadHardware(HardwareMap hardwareMap) {
         this.motors = LionMotor.masterSlaves(hardwareMap, MotorConstants.Names.leftShooterMotor, MotorConstants.Names.rightShooterMotor);
         this.hoodServo = LionServo.single(hardwareMap, ServoConstants.Names.hoodServo, ServoConstants.Zero.hood);
-        this.turret = LionServo.mirrored(hardwareMap, ServoConstants.Names.leftTurretServo, ServoConstants.Names.rightTurretServo, 0.5);
     }
 
     @Override
@@ -151,9 +149,6 @@ public class Shooter extends SystemBase {
         this.target.setX(ShooterPID.targetX);
         this.target.setY(ShooterPID.targetY);
         this.target.setZ(ShooterPID.targetZ);
-
-        double turretPosition = ServoConstants.Zero.turret + direction / (ServoConstants.Ratios.turret * ServoConstants.Ratios.turretRange);
-        this.turret.setPosition(turretPosition);
     }
 
     public double getHoodAngleDegrees() {

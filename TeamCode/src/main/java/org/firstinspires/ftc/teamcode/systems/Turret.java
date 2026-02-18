@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
@@ -19,7 +20,17 @@ public class Turret extends SystemBase {
         this.leftTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.leftTurretServo);
         this.rightTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightTurretServo);
 
-        AbsoluteEncoder readZero = new AbsoluteEncoder(hardwareMap, "turretAbsolute");
+        AbsoluteEncoder readZero = new AbsoluteEncoder(hardwareMap, "turretAbsolute", ServoConstants.Zero.turret);
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void update(Telemetry telemetry) {
+
     }
 
 }
