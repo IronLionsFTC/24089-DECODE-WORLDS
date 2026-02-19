@@ -64,8 +64,8 @@ public class Shooter extends SystemBase {
 
         // +x = right, +y = forward, +z = up
         public static double targetX = -1000;
-        public static double targetY = 2900;
-        public static double targetZ = 1600;
+        public static double targetY = 3000;
+        public static double targetZ = 1650;
 
         public static boolean flatShot = false;
     }
@@ -157,7 +157,7 @@ public class Shooter extends SystemBase {
             tof = 1;
         }
 
-        this.targetVelocity = 2000 + groundPlane.magnitude() * 0.5;
+        this.targetVelocity = 2100 + groundPlane.magnitude() * 0.5;
         this.targetVelocity = ProjectileMotion.calculateRequiredLaunchVelocity(targetVelocity, tof);
         double response = this.pid.calculate(current, targetVelocity);
         double targetRPM = this.velocityToRPM(targetVelocity);

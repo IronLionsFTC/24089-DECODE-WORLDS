@@ -27,6 +27,7 @@ public class Intake extends SystemBase {
     @Config
     public static class IntakeConstants {
         public static double currentThreshold = 7;
+        public static double intakeThreshold = 5;
     }
 
     public Intake() {
@@ -73,7 +74,7 @@ public class Intake extends SystemBase {
                 this.blocker.setPosition(ServoConstants.Positions.blockerClosed);
 
                 current = intakeMotor.getAmps();
-                if (current > IntakeConstants.currentThreshold) this.state = State.Off;
+                if (current > IntakeConstants.intakeThreshold) this.state = State.Off;
 
                 break;
 
