@@ -20,7 +20,7 @@ if __name__ == "__main__":
     print("Enter the horizontal distance (in meters):")
     distance = float(input())  # Get distance from user input
 
-    angle = 40
+    angle = 50
 
     # Calculate and display the launch velocity
     launch_velocity = calculate_launch_velocity(distance, angle)

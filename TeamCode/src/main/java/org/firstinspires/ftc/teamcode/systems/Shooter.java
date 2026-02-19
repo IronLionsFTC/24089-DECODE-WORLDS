@@ -61,13 +61,12 @@ public class Shooter extends SystemBase {
         public static double D = 0.00003;
         public static double kS = 0.07;
         public static double kV = 0.00017;
-
-        // +x = right, +y = forward, +z = up
-        public static double targetX = -1000;
-        public static double targetY = 3000;
-        public static double targetZ = 1650;
-
+        public static double targetX = 0;
+        public static double targetY = 400;
+        public static double targetZ = 1100;
         public static boolean flatShot = false;
+        public static double shooterPowerBase = 1526.41734;
+        public static double shooterPowerScalar = 0.599038;
     }
 
     @Override
@@ -133,42 +132,29 @@ public class Shooter extends SystemBase {
                 rotatedShooterZ
         );
 
-        double launchVelocity = ProjectileMotion.calculateAverageSpeedFromLaunchVelocity(rpmToVelocity(current), 0.7);
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
-
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY());
         double direction = 180 + (groundPlane.polarDirection() + SwerveDrive.PinpointCache.position.heading);
         while (direction < -180) direction += 360;
         while (direction >  180) direction -= 360;
 
         Vector2 cartesianTarget = Vector2.cartesian(Math.hypot(relativeTarget.getX(), relativeTarget.getY()), relativeTarget.getZ());
-        ProjectileMotion solution = ProjectileMotion.calculate(launchVelocity, cartesianTarget);
+        ProjectileMotion solution = ProjectileMotion.solve(cartesianTarget, 45, 80);
 
-        double hoodTarget;
-        double tof;
-        if (solution.flatPossible && ShooterPID.flatShot) {
-            hoodTarget = solution.flat;
-            tof = solution.flatTimeOfFlight;
-        } else if (solution.arcPossible && !ShooterPID.flatShot) {
-            hoodTarget = solution.arc;
-            tof = solution.arcTimeOfFlight;
-        } else {
-            hoodTarget = 75;
-            tof = 1;
-        }
+        double hoodTarget = solution.angle;
+        targetVelocity = solution.velocity.magnitude();
 
-        this.targetVelocity = 2100 + groundPlane.magnitude() * 0.5;
-        this.targetVelocity = ProjectileMotion.calculateRequiredLaunchVelocity(targetVelocity, tof);
-        double response = this.pid.calculate(current, targetVelocity);
         double targetRPM = this.velocityToRPM(targetVelocity);
+        double response = this.pid.calculate(current, targetRPM);
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
         feedforward *= TaskOpMode.Runtime.voltageCompensation;
         if (targetRPM != 0) response += feedforward;
 
         if (this.state == State.Cruising) this.motors.setPower(response);
         else {
-            if (current < targetVelocity) this.motors.setPower(1);
-            else this.motors.setPower(0);
+            this.motors.setPower(response);
+            // if (current < targetVelocity * 1.3) this.motors.setPower(1);
+            // else this.motors.setPower(0);
         }
         this.hoodServo.setPosition(calculateHoodAngleForDegrees(hoodTarget));
 

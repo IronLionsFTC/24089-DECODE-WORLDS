@@ -8,95 +8,85 @@ public class ProjectileMotion {
         public static Vector3 shooterOffset = new Vector3(0, -20, 300);
     }
 
-    public double flat = 0;
-    public double arc = 0;
-    public double flatTimeOfFlight = 0;
-    public double arcTimeOfFlight = 0;
+    public final boolean hasSolution;
+    public final double  angle;
+    public final Vector2 velocity;
 
-    public boolean flatPossible = false;
-    public boolean arcPossible = false;
-
-    public static double G = -9800;
-
-    private ProjectileMotion(double flat, double arc, double flatTimeOfFlight, double arcTimeOfFlight, boolean flatPossible, boolean arcPossible) {
-        this.flat = flat;
-        this.arc = arc;
-        this.flatTimeOfFlight = flatTimeOfFlight;
-        this.arcTimeOfFlight = arcTimeOfFlight;
-        this.flatPossible = flatPossible;
-        this.arcPossible = arcPossible;
+    private ProjectileMotion(boolean hasSolution, double angle, Vector2 velocity) {
+        this.hasSolution = hasSolution;
+        this.angle       = angle;
+        this.velocity    = velocity;
     }
 
-    public static ProjectileMotion calculate(double launchVelocity, Vector2 position) {
-        double x = position.x();
-        double y = position.y();
-        double v2 = Math.pow(launchVelocity, 2);
-        double g2 = Math.pow(G, 2);
-        double determinant = Math.pow(y * G - v2, 2) - g2 * (x*x + y*y);
+    private static final double G         = 9800.0;
+    private static final double ANGLE_MIN = 45.0;
+    private static final double ANGLE_MAX = 80.0;
 
-        if (determinant < 0) {
-            return new ProjectileMotion(0, 0, 0, 0, false, false);
+    public static ProjectileMotion solve(Vector2 delta) {
+        return solveConstrained(delta, ANGLE_MIN, ANGLE_MAX);
+    }
+
+    public static ProjectileMotion solve(Vector2 delta, double minAngle, double maxAngle) {
+        return solveConstrained(delta, minAngle, maxAngle);
+    }
+
+    private static double requiredVelocityForAngle(Vector2 delta, double angleDeg) {
+        double x     = delta.x();
+        double y     = delta.y();
+        double theta = Math.toRadians(angleDeg);
+        double cos   = Math.cos(theta);
+        double denom = 2.0 * (cos * cos) * (x * Math.tan(theta) - y);
+        if (denom <= 0) return Double.NaN;
+        double v2 = (G * x * x) / denom;
+        if (v2 <= 0) return Double.NaN;
+        return Math.sqrt(v2);
+    }
+
+    private static ProjectileMotion solveConstrained(Vector2 delta, double minAngle, double maxAngle) {
+        double x = delta.x();
+        double y = delta.y();
+
+        if (x == 0) return noSolution();
+
+        double r     = Math.sqrt(x * x + y * y);
+        // t = tan(theta); low-energy (flat) shot first, high-energy (steep) shot as fallback
+        double tLow  = (y - r) / x;
+        double tHigh = (y + r) / x;
+
+        ProjectileMotion result = evaluate(delta, tLow,  minAngle, maxAngle);
+        if (result == null) result = evaluate(delta, tHigh, minAngle, maxAngle);
+        if (result != null) return result;
+
+        // Both unconstrained optima are outside the angle bounds — check boundaries
+        double bestSpeed = Double.NaN;
+        double bestAngle = Double.NaN;
+        for (double boundary : new double[]{ minAngle, maxAngle }) {
+            double v = requiredVelocityForAngle(delta, boundary);
+            if (!Double.isNaN(v) && (Double.isNaN(bestSpeed) || v < bestSpeed)) {
+                bestSpeed = v;
+                bestAngle = boundary;
+            }
         }
 
-        double sqrt = Math.sqrt(determinant);
-
-        double flat = ((v2 - y * G) - sqrt) / g2;
-        double arc = ((v2 - y * G) + sqrt) / g2;
-
-        double flatTimeOfFlight = Math.sqrt(flat);
-        double arcTimeOfFlight = Math.sqrt(arc);
-
-        flat = Math.toDegrees(Math.acos(x / (launchVelocity * flatTimeOfFlight)));
-        arc = Math.toDegrees(Math.acos(x / (launchVelocity * arcTimeOfFlight)));
-
-        return new ProjectileMotion(flat, arc, flatTimeOfFlight, arcTimeOfFlight, !Double.isNaN(flat), !Double.isNaN(arc));
+        if (Double.isNaN(bestSpeed)) return noSolution();
+        return solution(bestAngle, bestSpeed);
     }
 
-    /**
-     * Calculates the required launch velocity to achieve a target average speed
-     * over the time of flight, taking air resistance into account.
-     *
-     * @param targetAverageSpeed desired average speed (mm/s)
-     * @param timeOfFlight       total time of flight (s)
-     * @return required launch velocity (m/s)
-     */
-    public static double calculateRequiredLaunchVelocity(double targetAverageSpeed, double timeOfFlight) {
-        targetAverageSpeed /= 1000;
-        // Constants for a 5-inch diameter sphere
-        final double AIR_DENSITY = 1.225;  // kg/m^3
-        final double DRAG_COEFF = 0.47;    // sphere
-        final double DIAMETER_METERS = 0.127; // 5 inches in meters
-
-        // Calculate cross-sectional area of the ball (A = pi * r^2)
-        double radius = DIAMETER_METERS / 2.0;
-        double area = Math.PI * radius * radius;
-
-        // Calculate the drag constant beta
-        double beta = 0.5 * AIR_DENSITY * DRAG_COEFF * area / 0.09;
-
-        // Calculate the required launch velocity
-        double exponent = beta * timeOfFlight * targetAverageSpeed;
-        return ((Math.exp(exponent) - 1.0) / (beta * timeOfFlight)) * 1000;
+    private static ProjectileMotion evaluate(Vector2 delta, double t, double minAngle, double maxAngle) {
+        double angleDeg = Math.toDegrees(Math.atan(t));
+        if (angleDeg < minAngle || angleDeg > maxAngle) return null;
+        double v = requiredVelocityForAngle(delta, angleDeg);
+        if (Double.isNaN(v)) return null;
+        return solution(angleDeg, v);
     }
 
+    private static ProjectileMotion solution(double angleDeg, double speed) {
+        // Vector2.polar expects radians
+        Vector2 velocity = Vector2.polar(speed, Math.toRadians(angleDeg));
+        return new ProjectileMotion(true, angleDeg, velocity);
+    }
 
-    public static double calculateAverageSpeedFromLaunchVelocity(double launchVelocity, double timeOfFlight) {
-        launchVelocity /= 1000;
-
-        // Constants for a 5-inch diameter sphere
-        final double AIR_DENSITY = 1.225;  // kg/m^3
-        final double DRAG_COEFF = 0.47;    // sphere
-        final double DIAMETER_METERS = 0.127; // 5 inches in meters
-
-        // Calculate cross-sectional area of the ball (A = pi * r^2)
-        double radius = DIAMETER_METERS / 2.0;
-        double area = Math.PI * radius * radius;
-
-        // Calculate the drag constant beta
-        double beta = 0.5 * AIR_DENSITY * DRAG_COEFF * area / 0.09;
-
-        // Calculate the target average speed using the inverse of the original formula
-        double exponentTerm = Math.log((beta * timeOfFlight * launchVelocity) + 1);
-        return (exponentTerm / (beta * timeOfFlight)) * 1000;
+    private static ProjectileMotion noSolution() {
+        return new ProjectileMotion(false, Double.NaN, Vector2.cartesian(Double.NaN, Double.NaN));
     }
 }
