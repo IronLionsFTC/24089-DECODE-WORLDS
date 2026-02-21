@@ -16,12 +16,12 @@ public class ServoConstants {
 
     public static class Zero {
         public static double hood = 0;
-        public static double turret = 2.265;
+        public static double turret = 1.907;
     }
 
     public static class Positions {
         public static double blockerOpen = 0.0;
-        public static double blockerClosed = 0.25;
+        public static double blockerClosed = 0.2;
     }
 
     public static class Ratios {

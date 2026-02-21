@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.parameters;
 
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
+
 public class Zeroing {
     public static class Names {
         public static String rightFrontAnalog = "rightFrontAnalog";
@@ -33,4 +35,9 @@ public class Zeroing {
         while (degrees > 180) degrees -= 360;
         return degrees;
     }
+
+    public static class ProjMotConstants {
+        public static Vector3 shooterOffset = new Vector3(0, -20, 300);
+    }
+
 }

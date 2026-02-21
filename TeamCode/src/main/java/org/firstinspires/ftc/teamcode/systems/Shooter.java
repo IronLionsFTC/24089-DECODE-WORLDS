@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import static org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion.ProjMotConstants.shooterOffset;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -19,7 +17,7 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
-import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
+import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 public class Shooter extends SystemBase {
 
@@ -61,12 +59,17 @@ public class Shooter extends SystemBase {
         public static double D = 0.00003;
         public static double kS = 0.07;
         public static double kV = 0.00017;
-        public static double targetX = 0;
-        public static double targetY = 400;
-        public static double targetZ = 1100;
-        public static boolean flatShot = false;
-        public static double shooterPowerBase = 1526.41734;
-        public static double shooterPowerScalar = 0.599038;
+
+        public static double targetXFar = -4000;
+        public static double targetYFar = 0;
+        public static double targetZFar = 0;
+
+        public static double targetXClose = 0;
+        public static double targetYClose = -5000;
+        public static double targetZClose = 0;
+
+        public static double velocityOverride = 3000;
+        public static double servoPositionOverride = 0;
     }
 
     @Override
@@ -122,9 +125,9 @@ public class Shooter extends SystemBase {
         double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
         double sinHeading = Math.sin(SwerveDrive.PinpointCache.position.heading);
 
-        double rotatedShooterX = shooterOffset.getX() * cosHeading - shooterOffset.getY() * sinHeading;
-        double rotatedShooterY = shooterOffset.getX() * sinHeading + shooterOffset.getY() * cosHeading;
-        double rotatedShooterZ = shooterOffset.getZ();
+        double rotatedShooterX = Zeroing.ProjMotConstants.shooterOffset.getX() * cosHeading - Zeroing.ProjMotConstants.shooterOffset.getY() * sinHeading;
+        double rotatedShooterY = Zeroing.ProjMotConstants.shooterOffset.getX() * sinHeading + Zeroing.ProjMotConstants.shooterOffset.getY() * cosHeading;
+        double rotatedShooterZ = Zeroing.ProjMotConstants.shooterOffset.getZ();
 
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x() + rotatedShooterX,
@@ -134,17 +137,22 @@ public class Shooter extends SystemBase {
 
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY());
+        Vector2 cartesianTarget = Vector2.cartesian(Math.hypot(relativeTarget.getX(), relativeTarget.getY()), relativeTarget.getZ());
+        double distance = SwerveDrive.PinpointCache.position.position.sub(
+                Vector2.cartesian(ShooterPID.targetXFar, ShooterPID.targetYFar)
+        ).magnitude();
+        boolean far = distance > 2500;
+
         double direction = 180 + (groundPlane.polarDirection() + SwerveDrive.PinpointCache.position.heading);
         while (direction < -180) direction += 360;
         while (direction >  180) direction -= 360;
 
-        Vector2 cartesianTarget = Vector2.cartesian(Math.hypot(relativeTarget.getX(), relativeTarget.getY()), relativeTarget.getZ());
-        ProjectileMotion solution = ProjectileMotion.solve(cartesianTarget, 45, 80);
+        double angle = ShooterPID.servoPositionOverride;
+        double hoodAngle = angle;
+        double servoPosition = calculateHoodAngleForDegrees(hoodAngle);
 
-        double hoodTarget = solution.angle;
-        targetVelocity = solution.velocity.magnitude();
-
-        double targetRPM = this.velocityToRPM(targetVelocity);
+        this.targetVelocity = ShooterPID.velocityOverride;
+        double targetRPM = targetVelocity;//this.velocityToRPM(targetVelocity);
         double response = this.pid.calculate(current, targetRPM);
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
         feedforward *= TaskOpMode.Runtime.voltageCompensation;
@@ -152,18 +160,26 @@ public class Shooter extends SystemBase {
 
         if (this.state == State.Cruising) this.motors.setPower(response);
         else {
-            this.motors.setPower(response);
-            // if (current < targetVelocity * 1.3) this.motors.setPower(1);
-            // else this.motors.setPower(0);
+            if (rpmToVelocity(current) < targetVelocity * 1.01) this.motors.setPower(1);
+            else this.motors.setPower(response * 0.95);
         }
-        this.hoodServo.setPosition(calculateHoodAngleForDegrees(hoodTarget));
+        if (!Double.isNaN(angle)) this.hoodServo.setPosition(servoPosition);
 
-        this.target.setX(ShooterPID.targetX);
-        this.target.setY(ShooterPID.targetY);
-        this.target.setZ(ShooterPID.targetZ);
+        if (far) {
+            this.target.setX(ShooterPID.targetXFar);
+            this.target.setY(ShooterPID.targetYFar);
+            this.target.setZ(ShooterPID.targetZFar);
+        } else {
+            this.target.setX(ShooterPID.targetXClose);
+            this.target.setY(ShooterPID.targetYClose);
+            this.target.setZ(ShooterPID.targetZClose);
+        }
 
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;
         response = this.turretpid.calculate(quadraturePosition, direction);
+        if (Math.abs(quadraturePosition - direction) > 1) {
+            response += ZeroTurret.TurretPID.kS * Math.signum(direction - quadraturePosition);
+        }
         this.leftTurretServo.setPower(response);
         this.rightTurretServo.setPower(response);
     }
