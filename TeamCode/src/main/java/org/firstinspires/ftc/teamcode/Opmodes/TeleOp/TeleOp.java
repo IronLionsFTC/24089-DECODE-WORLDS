@@ -29,6 +29,8 @@ public class TeleOp extends TaskOpMode {
         controller1.X.onPress(new TeleopIntake(intake));
         controller1.rightTrigger.asButton.onPress(new Shoot(intake, shooter));
 
+        setPriority(0);
+
         return Jobs.create()
                 .addTask(new Forever(new TeleopDriveVector(
                         drivetrain,

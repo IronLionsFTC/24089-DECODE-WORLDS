@@ -23,6 +23,9 @@ public abstract class TaskOpMode extends OpMode {
     private VoltageSensor voltageSensor;
 
     private int telemetryCounter = 0;
+    private int priorityCounter = 0;
+    private boolean hasPriority = false;
+    private int priorityIndex = 0;
 
     /**
      * Create all systems and tasks and return them. Do not initialise the systems.
@@ -100,9 +103,14 @@ public abstract class TaskOpMode extends OpMode {
             if (this.endWhenTasksFinished) this.requestOpModeStop();
         }
 
-        for (SystemBase system : this.systems) {
-            system.update(this.telemetry);
+        for (int idx = 0; idx < this.systems.size(); idx++) {
+            if (!this.hasPriority || this.priorityIndex == idx || this.priorityCounter == 0) {
+                this.systems.get(idx).update(this.telemetry);
+            }
         }
+
+        this.priorityCounter += 1;
+        if (this.priorityCounter > 1) priorityCounter = 0;
 
         this.mainloop();
 
@@ -118,5 +126,10 @@ public abstract class TaskOpMode extends OpMode {
         }
 
         this.lastTime = time;
+    }
+
+    public void setPriority(int index) {
+        this.priorityIndex = index;
+        this.hasPriority = true;
     }
 }
