@@ -14,13 +14,15 @@ public class ProjectileMotion {
     public double launchVelocity;
     public double launchAngle;
     public double yawDirection;
+    public boolean possible;
 
     private static final Vector3 target = Vector3.zero();
 
-    public ProjectileMotion(double velocity, double angle, double yaw) {
+    public ProjectileMotion(double velocity, double angle, double yaw, boolean possible) {
         this.launchVelocity = velocity;
         this.launchAngle = angle;
         this.yawDirection = yaw;
+        this.possible = possible;
     }
 
     @Config
@@ -30,7 +32,6 @@ public class ProjectileMotion {
 
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
         currentVelocity *= Shooter.ShooterPID.underShoot;
-        // ── Shooter position in field coordinates ────────────────────────────────
         double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
         double sinHeading = Math.sin(SwerveDrive.PinpointCache.position.heading);
         Vector3 shooterPositionInField = new Vector3(
@@ -43,39 +44,10 @@ public class ProjectileMotion {
                 Zeroing.ProjMotConstants.shooterOffset.getZ()
         );
 
-        // ── Target in shooter-relative ballistic coordinates ─────────────────────
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
         double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY()); // horizontal distance
         double y = relativeTarget.getZ();                                      // vertical distance (+ = above shooter)
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY());
-
-        // ── Velocity required at the preferred hood angle ────────────────────────
-        // v = x * sqrt( g / (2*cos²θ*(x*tanθ - y)) )
-        double idealAngle  = Math.toRadians(Shooter.ShooterPID.preferredHoodAngle);
-        double velocityForIdealLaunch = requiredLaunchVelocity(Vector2.cartesian(x, y), idealAngle);
-
-        // ── Hood angle required at the current (actual) velocity ─────────────────
-        // Rearranging y = x*tan(θ) - (g*x²/2v²)*(1+tan²θ) gives a quadratic in tan(θ):
-        //   (g*x²/2v²)*tan²θ - x*tan(θ) + (y + g*x²/2v²) = 0
-        // Let k = g*x²/(2*v²), then:  k*u² - x*u + (y+k) = 0
-        // Use the + root for the high arc (above 45°), - root for low arc (below 45°)
-        double v           = currentVelocity;
-        double k           = G * x * x / (2 * v * v);
-        double disc        = x * x - 4 * k * (y + k);
-        double hoodAngle;
-        if (disc < 0) {
-            // Current velocity can't reach the target at any angle — fall back to ideal
-            hoodAngle = idealAngle;
-        } else {
-            double sqrtDisc   = Math.sqrt(disc);
-            double highArcTan = (x + sqrtDisc) / (2 * k); // + root → steeper (high arc)
-            double lowArcTan  = (x - sqrtDisc) / (2 * k); // - root → shallower (low arc)
-            // Pick whichever arc angle is closest to the preferred hood angle
-            double highArc    = Math.atan(highArcTan);
-            double lowArc     = Math.atan(lowArcTan);
-
-            hoodAngle = lowArc;
-        }
 
         // ── Turret direction with heading feedforward ────────────────────────────
         double direction = 180 + groundPlane.polarDirection()
@@ -84,7 +56,21 @@ public class ProjectileMotion {
         while (direction < -180) direction += 360;
         while (direction >  180) direction -= 360;
 
-        return new ProjectileMotion(velocityForIdealLaunch / Shooter.ShooterPID.underShoot, Math.toDegrees(hoodAngle), direction);
+
+        // Projectile math
+        double chunk = (G * Math.pow(x, 2)) / (2 * Math.pow(currentVelocity, 2));
+        double dscrm = Math.pow(x, 2) - 4 * chunk * (chunk + y);
+
+        if (dscrm < 0) {
+            return new ProjectileMotion(4000, 45, direction, false);
+        }
+
+        double plus = (x + Math.sqrt(dscrm)) / (chunk * 2);
+        double minus = (x - Math.sqrt(dscrm)) / (chunk * 2);
+
+        double angle = Math.min(Math.toDegrees(Math.atan(plus)), Math.toDegrees(Math.atan(minus)));
+
+        return new ProjectileMotion(Shooter.ShooterPID.velocityOverride / Shooter.ShooterPID.underShoot, angle, direction, true);
     }
 
     public static boolean far() {
@@ -102,34 +88,6 @@ public class ProjectileMotion {
             target.setY(Shooter.ShooterPID.targetYClose);
             target.setZ(Shooter.ShooterPID.targetZClose);
         } return target;
-    }
-
-    public static double requiredLaunchVelocity(Vector2 target, double launchAngle) {
-
-        double x = target.x();
-        double y = target.y();
-
-        double theta = launchAngle;
-        double g = -G; // e.g. -9800 (mm/s^2)
-
-        double cos = Math.cos(theta);
-        double tan = Math.tan(theta);
-
-        // Prevent division by zero (vertical shot)
-        if (Math.abs(cos) < 1e-9) {
-            throw new IllegalArgumentException("Launch angle too close to vertical.");
-        }
-
-        double denominator = 2.0 * cos * cos * (y - x * tan);
-
-        // If denominator == 0 or sign makes v^2 negative → no solution
-        double vSquared = (g * x * x) / denominator;
-
-        if (vSquared <= 0 || Double.isNaN(vSquared) || Double.isInfinite(vSquared)) {
-            throw new IllegalArgumentException("No physical solution at this launch angle.");
-        }
-
-        return Math.sqrt(vSquared);
     }
 
 }

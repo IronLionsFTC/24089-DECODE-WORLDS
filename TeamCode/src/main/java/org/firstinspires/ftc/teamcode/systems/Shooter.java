@@ -70,7 +70,7 @@ public class Shooter extends SystemBase {
         public static double targetYClose = -5000;
         public static double targetZClose = 0;
 
-        public static double preferredHoodAngle = 52;
+        public static double velocityOverride = 3000;
 
         public static double angleOverride = 0;
         public static double underShoot = 0.95;
@@ -149,7 +149,7 @@ public class Shooter extends SystemBase {
         telemetry.addData("hoodAngle", hoodAngle);
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
         if (servoPosition < 0) servoPosition = 0;
-        if (servoPosition > 0.27) servoPosition = 0.27;
+        if (servoPosition > 0.37) servoPosition = 0.37;
         hoodServo.setPosition(servoPosition);
 
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;
