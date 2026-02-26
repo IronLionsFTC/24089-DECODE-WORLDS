@@ -139,6 +139,25 @@ public class ProjectileMotion {
         return new ProjectileMotion(velocity, Math.toDegrees(angle), direction, timeOfFlight, true);
     }
 
+    /**
+     * Calculate the target parameters and iteratively converge on a perfect SOTM intersection
+     * @param target The target Vector(right, forward, up), in mm
+     * @param currentVelocity The current flywheel velocity, in mm
+     * @return The aiming parameters that should work even accounting for robot velocity
+     */
+    public static ProjectileMotion calculateConvergence(Vector3 target, double currentVelocity) {
+        ProjectileMotion solution = calculate(target, currentVelocity);
+        Vector3 expectedMotion;
+
+        for (int convergence = 0; convergence < ShootOnTheMoveConstants.convergence; convergence++) {
+            expectedMotion = new Vector3(SwerveDrive.PinpointCache.velocity.x(), SwerveDrive.PinpointCache.velocity.y(), 0.0).scale(solution.timeOfFlight);
+            Vector3 trueTarget = target.subtract(expectedMotion);
+            solution = calculate(trueTarget, currentVelocity);
+        }
+
+        return solution;
+    }
+
     public static boolean far() {
         double distance = SwerveDrive.PinpointCache.position.position.sub( Vector2.cartesian(Shooter.ShooterPID.targetXFar, Shooter.ShooterPID.targetYFar) ).magnitude();
         return distance > 2500;
