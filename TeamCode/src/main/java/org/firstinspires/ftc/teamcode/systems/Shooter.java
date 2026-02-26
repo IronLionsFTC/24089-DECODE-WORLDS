@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
+import org.firstinspires.ftc.teamcode.lioncore.math.KalmanFilter;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
@@ -37,6 +38,7 @@ public class Shooter extends SystemBase {
 
     // Control
     private PID pid;
+    private KalmanFilter rpmFilter;
     private PID turretpid;
     public final Vector3 target;
     public double targetVelocity;
@@ -63,6 +65,9 @@ public class Shooter extends SystemBase {
         public static double targetXClose = 0;
         public static double targetYClose = -5000;
         public static double targetZClose = 0;
+
+        public static double kalmanQ = 140.0;
+        public static double kalmanR = 42.0;
     }
 
     @Override
@@ -99,6 +104,8 @@ public class Shooter extends SystemBase {
                 ZeroTurret.TurretPID.I,
                 ZeroTurret.TurretPID.D
         );
+
+        this.rpmFilter = new KalmanFilter(ShooterPID.kalmanQ, ShooterPID.kalmanR, 0.0);
         this.motors.setReversed(MotorConstants.Reversed.leftShooterMotor, MotorConstants.Reversed.rightShooterMotor);
         this.motors.setZPB(MotorConstants.ZPB.shooterMotors);
     }
@@ -111,7 +118,16 @@ public class Shooter extends SystemBase {
                 ShooterPID.D
         );
 
-        double current = this.motors.getVelocity(28.0);
+        this.turretpid.setConstants(
+                ZeroTurret.TurretPID.P,
+                ZeroTurret.TurretPID.I,
+                ZeroTurret.TurretPID.D
+        );
+
+        this.rpmFilter.setQ(ShooterPID.kalmanQ);
+        this.rpmFilter.setR(ShooterPID.kalmanR);
+
+        double current = this.rpmFilter.update(this.motors.getVelocity(28.0));
         double currentLaunchSpeed = Regressions.rpmToVelocity(current);
 
         ProjectileMotion solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed);
