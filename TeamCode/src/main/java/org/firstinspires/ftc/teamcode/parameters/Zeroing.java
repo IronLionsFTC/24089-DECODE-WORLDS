@@ -10,13 +10,6 @@ public class Zeroing {
         public static String leftRearAnalog = "leftRearAnalog";
     }
 
-    public static class ZeroPositions {
-        public static double rightFront = 0.578;
-        public static double leftFront = 0.492;
-        public static double rightRear = 0.532;
-        public static double leftRear = 2.765;
-    }
-
     public static class Constants {
         public static double voltageRange = 3.3;
         public static double scale = 360 / voltageRange;

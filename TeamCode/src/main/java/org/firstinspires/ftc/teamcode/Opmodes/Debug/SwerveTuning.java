@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
+import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
@@ -70,10 +71,10 @@ public class SwerveTuning extends LinearOpMode {
         rightRearAnalog.read();
         leftRearAnalog.read();
 
-        rightFront.resetPositionTo(Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront) * (4096.0 / 360.0));
-        leftFront.resetPositionTo(Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront) * (4096.0 / 360.0));
-        rightRear.resetPositionTo(Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear) * (4096.0 / 360.0));
-        leftRear.resetPositionTo(Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear) * (4096.0 / 360.0));
+        rightFront.resetPositionTo(Zeroing.podAngle(rightFrontAnalog.position(), ConstantsStorage.get("rf", 0.0)) * (4096.0 / 360.0));
+        leftFront.resetPositionTo(Zeroing.podAngle(leftFrontAnalog.position(), ConstantsStorage.get("lf", 0.0)) * (4096.0 / 360.0));
+        rightRear.resetPositionTo(Zeroing.podAngle(rightRearAnalog.position(), ConstantsStorage.get("rr", 0.0)) * (4096.0 / 360.0));
+        leftRear.resetPositionTo(Zeroing.podAngle(leftRearAnalog.position(), ConstantsStorage.get("lr", 0.0)) * (4096.0 / 360.0));
 
         while (opModeIsActive()) {
             rightFrontServo.setPower(SwerveConstants.rfp);
@@ -90,11 +91,6 @@ public class SwerveTuning extends LinearOpMode {
             leftFront.setPower(SwerveConstants.lfmp);
             rightRear.setPower(SwerveConstants.rrmp);
             leftRear.setPower(SwerveConstants.lrmp);
-
-            telemetry.addData("rightFront", Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront));
-            telemetry.addData("leftFront", Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront));
-            telemetry.addData("rightRear", Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear));
-            telemetry.addData("leftRear", Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear));
 
             telemetry.addData("rightFrontAbs", rightFrontAnalog.position());
             telemetry.addData("leftFrontAbs", leftFrontAnalog.position());

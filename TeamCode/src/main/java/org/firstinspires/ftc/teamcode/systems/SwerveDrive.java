@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
+import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
@@ -111,10 +112,10 @@ public class SwerveDrive extends SystemBase {
         rightFront.setReverseEncoder(true);
         rightRear.setReverseEncoder(true);
 
-        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector2.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), Zeroing.ZeroPositions.rightFront), xPattern);
-        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector2.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), Zeroing.ZeroPositions.leftFront), xPattern);
-        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector2.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), Zeroing.ZeroPositions.rightRear), xPattern);
-        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector2.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), Zeroing.ZeroPositions.leftRear), xPattern);
+        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector2.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), ConstantsStorage.get("rf", 0.0)), xPattern);
+        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector2.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), ConstantsStorage.get("lf", 0.0)), xPattern);
+        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector2.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), ConstantsStorage.get("rr", 0.0)), xPattern);
+        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector2.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), ConstantsStorage.get("lr", 0.0)), xPattern);
     }
 
     @Override
