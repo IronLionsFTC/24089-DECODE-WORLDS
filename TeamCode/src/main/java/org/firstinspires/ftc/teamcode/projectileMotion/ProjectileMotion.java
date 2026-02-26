@@ -19,10 +19,11 @@ public class ProjectileMotion {
 
     private static final Vector3 target = Vector3.zero();
 
-    public ProjectileMotion(double velocity, double angle, double yaw, boolean possible) {
+    public ProjectileMotion(double velocity, double angle, double yaw, double timeOfFlight, boolean possible) {
         this.launchVelocity = velocity;
         this.launchAngle = angle;
         this.yawDirection = yaw;
+        this.timeOfFlight = timeOfFlight;
         this.possible = possible;
     }
 
@@ -119,32 +120,23 @@ public class ProjectileMotion {
         // Calculate the relative position of the target, on the ground, looking ahead in time to counteract turret lag.
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY())
                 .sub(SwerveDrive.PinpointCache.velocity.multiply(ShootOnTheMoveConstants.turretLookahead));
-
-        // ── Turret direction with heading feedforward ────────────────────────────
         double direction = 180 + groundPlane.polarDirection()
                 + SwerveDrive.PinpointCache.position.heading
-                + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.headingTimeStep;
+                + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.turretLookahead;
         while (direction < -180) direction += 360;
         while (direction >  180) direction -= 360;
 
 
         // Projectile math
-        double chunk = (G * Math.pow(x, 2)) / (2 * Math.pow(currentVelocity, 2));
-        double dscrm = Math.pow(x, 2) - 4 * chunk * (chunk + y);
+        double angle = solveAngle(currentVelocity, x, y);
+        double velocity = findSuitableVelocity(x, y);
 
-        if (dscrm < 0) {
-            return new ProjectileMotion(getTargetPower(x) / Shooter.ShooterPID.underShoot, 45, direction, false);
-        }
+        if (Double.isNaN(velocity)) velocity = 7000.0;
+        if (Double.isNaN(angle)) return new ProjectileMotion(velocity, 45, direction, 1, false);
 
-        double plus = (x + Math.sqrt(dscrm)) / (chunk * 2);
-        double minus = (x - Math.sqrt(dscrm)) / (chunk * 2);
-
-        double angleA = Math.toDegrees(Math.atan(plus));
-        double angleB = Math.toDegrees(Math.atan(minus));
-
-        double angle = Math.min(angleA, angleB);
-
-        return new ProjectileMotion(getTargetPower(x) / Shooter.ShooterPID.underShoot, angle, direction, true);
+        // Given that x = vt cos (a), t = x / (v cos (a))
+        double timeOfFlight = x / (currentVelocity * Math.cos(angle));
+        return new ProjectileMotion(velocity, Math.toDegrees(angle), direction, timeOfFlight, true);
     }
 
     public static boolean far() {
@@ -163,9 +155,4 @@ public class ProjectileMotion {
             target.setZ(Shooter.ShooterPID.targetZClose);
         } return target;
     }
-
-    public static double getTargetPower(double distance) {
-        return distance * PowerScaling.flatScale + PowerScaling.flatBase;
-    }
-
 }
