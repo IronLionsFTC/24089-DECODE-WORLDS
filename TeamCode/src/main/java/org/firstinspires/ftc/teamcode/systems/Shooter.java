@@ -60,12 +60,9 @@ public class Shooter extends SystemBase {
         public static double targetXFar = -3900;
         public static double targetYFar = 200;
         public static double targetZFar = 800;
-
         public static double targetXClose = 0;
         public static double targetYClose = -5000;
         public static double targetZClose = 0;
-
-        public static double underShoot = 0.99;
     }
 
     @Override

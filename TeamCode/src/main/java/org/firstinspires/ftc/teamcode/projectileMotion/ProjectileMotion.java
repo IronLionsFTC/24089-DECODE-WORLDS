@@ -10,19 +10,12 @@ import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 
 public class ProjectileMotion {
 
-    @Config
-    public static class PowerScaling {
-
-        public static double flatBase = 4000;
-        public static double flatScale = 1;
-
-    }
-
     public static double G = 9800;
     public double launchVelocity;
     public double launchAngle;
     public double yawDirection;
     public boolean possible;
+    public double timeOfFlight;
 
     private static final Vector3 target = Vector3.zero();
 
@@ -106,9 +99,9 @@ public class ProjectileMotion {
     }
 
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
-        currentVelocity *= Shooter.ShooterPID.underShoot;
         double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
         double sinHeading = Math.sin(SwerveDrive.PinpointCache.position.heading);
+
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x()
                         + Zeroing.ProjMotConstants.shooterOffset.getX() * cosHeading
@@ -120,10 +113,12 @@ public class ProjectileMotion {
         );
 
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
-        double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY()); // horizontal distance
-        double y = relativeTarget.getZ();                                      // vertical distance (+ = above shooter)
+        double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY());
+        double y = relativeTarget.getZ();
 
-        Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY());
+        // Calculate the relative position of the target, on the ground, looking ahead in time to counteract turret lag.
+        Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY())
+                .sub(SwerveDrive.PinpointCache.velocity.multiply(ShootOnTheMoveConstants.turretLookahead));
 
         // ── Turret direction with heading feedforward ────────────────────────────
         double direction = 180 + groundPlane.polarDirection()
