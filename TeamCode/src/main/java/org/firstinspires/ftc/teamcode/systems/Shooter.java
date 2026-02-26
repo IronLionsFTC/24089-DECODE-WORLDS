@@ -11,13 +11,11 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
-import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
-import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 import org.firstinspires.ftc.teamcode.projectileMotion.Regressions;
 
@@ -50,9 +48,6 @@ public class Shooter extends SystemBase {
         this.target = new Vector3(0, 2000, 800);
     }
 
-    public static final double a = 0.00137115;
-    public static final double b = 1.66917;
-
     // PID constants
     @Config
     public static class ShooterPID {
@@ -62,18 +57,15 @@ public class Shooter extends SystemBase {
         public static double kS = 0.07;
         public static double kV = 0.00017;
 
-        public static double targetXFar = -2200;
-        public static double targetYFar = 2750;
-        public static double targetZFar = 1100;
+        public static double targetXFar = -3900;
+        public static double targetYFar = 200;
+        public static double targetZFar = 800;
 
         public static double targetXClose = 0;
         public static double targetYClose = -5000;
         public static double targetZClose = 0;
 
-        public static double velocityOverride = 3000;
-
-        public static double angleOverride = 0;
-        public static double underShoot = 0.95;
+        public static double underShoot = 0.99;
     }
 
     @Override
@@ -131,8 +123,10 @@ public class Shooter extends SystemBase {
 
         this.targetVelocity = solution.launchVelocity;
         double targetRPM = Regressions.velocityToRpm(targetVelocity);
+
         double response = this.pid.calculate(current, targetRPM);
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
+
         feedforward *= TaskOpMode.Runtime.voltageCompensation;
         if (targetRPM != 0) response += feedforward;
 
@@ -142,11 +136,12 @@ public class Shooter extends SystemBase {
             else this.motors.setPower(response);
         }
 
-        if (ShooterPID.angleOverride > 40) solution.launchAngle = ShooterPID.angleOverride;
-
         double hoodAngle = Regressions.launchAngleToHoodAngle(solution.launchAngle);
+
         telemetry.addData("launchAngle", solution.launchAngle);
         telemetry.addData("hoodAngle", hoodAngle);
+        telemetry.addData("currentLaunchVelocity", currentLaunchSpeed);
+        telemetry.addData("targetVelocity", targetVelocity);
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
         if (servoPosition < 0) servoPosition = 0;
         if (servoPosition > 0.37) servoPosition = 0.37;

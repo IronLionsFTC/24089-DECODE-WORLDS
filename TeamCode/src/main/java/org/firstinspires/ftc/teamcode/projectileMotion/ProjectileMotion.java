@@ -10,6 +10,14 @@ import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 
 public class ProjectileMotion {
 
+    @Config
+    public static class PowerScaling {
+
+        public static double flatBase = 4000;
+        public static double flatScale = 1;
+
+    }
+
     public static double G = 9800;
     public double launchVelocity;
     public double launchAngle;
@@ -62,15 +70,18 @@ public class ProjectileMotion {
         double dscrm = Math.pow(x, 2) - 4 * chunk * (chunk + y);
 
         if (dscrm < 0) {
-            return new ProjectileMotion(4000, 45, direction, false);
+            return new ProjectileMotion(getTargetPower(x) / Shooter.ShooterPID.underShoot, 45, direction, false);
         }
 
         double plus = (x + Math.sqrt(dscrm)) / (chunk * 2);
         double minus = (x - Math.sqrt(dscrm)) / (chunk * 2);
 
-        double angle = Math.min(Math.toDegrees(Math.atan(plus)), Math.toDegrees(Math.atan(minus)));
+        double angleA = Math.toDegrees(Math.atan(plus));
+        double angleB = Math.toDegrees(Math.atan(minus));
 
-        return new ProjectileMotion(Shooter.ShooterPID.velocityOverride / Shooter.ShooterPID.underShoot, angle, direction, true);
+        double angle = Math.min(angleA, angleB);
+
+        return new ProjectileMotion(getTargetPower(x) / Shooter.ShooterPID.underShoot, angle, direction, true);
     }
 
     public static boolean far() {
@@ -88,6 +99,10 @@ public class ProjectileMotion {
             target.setY(Shooter.ShooterPID.targetYClose);
             target.setZ(Shooter.ShooterPID.targetZClose);
         } return target;
+    }
+
+    public static double getTargetPower(double distance) {
+        return distance * PowerScaling.flatScale + PowerScaling.flatBase;
     }
 
 }

@@ -24,7 +24,7 @@ public class Shoot extends Task {
 
     @Override
     public boolean finished() {
-        return (System.nanoTime() - initTime) > 1e9;
+        return (System.nanoTime() - initTime) > 5e8;
     }
 
     @Override

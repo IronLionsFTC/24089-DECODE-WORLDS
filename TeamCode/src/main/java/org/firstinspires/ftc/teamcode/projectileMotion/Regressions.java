@@ -23,6 +23,6 @@ public class Regressions {
     }
 
     public static double launchAngleToHoodAngle(double launchAngle) {
-        return (launchAngle - Angle.c) / Angle.a;
+        return launchAngle * 1.2;//return (launchAngle - Angle.c) / Angle.a;
     }
 }

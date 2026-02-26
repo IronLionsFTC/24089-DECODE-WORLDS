@@ -17,7 +17,9 @@ public class Intake extends SystemBase {
         IntakingEmpty,
         IntakeOnly,
         Off,
-        Shooting
+        Shooting,
+        TopOnly,
+        Reverse
     }
 
     private LionMotor intakeMotor;
@@ -28,7 +30,7 @@ public class Intake extends SystemBase {
     @Config
     public static class IntakeConstants {
         public static double currentThreshold = 7;
-        public static double intakeThreshold = 5;
+        public static double intakeThreshold = 3;
     }
 
     public Intake() {
@@ -87,6 +89,18 @@ public class Intake extends SystemBase {
                 current = transferMotor.getAmps();
                 if (current > IntakeConstants.currentThreshold) this.state = State.IntakeOnly;
 
+                break;
+
+            case TopOnly:
+                this.intakeMotor.setPower(0);
+                this.transferMotor.setPower(1);
+                this.blocker.setPosition(ServoConstants.Positions.blockerOpen);
+                break;
+
+            case Reverse:
+                this.intakeMotor.setPower(0.5);
+                this.transferMotor.setPower(-1);
+                this.blocker.setPosition(ServoConstants.Positions.blockerOpen);
                 break;
         }
     }
