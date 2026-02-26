@@ -134,7 +134,7 @@ public class ProjectileMotion {
 
         if (Double.isNaN(velocity)) velocity = 7000.0;
         if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
-        if (Double.isNaN(angle)) angle = Math.toRadians(45);
+        if (Double.isNaN(angle)) angle = Math.toRadians(55);
 
         // Given that x = vt cos (a), t = x / (v cos (a))
         double timeOfFlight = x / (currentVelocity * Math.cos(angle));

@@ -128,7 +128,7 @@ public class SwerveDrive extends SystemBase {
     }
 
     @Override
-    public void update(Telemetry telemetry) {
+    public void update(Telemetry telemetry, boolean useTelemetry) {
 
         this.headingController.setConstants(
             HeadingPID.P,
@@ -188,9 +188,11 @@ public class SwerveDrive extends SystemBase {
         rightRear.set(c);
         leftRear.set(d);
 
-        telemetry.addData("X POSITION", SwerveDrive.PinpointCache.position.position.x());
-        telemetry.addData("Y POSITION", SwerveDrive.PinpointCache.position.position.y());
-        telemetry.addData("HEADING", PinpointCache.position.heading);
+        if (useTelemetry) {
+            telemetry.addData("X POSITION", SwerveDrive.PinpointCache.position.position.x());
+            telemetry.addData("Y POSITION", SwerveDrive.PinpointCache.position.position.y());
+            telemetry.addData("HEADING", PinpointCache.position.heading);
+        }
     }
 
     /**

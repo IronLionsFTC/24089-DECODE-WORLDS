@@ -53,12 +53,12 @@ public class Follower extends SystemBase {
     }
 
     @Override
-    public void update(Telemetry telemetry) {
+    public void update(Telemetry telemetry, boolean useTelemetry) {
         if (path == null) {
             this.targetSpeed = 0;
             this.targetVelocity.update(0, 0);
             this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);
-            this.drivetrain.update(telemetry);
+            this.drivetrain.update(telemetry, useTelemetry);
             return;
         }
 
@@ -97,7 +97,7 @@ public class Follower extends SystemBase {
             this.drivetrain.setHoldpoint(closest);
         }
 
-        this.drivetrain.update(telemetry);
+        this.drivetrain.update(telemetry, useTelemetry);
     }
 
     public double getDistance() {

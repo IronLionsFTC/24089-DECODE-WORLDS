@@ -18,5 +18,5 @@ public abstract class SystemBase {
     /**
      * Runs once per cycle, after task execution. Should be used to set motor powers and servo positions based on state
      */
-    public abstract void update(Telemetry telemetry);
+    public abstract void update(Telemetry telemetry, boolean useTelemetry);
 }

@@ -54,7 +54,7 @@ public class Intake extends SystemBase {
     }
 
     @Override
-    public void update(Telemetry telemetry) {
+    public void update(Telemetry telemetry, boolean useTelemetry) {
 
         double current;
 

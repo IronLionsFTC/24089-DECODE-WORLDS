@@ -104,7 +104,7 @@ public class Shooter extends SystemBase {
     }
 
     @Override
-    public void update(Telemetry telemetry) {
+    public void update(Telemetry telemetry, boolean useTelemetry) {
         this.pid.setConstants(
                 ShooterPID.P,
                 ShooterPID.I,
@@ -113,8 +113,6 @@ public class Shooter extends SystemBase {
 
         double current = this.motors.getVelocity(28.0);
         double currentLaunchSpeed = Regressions.rpmToVelocity(current);
-
-        telemetry.addData("Flywheel RPM", current);
 
         ProjectileMotion solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed);
 
@@ -135,10 +133,6 @@ public class Shooter extends SystemBase {
 
         double hoodAngle = Regressions.launchAngleToHoodAngle(solution.launchAngle);
 
-        telemetry.addData("launchAngle", solution.launchAngle);
-        telemetry.addData("hoodAngle", hoodAngle);
-        telemetry.addData("currentLaunchVelocity", currentLaunchSpeed);
-        telemetry.addData("targetVelocity", targetVelocity);
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
         if (servoPosition < 0) servoPosition = 0;
         if (servoPosition > 0.37) servoPosition = 0.37;
@@ -151,6 +145,14 @@ public class Shooter extends SystemBase {
         }
         this.leftTurretServo.setPower(response);
         this.rightTurretServo.setPower(response);
+
+        if (useTelemetry) {
+            telemetry.addData("launchAngle", solution.launchAngle);
+            telemetry.addData("hoodAngle", hoodAngle);
+            telemetry.addData("currentLaunchVelocity", currentLaunchSpeed);
+            telemetry.addData("targetVelocity", targetVelocity);
+            telemetry.addData("Flywheel RPM", current);
+        }
     }
 
     public double calculateHoodAngleForDegrees(double degrees) {

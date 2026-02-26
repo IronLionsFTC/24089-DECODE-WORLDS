@@ -75,7 +75,7 @@ public class VelocityFollower extends SystemBase {
     }
 
     @Override
-    public void update(Telemetry telemetry) {
+    public void update(Telemetry telemetry, boolean useTelemetry) {
 
         double headingRadians;
         double c;
@@ -143,14 +143,16 @@ public class VelocityFollower extends SystemBase {
         }
 
         swerveDrive.setTargetVector(targetRobotCentricVelocity);
-        swerveDrive.update(telemetry);
+        swerveDrive.update(telemetry, useTelemetry);
 
-        telemetry.addData("XV", SwerveDrive.PinpointCache.velocity.x());
-        telemetry.addData("YV", SwerveDrive.PinpointCache.velocity.y());
-        telemetry.addData("FX", targetFieldCentricVelocity.x());
-        telemetry.addData("FY", targetFieldCentricVelocity.y());
-        telemetry.addData("RX", targetRobotCentricVelocity.x());
-        telemetry.addData("RY", targetRobotCentricVelocity.y());
+        if (useTelemetry) {
+            telemetry.addData("XV", SwerveDrive.PinpointCache.velocity.x());
+            telemetry.addData("YV", SwerveDrive.PinpointCache.velocity.y());
+            telemetry.addData("FX", targetFieldCentricVelocity.x());
+            telemetry.addData("FY", targetFieldCentricVelocity.y());
+            telemetry.addData("RX", targetRobotCentricVelocity.x());
+            telemetry.addData("RY", targetRobotCentricVelocity.y());
+        }
     }
 
     public void setTargetFieldCentricVelocity(Vector2 targetFieldCentricVelocity) {
