@@ -69,6 +69,7 @@ public class Shooter extends SystemBase {
 
         public static double kalmanQ = 140.0;
         public static double kalmanR = 42.0;
+        public static boolean useConvergence = false;
     }
 
     @Override
@@ -133,7 +134,11 @@ public class Shooter extends SystemBase {
         double current = this.rpmFilter.update(this.motors.getVelocity(28.0));
         double currentLaunchSpeed = Regressions.rpmToVelocity(current);
 
-        ProjectileMotion solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed);
+        ProjectileMotion solution;
+        if (ShooterPID.useConvergence)
+            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed);
+        else
+            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed);
 
         this.targetVelocity = solution.launchVelocity;
         double targetRPM = Regressions.velocityToRpm(targetVelocity);
