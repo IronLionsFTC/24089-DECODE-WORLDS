@@ -56,6 +56,55 @@ public class ProjectileMotion {
         return Math.sqrt(vSquared);
     }
 
+    /**
+     * Solve for the angle required to intercept a target at a measured velocity.
+     * @param measuredVelocity mm/2
+     * @param tx Horizontal distance to target, mm
+     * @param ty Height of target, mm
+     * @return Angle, radians above +x axis
+     */
+    public static double solveAngle(double measuredVelocity, double tx, double ty) {
+        if (measuredVelocity <= 2000) return Double.NaN;
+        double chunk = (G * tx * tx) / (2 * measuredVelocity * measuredVelocity);
+        double dscrm = tx * tx - 4 * chunk * (chunk + ty);
+        if (dscrm < 0) return Double.NaN;
+        double plus = Math.atan((tx + Math.sqrt(dscrm)) / (2 * chunk));
+        double minu = Math.atan((tx - Math.sqrt(dscrm)) / (2 * chunk));
+        return Math.min(plus, minu);
+    }
+
+    /**
+     * Find an appropriate launch velocity to use
+     * @param tx Horizontal distance to target, mm
+     * @param ty Height of target, mm
+     * @return A suitable launch velocity that works within the bounds of the hood angle
+     */
+    public static double findSuitableVelocity(double tx, double ty) {
+        double solution = 10000;
+        double solutionWeight = 10000;
+
+        for (double angle = 35; angle < 57.0; angle += 1.0) {
+            double velocity = solveVelocity(Math.toRadians(angle), tx, ty);
+            if (Double.isNaN(velocity)) continue;
+            if (velocity > 9000) continue;
+
+            double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
+            double b = Math.toDegrees(solveAngle(velocity * 0.95, tx, ty));
+            double c = Math.toDegrees(solveAngle(velocity * 0.92, tx, ty));
+
+            if (a >= 34 && b >= 34 && c >= 34 && a <= 57 && b <= 57 && c <= 57) {
+                double weight = velocity / 9000.0 + Math.abs(c - a) / 20.0;
+                if (weight < solutionWeight) {
+                    solution = velocity;
+                    solutionWeight = weight;
+                }
+            }
+        }
+
+        if (solution == 10000) return Double.NaN;
+        return solution;
+    }
+
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
         currentVelocity *= Shooter.ShooterPID.underShoot;
         double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
