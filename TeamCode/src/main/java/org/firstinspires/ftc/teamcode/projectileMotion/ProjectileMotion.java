@@ -31,6 +31,7 @@ public class ProjectileMotion {
     public static class ShootOnTheMoveConstants {
         public static double turretLookahead = 0.1;
         public static int convergence = 3;
+        public static double timeOverestimate = 1.1;
     }
 
     /**
@@ -132,7 +133,8 @@ public class ProjectileMotion {
         double velocity = findSuitableVelocity(x, y);
 
         if (Double.isNaN(velocity)) velocity = 7000.0;
-        if (Double.isNaN(angle)) return new ProjectileMotion(velocity, 45, direction, 1, false);
+        if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
+        if (Double.isNaN(angle)) angle = Math.toRadians(45);
 
         // Given that x = vt cos (a), t = x / (v cos (a))
         double timeOfFlight = x / (currentVelocity * Math.cos(angle));
@@ -150,7 +152,8 @@ public class ProjectileMotion {
         Vector3 expectedMotion;
 
         for (int convergence = 0; convergence < ShootOnTheMoveConstants.convergence; convergence++) {
-            expectedMotion = new Vector3(SwerveDrive.PinpointCache.velocity.x(), SwerveDrive.PinpointCache.velocity.y(), 0.0).scale(solution.timeOfFlight);
+            expectedMotion = new Vector3(SwerveDrive.PinpointCache.velocity.x(), SwerveDrive.PinpointCache.velocity.y(), 0.0)
+                    .scale(solution.timeOfFlight * ShootOnTheMoveConstants.timeOverestimate);
             Vector3 trueTarget = target.subtract(expectedMotion);
             solution = calculate(trueTarget, currentVelocity);
         }
