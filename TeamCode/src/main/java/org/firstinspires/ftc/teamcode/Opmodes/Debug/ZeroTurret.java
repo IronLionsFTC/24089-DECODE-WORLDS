@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
+import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 
@@ -17,7 +18,6 @@ public class ZeroTurret extends OpMode {
 
     private AbsoluteEncoder absolute;
     private Encoder quadrature;
-    private PID pid;
 
     private LionCRServo leftTurretServo;
     private LionCRServo rightTurretServo;
@@ -32,13 +32,6 @@ public class ZeroTurret extends OpMode {
 
     @Override
     public void init() {
-
-        this.pid = new PID(
-                TurretPID.P,
-                TurretPID.I,
-                TurretPID.D
-        );
-
         this.absolute = new AbsoluteEncoder(hardwareMap, "turretAbsolute");
         LionMotor rightShooterMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightShooterMotor);
         rightShooterMotor.setReversed(MotorConstants.Reversed.rightShooterMotor);
@@ -46,6 +39,8 @@ public class ZeroTurret extends OpMode {
         this.quadrature = new Encoder(rightShooterMotor);
 
         absolute.read();
+
+        ConstantsStorage.save("turretZeroVoltage", absolute.position());
         double absolutePosition = ((absolute.position() - ServoConstants.Zero.turret) / 3.3) * 360;
 
         while (absolutePosition < -180.0) absolutePosition += 360;
@@ -61,13 +56,6 @@ public class ZeroTurret extends OpMode {
 
     @Override
     public void loop() {
-
-        this.pid.setConstants(
-                TurretPID.P,
-                TurretPID.I,
-                TurretPID.D
-        );
-
         absolute.read();
         telemetry.addData("Voltage", absolute.position());
 
@@ -84,10 +72,7 @@ public class ZeroTurret extends OpMode {
 
         telemetry.update();
 
-        double response = pid.calculate(quadraturePosition, 0);
-        if (Math.abs(response) > 0.05) response += TurretPID.kS * Math.signum(response);
-
-        this.leftTurretServo.setPower(-response);
-        this.rightTurretServo.setPower(response);
+        this.leftTurretServo.setPower(0);
+        this.rightTurretServo.setPower(0);
     }
 }

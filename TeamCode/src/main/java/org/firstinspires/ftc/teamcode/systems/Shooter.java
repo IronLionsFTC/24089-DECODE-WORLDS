@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.KalmanFilter;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
+import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
@@ -108,6 +109,8 @@ public class Shooter extends SystemBase {
         this.rpmFilter = new KalmanFilter(ShooterPID.kalmanQ, ShooterPID.kalmanR, 0.0);
         this.motors.setReversed(MotorConstants.Reversed.leftShooterMotor, MotorConstants.Reversed.rightShooterMotor);
         this.motors.setZPB(MotorConstants.ZPB.shooterMotors);
+
+        ServoConstants.Zero.turret = ConstantsStorage.get("turretZeroVoltage", ServoConstants.Zero.turret);
     }
 
     @Override
