@@ -35,7 +35,25 @@ public class ProjectileMotion {
 
     @Config
     public static class ShootOnTheMoveConstants {
-        public static double headingTimeStep = 0.2;
+        public static double turretLookahead = 0.1;
+        public static int convergence = 3;
+    }
+
+    /**
+     * Solve for the velocity required to intercept a target at a given launch_angle
+     * @param desiredAngleRadians Launch angle above +x axis, radians.
+     * @param tx Horizontal distance to target, mm
+     * @param ty Height of target, mm
+     * @return Velocity, mm/s
+     */
+    public static double solveVelocity(double desiredAngleRadians, double tx, double ty) {
+        double cos_a = Math.cos(desiredAngleRadians);
+        if (cos_a < 1e-9) return Double.NaN;
+        double k = tx * Math.tan(desiredAngleRadians) - ty;
+        if (k < 1e-9) return Double.NaN;
+        double vSquared = (G * tx * tx) / (2 * cos_a * cos_a * k);
+        if (!Double.isFinite(vSquared) || vSquared < 0.0) return Double.NaN;
+        return Math.sqrt(vSquared);
     }
 
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
@@ -55,6 +73,7 @@ public class ProjectileMotion {
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
         double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY()); // horizontal distance
         double y = relativeTarget.getZ();                                      // vertical distance (+ = above shooter)
+
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY());
 
         // ── Turret direction with heading feedforward ────────────────────────────
