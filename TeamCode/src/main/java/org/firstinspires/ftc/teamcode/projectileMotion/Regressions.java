@@ -10,8 +10,8 @@ public class Regressions {
 
     @Config
     public static class Angle {
-        public static double a = 1.16209;
-        public static double c = -5.64129;
+        public static double a = 1;
+        public static double c = 0;
     }
 
     public static double rpmToVelocity(double rpm) {

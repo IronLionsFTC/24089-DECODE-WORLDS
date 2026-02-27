@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.Opmodes.Debug;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
+@TeleOp
 public class ZeroSwerve extends LinearOpMode {
 
     public void runOpMode() {

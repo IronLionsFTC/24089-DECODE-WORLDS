@@ -22,6 +22,9 @@ public class PID {
      * @return The power bound by [min, max], which are -1 and 1 by default.
      */
     public double calculate(double current, double target) {
+
+        if (Double.isNaN(current) || Double.isNaN(target)) return 0;
+
         long currentTime = System.nanoTime();
 
         // Convert from NS -> S

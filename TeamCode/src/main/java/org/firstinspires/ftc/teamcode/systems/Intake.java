@@ -29,8 +29,8 @@ public class Intake extends SystemBase {
 
     @Config
     public static class IntakeConstants {
-        public static double currentThreshold = 7;
-        public static double intakeThreshold = 3;
+        public static double currentThreshold = 6;
+        public static double intakeThreshold = 5;
     }
 
     public Intake() {
@@ -66,8 +66,8 @@ public class Intake extends SystemBase {
                 break;
 
             case Shooting:
-                this.intakeMotor.setPower(1);
-                this.transferMotor.setPower(1);
+                this.intakeMotor.setPower(Shooter.ShooterPID.intakePower);
+                this.transferMotor.setPower(Shooter.ShooterPID.transferPower);
                 this.blocker.setPosition(ServoConstants.Positions.blockerOpen);
                 break;
 

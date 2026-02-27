@@ -30,8 +30,8 @@ public class ProjectileMotion {
     @Config
     public static class ShootOnTheMoveConstants {
         public static double turretLookahead = 0.1;
-        public static int convergence = 3;
-        public static double timeOverestimate = 1.1;
+        public static int convergence = 15;
+        public static double timeOverestimate = 1.3;
     }
 
     /**
@@ -84,8 +84,8 @@ public class ProjectileMotion {
             if (velocity > 9000) continue;
 
             double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
-            double b = Math.toDegrees(solveAngle(velocity * 0.95, tx, ty));
-            double c = Math.toDegrees(solveAngle(velocity * 0.92, tx, ty));
+            double b = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop, tx, ty));
+            double c = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop * 1.5, tx, ty));
 
             if (a >= 34 && b >= 34 && c >= 34 && a <= 57 && b <= 57 && c <= 57) {
                 double weight = velocity / 9000.0 + Math.abs(c - a) / 20.0;
@@ -104,6 +104,7 @@ public class ProjectileMotion {
         double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
         double sinHeading = Math.sin(SwerveDrive.PinpointCache.position.heading);
 
+        /*
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x()
                         + Zeroing.ProjMotConstants.shooterOffset.getX() * cosHeading
@@ -111,6 +112,11 @@ public class ProjectileMotion {
                 SwerveDrive.PinpointCache.position.position.y()
                         + Zeroing.ProjMotConstants.shooterOffset.getX() * sinHeading
                         + Zeroing.ProjMotConstants.shooterOffset.getY() * cosHeading,
+                Zeroing.ProjMotConstants.shooterOffset.getZ()
+        );*/
+        Vector3 shooterPositionInField = new Vector3(
+                SwerveDrive.PinpointCache.position.position.x(),
+                SwerveDrive.PinpointCache.position.position.y(),
                 Zeroing.ProjMotConstants.shooterOffset.getZ()
         );
 
@@ -157,6 +163,9 @@ public class ProjectileMotion {
             Vector3 trueTarget = target.subtract(expectedMotion);
             solution = calculate(trueTarget, currentVelocity);
         }
+
+        double headingOffset = SwerveDrive.PinpointCache.velocity.magnitude() / 500;
+        solution.launchAngle += headingOffset;
 
         return solution;
     }

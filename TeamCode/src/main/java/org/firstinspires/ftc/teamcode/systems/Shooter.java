@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 import org.firstinspires.ftc.teamcode.projectileMotion.Regressions;
 
+import java.util.ArrayList;
+
 public class Shooter extends SystemBase {
 
     public enum State {
@@ -39,16 +41,17 @@ public class Shooter extends SystemBase {
 
     // Control
     private PID pid;
-    private KalmanFilter rpmFilter;
     private PID turretpid;
     public final Vector3 target;
     public double targetVelocity;
     public double targetHood;
+    public ArrayList<Double> rpmBuffer;
 
     public Shooter() {
         this.targetVelocity = 0;
         this.targetHood = 0;
         this.target = new Vector3(0, 2000, 800);
+        this.rpmBuffer = new ArrayList<>();
     }
 
     // PID constants
@@ -60,20 +63,26 @@ public class Shooter extends SystemBase {
         public static double kS = 0.07;
         public static double kV = 0.00017;
 
-        public static double targetXFar = -3900;
-        public static double targetYFar = 200;
-        public static double targetZFar = 800;
-        public static double targetXClose = 0;
-        public static double targetYClose = -5000;
-        public static double targetZClose = 0;
+        public static double targetXFar = -3600;
+        public static double targetYFar = 0;
+        public static double targetZFar = 1100;
+        public static double targetXClose = -3300;
+        public static double targetYClose = 0;
+        public static double targetZClose = 1200;
 
-        public static double kalmanQ = 140.0;
-        public static double kalmanR = 42.0;
-        public static boolean useConvergence = false;
+        public static boolean useConvergence = true;
+
+        public static double overPower = 1.04;
+        public static double transferPower = 0.8;
+        public static double intakePower = 0.8;
+
+        public static double expectedDrop = 500;
     }
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
+
+        ServoConstants.Zero.turret = ConstantsStorage.get("turretZeroVoltage", ServoConstants.Zero.turret);
         this.motors = LionMotor.masterSlaves(hardwareMap, MotorConstants.Names.leftShooterMotor, MotorConstants.Names.rightShooterMotor);
         this.hoodServo = LionServo.single(hardwareMap, ServoConstants.Names.hoodServo, ServoConstants.Zero.hood);
 
@@ -107,11 +116,8 @@ public class Shooter extends SystemBase {
                 ZeroTurret.TurretPID.D
         );
 
-        this.rpmFilter = new KalmanFilter(ShooterPID.kalmanQ, ShooterPID.kalmanR, 0.0);
         this.motors.setReversed(MotorConstants.Reversed.leftShooterMotor, MotorConstants.Reversed.rightShooterMotor);
         this.motors.setZPB(MotorConstants.ZPB.shooterMotors);
-
-        ServoConstants.Zero.turret = ConstantsStorage.get("turretZeroVoltage", ServoConstants.Zero.turret);
     }
 
     @Override
@@ -128,19 +134,17 @@ public class Shooter extends SystemBase {
                 ZeroTurret.TurretPID.D
         );
 
-        this.rpmFilter.setQ(ShooterPID.kalmanQ);
-        this.rpmFilter.setR(ShooterPID.kalmanR);
-
-        double current = this.rpmFilter.update(this.motors.getVelocity(28.0));
+        double current = this.motors.getVelocity(28.0);
         double currentLaunchSpeed = Regressions.rpmToVelocity(current);
 
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
-            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed);
+            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
         else
-            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed);
+            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
 
-        this.targetVelocity = solution.launchVelocity;
+        this.targetVelocity = solution.launchVelocity * ShooterPID.overPower;
+        if (this.targetVelocity < 4000 || Double.isNaN(targetVelocity)) targetVelocity = 4000;
         double targetRPM = Regressions.velocityToRpm(targetVelocity);
 
         double response = this.pid.calculate(current, targetRPM);
@@ -148,6 +152,7 @@ public class Shooter extends SystemBase {
 
         feedforward *= TaskOpMode.Runtime.voltageCompensation;
         if (targetRPM != 0) response += feedforward;
+        if (response < 0) response = 0;
 
         if (this.state == State.Cruising) this.motors.setPower(response);
         else {
