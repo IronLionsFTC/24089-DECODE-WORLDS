@@ -31,7 +31,8 @@ public class ProjectileMotion {
     public static class ShootOnTheMoveConstants {
         public static double turretLookahead = 0.1;
         public static int convergence = 15;
-        public static double timeOverestimate = 1.3;
+        public static double timeOverestimate = 1.1;
+        public static double lastDistance = 1000;
     }
 
     /**
@@ -101,19 +102,7 @@ public class ProjectileMotion {
     }
 
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
-        double cosHeading = Math.cos(SwerveDrive.PinpointCache.position.heading);
-        double sinHeading = Math.sin(SwerveDrive.PinpointCache.position.heading);
 
-        /*
-        Vector3 shooterPositionInField = new Vector3(
-                SwerveDrive.PinpointCache.position.position.x()
-                        + Zeroing.ProjMotConstants.shooterOffset.getX() * cosHeading
-                        - Zeroing.ProjMotConstants.shooterOffset.getY() * sinHeading,
-                SwerveDrive.PinpointCache.position.position.y()
-                        + Zeroing.ProjMotConstants.shooterOffset.getX() * sinHeading
-                        + Zeroing.ProjMotConstants.shooterOffset.getY() * cosHeading,
-                Zeroing.ProjMotConstants.shooterOffset.getZ()
-        );*/
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x(),
                 SwerveDrive.PinpointCache.position.position.y(),
@@ -122,6 +111,7 @@ public class ProjectileMotion {
 
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
         double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY());
+        ShootOnTheMoveConstants.lastDistance = x;
         double y = relativeTarget.getZ();
 
         // Calculate the relative position of the target, on the ground, looking ahead in time to counteract turret lag.

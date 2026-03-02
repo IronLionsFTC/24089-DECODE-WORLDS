@@ -10,7 +10,6 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
-import org.firstinspires.ftc.teamcode.lioncore.math.KalmanFilter;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
@@ -63,8 +62,8 @@ public class Shooter extends SystemBase {
         public static double kS = 0.07;
         public static double kV = 0.00017;
 
-        public static double targetXFar = -3600;
-        public static double targetYFar = 0;
+        public static double targetXFar = 1300;
+        public static double targetYFar = 3200;
         public static double targetZFar = 1100;
         public static double targetXClose = -3300;
         public static double targetYClose = 0;
@@ -73,10 +72,15 @@ public class Shooter extends SystemBase {
         public static boolean useConvergence = true;
 
         public static double overPower = 1.04;
-        public static double transferPower = 0.8;
-        public static double intakePower = 0.8;
+        public static double transferPower = 0.72;
+        public static double intakePower = 0.72;
 
         public static double expectedDrop = 500;
+
+        public static double hoodAngle = 0;
+        public static double launchVelocity = 0;
+
+        public static int averageWindow = 5;
     }
 
     @Override
@@ -134,8 +138,20 @@ public class Shooter extends SystemBase {
                 ZeroTurret.TurretPID.D
         );
 
-        double current = this.motors.getVelocity(28.0);
-        double currentLaunchSpeed = Regressions.rpmToVelocity(current);
+        double sum = this.motors.getVelocity(28.0);
+
+        /*
+        this.rpmBuffer.add(rawRPM);
+        if (this.rpmBuffer.size() > ShooterPID.averageWindow) {
+            this.rpmBuffer.remove(0);
+        }
+
+        double sum = 0;
+        for (double value : this.rpmBuffer) sum += value;
+        sum /= this.rpmBuffer.size();
+         */
+
+        double currentLaunchSpeed = Regressions.rpmToVelocity(sum);
 
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
@@ -144,10 +160,12 @@ public class Shooter extends SystemBase {
             solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
 
         this.targetVelocity = solution.launchVelocity * ShooterPID.overPower;
+        if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
+
         if (this.targetVelocity < 4000 || Double.isNaN(targetVelocity)) targetVelocity = 4000;
         double targetRPM = Regressions.velocityToRpm(targetVelocity);
 
-        double response = this.pid.calculate(current, targetRPM);
+        double response = this.pid.calculate(sum, targetRPM);
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
 
         feedforward *= TaskOpMode.Runtime.voltageCompensation;
@@ -161,6 +179,7 @@ public class Shooter extends SystemBase {
         }
 
         double hoodAngle = Regressions.launchAngleToHoodAngle(solution.launchAngle);
+        if (ShooterPID.hoodAngle != 0) hoodAngle = Regressions.launchAngleToHoodAngle(ShooterPID.hoodAngle);
 
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
         if (servoPosition < 0) servoPosition = 0;
@@ -180,11 +199,16 @@ public class Shooter extends SystemBase {
             telemetry.addData("hoodAngle", hoodAngle);
             telemetry.addData("currentLaunchVelocity", currentLaunchSpeed);
             telemetry.addData("targetVelocity", targetVelocity);
-            telemetry.addData("Flywheel RPM", current);
+            telemetry.addData("Flywheel RPM", sum);
         }
     }
 
     public double calculateHoodAngleForDegrees(double degrees) {
         return ((90 - degrees) - ServoConstants.Ratios.hoodZeroAngle) / (ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle);
+    }
+
+    @Override
+    public boolean needsPriority() {
+        return this.state == State.Shooting;
     }
 }

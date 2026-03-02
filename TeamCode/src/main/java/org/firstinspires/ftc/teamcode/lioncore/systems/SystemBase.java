@@ -4,6 +4,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public abstract class SystemBase {
+
+    public boolean needsPriority() { return false; };
+
     /**
      * Idiomatic place to load hardware from the hardware map, run post initialisation
      * @param hardwareMap The hardware map post initialisation.

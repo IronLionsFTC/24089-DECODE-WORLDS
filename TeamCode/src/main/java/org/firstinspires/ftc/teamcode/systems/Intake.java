@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
+import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 
 public class Intake extends SystemBase {
 
@@ -66,8 +67,9 @@ public class Intake extends SystemBase {
                 break;
 
             case Shooting:
-                this.intakeMotor.setPower(Shooter.ShooterPID.intakePower);
-                this.transferMotor.setPower(Shooter.ShooterPID.transferPower);
+                double power = 1 - ProjectileMotion.ShootOnTheMoveConstants.lastDistance / 12000;
+                this.intakeMotor.setPower(power);
+                this.transferMotor.setPower(power);
                 this.blocker.setPosition(ServoConstants.Positions.blockerOpen);
                 break;
 

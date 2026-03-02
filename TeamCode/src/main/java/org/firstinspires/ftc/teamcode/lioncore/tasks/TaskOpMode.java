@@ -24,6 +24,9 @@ public abstract class TaskOpMode extends OpMode {
 
     private int telemetryCounter = 0;
 
+    private int priority = 0;
+    private boolean acceptPriority = false;
+
     /**
      * Create all systems and tasks and return them. Do not initialise the systems.
      * @return Return a "Jobs" item containing task and systems
@@ -100,8 +103,21 @@ public abstract class TaskOpMode extends OpMode {
             if (this.endWhenTasksFinished) this.requestOpModeStop();
         }
 
+        boolean requestedPriority = false;
         for (int idx = 0; idx < this.systems.size(); idx++) {
-            this.systems.get(idx).update(this.telemetry, this.telemetryCounter == 20);
+            if (this.systems.get(idx).needsPriority()) {
+                this.priority = idx;
+                requestedPriority = true;
+                break;
+            }
+        }
+
+        if (!this.acceptPriority) {
+            for (int idx = 0; idx < this.systems.size(); idx++) {
+                this.systems.get(idx).update(this.telemetry, this.telemetryCounter == 20);
+            }
+        } else {
+            this.systems.get(priority).update(this.telemetry, false);
         }
 
         this.mainloop();
@@ -118,5 +134,6 @@ public abstract class TaskOpMode extends OpMode {
         }
 
         this.lastTime = time;
+        this.acceptPriority = requestedPriority;
     }
 }
