@@ -101,6 +101,28 @@ public class ProjectileMotion {
         return solution;
     }
 
+    public static double alternativeFindSuitableVelocity(double tx, double ty) {
+        double solution = 10000;
+        double solutionWeight = 10000;
+
+        for (double velocity = 2500; velocity <= 10000; velocity += 100) {
+            double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
+            double b = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop, tx, ty));
+            double c = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop * 2, tx, ty));
+
+            if (a >= 34 && b >= 34 && c >= 34 && a <= 57 && b <= 57 && c <= 57) {
+                double weight = velocity / 9000.0 + Math.abs(c - a) / 20.0;
+                if (weight < solutionWeight) {
+                    solution = velocity;
+                    solutionWeight = weight;
+                }
+            }
+        }
+
+        if (solution == 10000) return Double.NaN;
+        return solution;
+    }
+
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
 
         Vector3 shooterPositionInField = new Vector3(
@@ -126,7 +148,7 @@ public class ProjectileMotion {
 
         // Projectile math
         double angle = solveAngle(currentVelocity, x, y);
-        double velocity = findSuitableVelocity(x, y);
+        double velocity = alternativeFindSuitableVelocity(x, y);
 
         if (Double.isNaN(velocity)) velocity = 7000.0;
         if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);

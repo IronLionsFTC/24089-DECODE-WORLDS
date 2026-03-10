@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.Encoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
@@ -27,11 +28,12 @@ public class Intake extends SystemBase {
     private LionMotor transferMotor;
     private LionServo blocker;
     private State state;
+    private boolean hardwareLoaded = false;
 
     @Config
     public static class IntakeConstants {
-        public static double currentThreshold = 6;
-        public static double intakeThreshold = 5;
+        public static double currentThreshold = 7;
+        public static double intakeThreshold = 7;
     }
 
     public Intake() {
@@ -40,6 +42,7 @@ public class Intake extends SystemBase {
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
+        if (this.hardwareLoaded) return;
         this.intakeMotor = LionMotor.withoutEncoder(hardwareMap, MotorConstants.Names.intakeMotor);
         this.transferMotor = LionMotor.withoutEncoder(hardwareMap, MotorConstants.Names.transferMotor);
         this.intakeMotor.setReversed(MotorConstants.Reversed.intakeMotor);
@@ -47,6 +50,7 @@ public class Intake extends SystemBase {
         this.intakeMotor.setZPB(MotorConstants.ZPB.intakeMotors);
         this.transferMotor.setZPB(MotorConstants.ZPB.intakeMotors);
         this.blocker = LionServo.single(hardwareMap, ServoConstants.Names.blocker, ServoConstants.Positions.blockerOpen);
+        this.hardwareLoaded = true;
     }
 
     @Override
@@ -67,7 +71,12 @@ public class Intake extends SystemBase {
                 break;
 
             case Shooting:
-                double power = 1 - ProjectileMotion.ShootOnTheMoveConstants.lastDistance / 12000;
+                double power;
+                if (ProjectileMotion.far()) {
+                    power = Shooter.ShooterPID.intakePower;
+                } else {
+                    power = 1;
+                }
                 this.intakeMotor.setPower(power);
                 this.transferMotor.setPower(power);
                 this.blocker.setPosition(ServoConstants.Positions.blockerOpen);
@@ -113,5 +122,9 @@ public class Intake extends SystemBase {
 
     public State getState() {
         return this.state;
+    }
+
+    public Encoder yieldTurretEncoder() {
+        return this.intakeMotor.yieldEncoder(0);
     }
 }

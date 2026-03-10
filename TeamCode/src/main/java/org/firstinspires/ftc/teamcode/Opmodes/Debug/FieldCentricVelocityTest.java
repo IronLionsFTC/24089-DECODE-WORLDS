@@ -20,7 +20,7 @@ public class FieldCentricVelocityTest extends TaskOpMode {
 
     @Override
     public Jobs spawn() {
-        VelocityFollower follower = new VelocityFollower();
+        VelocityFollower follower = new VelocityFollower(0, 0, 0);
         return Jobs.create()
                 .addTask(new Forever(
                         () -> follower.setTargetFieldCentricVelocity(Vector2.cartesian(VelocityTuning.xVelocity, VelocityTuning.yVelocity))

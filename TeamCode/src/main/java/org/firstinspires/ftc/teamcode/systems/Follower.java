@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Path;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 
 public class Follower extends SystemBase {
@@ -31,10 +32,10 @@ public class Follower extends SystemBase {
         public static double maxSpeed = 3000;
     }
 
-    public Follower() {
-        this.drivetrain = new VelocityFollower();
-        this.closest = new Position(0, 0, 0);
-        this.discreteStep = new Position(0, 0, 0);
+    public Follower(double x, double y, double h) {
+        this.drivetrain = new VelocityFollower(x, y, h);
+        this.closest = new Position(0, 0, h);
+        this.discreteStep = new Position(0, 0, h);
         this.tangent = Vector2.cartesian(0, 0);
         this.normal = Vector2.cartesian(0, 0);
         this.corrective = Vector2.cartesian(0, 0);
@@ -111,5 +112,9 @@ public class Follower extends SystemBase {
     public void follow(Path path) {
         this.targetSpeed = 0;
         this.path = path;
+    }
+
+    public void setPosition(Position position) {
+        this.drivetrain.setPosition(position);
     }
 }

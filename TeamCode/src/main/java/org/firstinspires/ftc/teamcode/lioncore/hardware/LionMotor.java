@@ -95,6 +95,19 @@ public class LionMotor {
         return this.motors.get(0).getVelocity() * 60 * (1 / tpr);
     }
 
+    /**
+     * Calculate the average velocity of all motors on the system
+     * @return RPM
+     */
+    public double getVelocityAverage(double tpr) {
+        if (this.motors.isEmpty()) return 0.0;
+        double sum = 0;
+        for (DcMotorEx motor : this.motors) {
+            sum += motor.getVelocity() * 60 * (1 / tpr);
+        }
+        return sum / (double)this.motors.size();
+    }
+
     public double cachedPosition() {
         return this.position;
     }

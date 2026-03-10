@@ -31,8 +31,8 @@ public class VelocityFollower extends SystemBase {
         public static double P = 0.0005;
         public static double I = 0.0;
         public static double D = 0.0;
-        public static double kS = 0.1;
-        public static double kV = 0.0004;
+        public static double kS = 0.11;
+        public static double kV = 0.0005;
     }
 
     @Config
@@ -44,7 +44,7 @@ public class VelocityFollower extends SystemBase {
         public static double kV = 0.0;
     }
 
-    public VelocityFollower() {
+    public VelocityFollower(double x, double y, double h) {
         this.velocityController = new PID(
                 VelocityPID.P,
                 VelocityPID.I,
@@ -59,8 +59,8 @@ public class VelocityFollower extends SystemBase {
 
         this.targetFieldCentricVelocity = Vector2.cartesian(0, 0);
         this.targetRobotCentricVelocity = Vector2.cartesian(0, 0);
-        this.swerveDrive = new SwerveDrive(new Position(0, 0, 0), true);
-        this.holdpoint = new Position(0, 0, 0);
+        this.swerveDrive = new SwerveDrive(new Position(x, y, h), true);
+        this.holdpoint = new Position(x, y, h);
         this.state = State.Velocity;
     }
 
@@ -166,5 +166,9 @@ public class VelocityFollower extends SystemBase {
     public void setHoldpoint(Position holdpoint) {
         this.holdpoint.position.copy(holdpoint.position);
         this.holdpoint.heading = holdpoint.heading;
+    }
+
+    public void setPosition(Position position) {
+        this.swerveDrive.relocaliseTo(position);
     }
 }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static android.os.SystemClock.sleep;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -94,7 +96,7 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.setOffsets(134.857, 0, DistanceUnit.MM);
         this.pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
-        PinpointCache.position = new Position(0, 0, 0);
+        PinpointCache.position = new Position(startPosition.position.x(), startPosition.position.y(), startPosition.heading);
         PinpointCache.velocity = Vector2.cartesian(0, 0);
         PinpointCache.angularVelocity = 0;
         LionMotor rightFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightFront);
@@ -121,8 +123,12 @@ public class SwerveDrive extends SystemBase {
     @Override
     public void init() {
         this.pinpoint.resetPosAndIMU();
-        this.pinpoint.setPosition(startPosition.pose());
-        this.pinpoint.setHeading(startPosition.heading, AngleUnit.DEGREES);
+        sleep(300);
+        this.pinpoint.setPosition(new Position(
+                -startPosition.position.y(),
+                startPosition.position.x(),
+                startPosition.heading
+        ).pose());
         this.targetHeading = startPosition.heading;
         this.turning = false;
         this.driveVector = Vector2.cartesian(0, 0);
@@ -193,6 +199,7 @@ public class SwerveDrive extends SystemBase {
             telemetry.addData("X POSITION", SwerveDrive.PinpointCache.position.position.x());
             telemetry.addData("Y POSITION", SwerveDrive.PinpointCache.position.position.y());
             telemetry.addData("HEADING", PinpointCache.position.heading);
+            telemetry.addData("HEADING START", startPosition.heading);
         }
     }
 
@@ -212,5 +219,13 @@ public class SwerveDrive extends SystemBase {
     }
     public void setTargetVector(Vector2 vector) {
         this.driveVector = vector;
+    }
+
+    public void relocalise() {
+        this.pinpoint.setPosition(startPosition.pose());
+    }
+
+    public void relocaliseTo(Position position) {
+        this.pinpoint.setPosition(position.pose());
     }
 }

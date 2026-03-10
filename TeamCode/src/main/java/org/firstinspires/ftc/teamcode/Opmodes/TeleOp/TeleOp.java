@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.tasks.Reloca;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
 import org.firstinspires.ftc.teamcode.tasks.TeleopDriveVector;
 import org.firstinspires.ftc.teamcode.tasks.TeleopIntake;
@@ -24,9 +25,11 @@ public class TeleOp extends TaskOpMode {
         );
 
         Intake intake = new Intake();
-        Shooter shooter = new Shooter();
+        intake.loadHardware(hardwareMap);
+        Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
         controller1.X.onPress(new TeleopIntake(intake));
+        controller1.A.onPress(new Reloca(drivetrain));
         controller1.rightTrigger.asButton.onPress(new Shoot(intake, shooter));
 
         return Jobs.create()

@@ -21,7 +21,7 @@ public class FieldCentricHoldpointTest extends TaskOpMode {
 
     @Override
     public Jobs spawn() {
-        VelocityFollower follower = new VelocityFollower();
+        VelocityFollower follower = new VelocityFollower(0, 0, 0);
         follower.state = VelocityFollower.State.Holdpoint;
 
         return Jobs.create()

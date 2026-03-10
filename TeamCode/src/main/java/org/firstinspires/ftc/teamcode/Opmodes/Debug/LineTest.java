@@ -9,6 +9,8 @@ import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Follower;
 import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 import org.firstinspires.ftc.teamcode.tasks.Follow;
+import org.firstinspires.ftc.teamcode.tasks.Reloca;
+import org.firstinspires.ftc.teamcode.tasks.SetPosition;
 
 @Autonomous
 public class LineTest extends TaskOpMode {
@@ -16,22 +18,14 @@ public class LineTest extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        Follower follower = new Follower();
+        Follower follower = new Follower(0, 1000, 90);
 
         return Jobs.create()
                 .addSeries(
                         new Follow(follower, new Line(
-                            new Position(0, 0, 0),
-                            new Position(-400, 2000, 90)
-                        )),
-                        new Follow(follower, new Line(
-                                new Position(-400, 2000, 90),
-                                new Position(800, 1600, 135)
-                        )).setMaxSpeed(300),
-                        new Follow(follower, new Line(
-                                new Position(800, 1600, 135),
-                                new Position(0, 0, 0)
-                        ))
+                            new Position(0, 1000, 90),
+                            new Position(0, 1200, 90)
+                        )).setMaxSpeed(200)
                 )
                 .registerSystem(follower);
     }

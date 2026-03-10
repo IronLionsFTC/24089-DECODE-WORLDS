@@ -46,10 +46,11 @@ public class Shooter extends SystemBase {
     public double targetHood;
     public ArrayList<Double> rpmBuffer;
 
-    public Shooter() {
+    public Shooter(Encoder intakeEncoderForTurret) {
+        this.quadrature = intakeEncoderForTurret;
         this.targetVelocity = 0;
         this.targetHood = 0;
-        this.target = new Vector3(0, 2000, 800);
+        this.target = new Vector3(0, 0, 3500);
         this.rpmBuffer = new ArrayList<>();
     }
 
@@ -60,27 +61,30 @@ public class Shooter extends SystemBase {
         public static double I = 0;
         public static double D = 0.00003;
         public static double kS = 0.07;
-        public static double kV = 0.00017;
+        public static double kV = 0.00015;
 
-        public static double targetXFar = 1300;
-        public static double targetYFar = 3200;
+        public static double targetXFar = -3500;
+        public static double targetYFar = -100;
         public static double targetZFar = 1100;
-        public static double targetXClose = -3300;
+        public static double targetXClose = -3200;
         public static double targetYClose = 0;
         public static double targetZClose = 1200;
 
         public static boolean useConvergence = true;
 
-        public static double overPower = 1.04;
-        public static double transferPower = 0.72;
-        public static double intakePower = 0.72;
+        public static double overPower = 1.03;
+        public static double intakePower = 0.8;
 
         public static double expectedDrop = 500;
 
         public static double hoodAngle = 0;
         public static double launchVelocity = 0;
 
-        public static int averageWindow = 5;
+        public static double angleBase = 0;
+        public static double angleScale = 0;
+        public static double powerBase = 0;
+        public static double powerScale = 0;
+
     }
 
     @Override
@@ -91,7 +95,6 @@ public class Shooter extends SystemBase {
         this.hoodServo = LionServo.single(hardwareMap, ServoConstants.Names.hoodServo, ServoConstants.Zero.hood);
 
         AbsoluteEncoder absolute = new AbsoluteEncoder(hardwareMap, "turretAbsolute");
-        this.quadrature = motors.yieldEncoder(1);
         this.quadrature.reverse();
 
         absolute.read();
@@ -138,19 +141,7 @@ public class Shooter extends SystemBase {
                 ZeroTurret.TurretPID.D
         );
 
-        double sum = this.motors.getVelocity(28.0);
-
-        /*
-        this.rpmBuffer.add(rawRPM);
-        if (this.rpmBuffer.size() > ShooterPID.averageWindow) {
-            this.rpmBuffer.remove(0);
-        }
-
-        double sum = 0;
-        for (double value : this.rpmBuffer) sum += value;
-        sum /= this.rpmBuffer.size();
-         */
-
+        double sum = this.motors.getVelocityAverage(28.0);
         double currentLaunchSpeed = Regressions.rpmToVelocity(sum);
 
         ProjectileMotion solution;
@@ -174,8 +165,7 @@ public class Shooter extends SystemBase {
 
         if (this.state == State.Cruising) this.motors.setPower(response);
         else {
-            if (currentLaunchSpeed < targetVelocity) this.motors.setPower(1);
-            else this.motors.setPower(response);
+            this.motors.setPower(response);
         }
 
         double hoodAngle = Regressions.launchAngleToHoodAngle(solution.launchAngle);
