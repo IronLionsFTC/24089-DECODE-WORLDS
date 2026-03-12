@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
+import org.firstinspires.ftc.teamcode.projectileMotion.DiscreteProjectileMotion;
 import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 import org.firstinspires.ftc.teamcode.projectileMotion.Regressions;
 
@@ -144,13 +145,13 @@ public class Shooter extends SystemBase {
         double sum = this.motors.getVelocityAverage(28.0);
         double currentLaunchSpeed = Regressions.rpmToVelocity(sum);
 
-        ProjectileMotion solution;
+        DiscreteProjectileMotion.Aiming solution;
         if (ShooterPID.useConvergence)
-            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
+            solution = DiscreteProjectileMotion.solveConvergent(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
         else
-            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
+            solution = DiscreteProjectileMotion.solve(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
 
-        this.targetVelocity = solution.launchVelocity * ShooterPID.overPower;
+        this.targetVelocity = solution.velocity * ShooterPID.overPower;
         if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
 
         if (this.targetVelocity < 4000 || Double.isNaN(targetVelocity)) targetVelocity = 4000;
@@ -168,7 +169,7 @@ public class Shooter extends SystemBase {
             this.motors.setPower(response);
         }
 
-        double hoodAngle = Regressions.launchAngleToHoodAngle(solution.launchAngle);
+        double hoodAngle = Regressions.launchAngleToHoodAngle(solution.solution.altitude);
         if (ShooterPID.hoodAngle != 0) hoodAngle = Regressions.launchAngleToHoodAngle(ShooterPID.hoodAngle);
 
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
@@ -177,15 +178,15 @@ public class Shooter extends SystemBase {
         hoodServo.setPosition(servoPosition);
 
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;
-        response = this.turretpid.calculate(quadraturePosition, solution.yawDirection);
-        if (Math.abs(quadraturePosition - solution.yawDirection) > 1) {
-            response += ZeroTurret.TurretPID.kS * Math.signum(solution.yawDirection - quadraturePosition);
+        response = this.turretpid.calculate(quadraturePosition, solution.azimuth);
+        if (Math.abs(quadraturePosition - solution.azimuth) > 1) {
+            response += ZeroTurret.TurretPID.kS * Math.signum(solution.azimuth - quadraturePosition);
         }
         this.leftTurretServo.setPower(response);
         this.rightTurretServo.setPower(response);
 
         if (useTelemetry) {
-            telemetry.addData("launchAngle", solution.launchAngle);
+            telemetry.addData("launchAngle", solution.solution.altitude);
             telemetry.addData("hoodAngle", hoodAngle);
             telemetry.addData("currentLaunchVelocity", currentLaunchSpeed);
             telemetry.addData("targetVelocity", targetVelocity);
