@@ -11,19 +11,19 @@ import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 public class ProjectileMotion {
 
     public static double G = 9800;
-    public double launchVelocity;
-    public double launchAngle;
-    public double yawDirection;
+    public double velocity;
+    public double altitude;
+    public double azimuth;
     public boolean possible;
-    public double timeOfFlight;
+    public double time;
 
     private static final Vector3 target = Vector3.zero();
 
     public ProjectileMotion(double velocity, double angle, double yaw, double timeOfFlight, boolean possible) {
-        this.launchVelocity = velocity;
-        this.launchAngle = angle;
-        this.yawDirection = yaw;
-        this.timeOfFlight = timeOfFlight;
+        this.velocity = velocity;
+        this.altitude = angle;
+        this.azimuth = yaw;
+        this.time = timeOfFlight;
         this.possible = possible;
     }
 
@@ -88,7 +88,7 @@ public class ProjectileMotion {
             double b = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop, tx, ty));
             double c = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop * 1.5, tx, ty));
 
-            if (a >= 34 && b >= 34 && c >= 34 && a <= 57 && b <= 57 && c <= 57) {
+            if (a >= 20 && b >= 20 && c >= 20 && a <= 52 && b <= 52 && c <= 52) {
                 double weight = velocity / 9000.0 + Math.abs(c - a) / 20.0;
                 if (weight < solutionWeight) {
                     solution = velocity;
@@ -105,13 +105,13 @@ public class ProjectileMotion {
         double solution = 10000;
         double solutionWeight = 10000;
 
-        for (double velocity = 2500; velocity <= 10000; velocity += 100) {
+        for (double velocity = 5000; velocity <= 8500; velocity += 100) {
             double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
             double b = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop, tx, ty));
             double c = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop * 2, tx, ty));
 
-            if (a >= 34 && b >= 34 && c >= 34 && a <= 57 && b <= 57 && c <= 57) {
-                double weight = velocity / 9000.0 + Math.abs(c - a) / 20.0;
+            if (a >= 20 && b >= 20 && c >= 20 && a <= 52 && b <= 52 && c <= 52) {
+                double weight = velocity / Shooter.ShooterPID.velocityScale + Math.abs(c - a) / 20.0;
                 if (weight < solutionWeight) {
                     solution = velocity;
                     solutionWeight = weight;
@@ -150,11 +150,12 @@ public class ProjectileMotion {
         double angle = solveAngle(currentVelocity, x, y);
         double velocity = alternativeFindSuitableVelocity(x, y);
 
-        if (Double.isNaN(velocity)) velocity = 7000.0;
+        if (Double.isNaN(velocity)) velocity = 8500.0;
         if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
-        if (Double.isNaN(angle)) angle = Math.toRadians(55);
+        if (Double.isNaN(angle)) angle = Math.toRadians(52);
 
         // Given that x = vt cos (a), t = x / (v cos (a))
+        if (currentVelocity < 2500) currentVelocity = velocity;
         double timeOfFlight = x / (currentVelocity * Math.cos(angle));
         return new ProjectileMotion(velocity, Math.toDegrees(angle), direction, timeOfFlight, true);
     }
@@ -171,13 +172,10 @@ public class ProjectileMotion {
 
         for (int convergence = 0; convergence < ShootOnTheMoveConstants.convergence; convergence++) {
             expectedMotion = new Vector3(SwerveDrive.PinpointCache.velocity.x(), SwerveDrive.PinpointCache.velocity.y(), 0.0)
-                    .scale(solution.timeOfFlight * ShootOnTheMoveConstants.timeOverestimate);
+                    .scale(solution.time * ShootOnTheMoveConstants.timeOverestimate);
             Vector3 trueTarget = target.subtract(expectedMotion);
             solution = calculate(trueTarget, currentVelocity);
         }
-
-        double headingOffset = SwerveDrive.PinpointCache.velocity.magnitude() / 500;
-        solution.launchAngle += headingOffset;
 
         return solution;
     }

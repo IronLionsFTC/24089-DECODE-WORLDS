@@ -11,15 +11,18 @@ public class DiscreteProjectileMotion {
     @Config
     public static class DPM {
         public static double G = 9800;
-        public static double T = 0.02;
-        public static double MINANGLE = 20.0;
+        public static double MINANGLE = 30.0;
         public static double MAXANGLE = 52.0;
-        public static double MINVELOCITY = 5000.0;
-        public static double MAXVELOCITY = 10000.0;
-        public static double FINEANGLE = 0.1;
-        public static double COARSEANGLE = 1;
-        public static double VSTEP = 100;
+        public static double MINVELOCITY = 6000.0;
+        public static double MAXVELOCITY = 8800.0;
+        public static double FINEANGLE = 1;
+        public static double COARSEANGLE = 3;
+        public static double VSTEPCOARSE = 250;
         public static double LOSS = 0;
+
+        public static double VELOCITYSCALE = 200;
+        public static double MAXHEIGHTSCALE = 100;
+        public static double DIFSCALE = 1;
     }
 
     public static class Aiming {
@@ -45,27 +48,42 @@ public class DiscreteProjectileMotion {
             this.velocity = velocity;
             this.altitude = altitude;
 
-            double time = 0;
-            double maxHeight = 0;
-            Vector2 positionVec = Vector2.cartesian(0, 0);
-            Vector2 velocityVec = Vector2.polar(this.velocity, Math.toRadians(this.altitude));
-            Vector2 acceleration = Vector2.cartesian(0, -DPM.G);
+            double targetX = target.x();
+            double targetY = target.y();
 
-            while (positionVec.x() < target.x()) {
-                time += DPM.T;
-                velocityVec.add(acceleration.multiply(DPM.T));
-                positionVec.add(velocityVec.multiply(DPM.T));
-                if (positionVec.y() > maxHeight) maxHeight = positionVec.y();
+            double rad = Math.toRadians(altitude);
+
+            double vx = velocity * Math.cos(rad);
+            double vy = velocity * Math.sin(rad);
+
+            // If horizontal velocity is zero, the projectile never reaches the target
+            if (Math.abs(vx) < 1e-6) {
+                this.time = Double.POSITIVE_INFINITY;
+                this.error = Double.POSITIVE_INFINITY;
+                this.maxHeight = 0;
+                return;
             }
 
-            this.error = target.y() - positionVec.y();
+            // Time to reach the target X distance
+            double time = targetX / vx;
+
+            // Height at that time
+            double y = vy * time - 0.5 * DPM.G * time * time;
+
+            // Maximum height
+            double maxHeight = (vy * vy) / (2 * DPM.G);
+
             this.time = time;
             this.maxHeight = maxHeight;
-            if (this.error < 0) this.error = this.error * -3;
+
+            this.error = targetY - y;
+            if (this.error < 0) {
+                this.error *= -3;
+            }
         }
 
         public double rank() {
-            return this.error + this.velocity / 200 + this.maxHeight / 100;
+            return this.error + this.velocity / DPM.VELOCITYSCALE + this.maxHeight / DPM.MAXHEIGHTSCALE;
         }
 
     }
@@ -98,13 +116,13 @@ public class DiscreteProjectileMotion {
         double bestRank = 0;
         Solution optimalSolution = null;
 
-        for (double velocity = DPM.MINVELOCITY; velocity < DPM.MAXVELOCITY; velocity += DPM.VSTEP) {
+        for (double velocity = DPM.MINVELOCITY; velocity < DPM.MAXVELOCITY; velocity += DPM.VSTEPCOARSE) {
             Solution solution = withVelocity(velocity, target);
             Solution solutionLoss = withVelocity(velocity - DPM.LOSS, target);
             if (solution == null || solutionLoss == null) continue;
             double rank = solution.rank()
                     + solutionLoss.rank()
-                    + Math.abs(solution.altitude - solutionLoss.altitude);
+                    + Math.abs(solution.altitude - solutionLoss.altitude) * DPM.DIFSCALE;
 
             if (rank < bestRank || bestRank == 0) {
                 bestRank = rank;
@@ -151,6 +169,7 @@ public class DiscreteProjectileMotion {
         // The 2D aiming vector for angle / velocity
         Vector2 cartesian = Vector2.cartesian(groundPlane.magnitude(), relativeTarget.getZ());
         Solution theoretical = optimalLaunchVelocity(cartesian);
+        if (measuredVelocity == 0) measuredVelocity = theoretical.velocity;
         Solution actual = withVelocity(measuredVelocity, cartesian);
 
         return new Aiming(theoretical, actual, direction);
