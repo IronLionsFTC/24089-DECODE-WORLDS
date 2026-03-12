@@ -125,8 +125,8 @@ public class SwerveDrive extends SystemBase {
         this.pinpoint.resetPosAndIMU();
         sleep(300);
         this.pinpoint.setPosition(new Position(
-                -startPosition.position.y(),
-                startPosition.position.x(),
+                startPosition.position.y(),
+                -startPosition.position.x(),
                 startPosition.heading
         ).pose());
         this.targetHeading = startPosition.heading;
