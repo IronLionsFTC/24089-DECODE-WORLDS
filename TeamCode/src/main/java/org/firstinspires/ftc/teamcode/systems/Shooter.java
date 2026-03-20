@@ -73,9 +73,9 @@ public class Shooter extends SystemBase {
         public static boolean useConvergence = true;
 
         public static double overPower = 0.97;
-        public static double intakePower = 0.72;
+        public static double intakePower = 0.85;
 
-        public static double expectedDrop = 700;
+        public static double expectedDrop = 600;
 
         public static double hoodAngle = 0;
         public static double launchVelocity = 0;

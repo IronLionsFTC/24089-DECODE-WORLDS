@@ -39,7 +39,7 @@ public class SwervePod {
      * @param heading Desired rotational velocity
      * @return drive motor power (-1 to 1)
      */
-    public double update(Vector2 target, double heading) {
+    public double update(Vector2 target, double heading, double yawCorrectionOffset) {
 
         double podAngle = wrapDeg(Zeroing.polarQuadrature(motor.getPosition()));
 
@@ -94,7 +94,6 @@ public class SwervePod {
         // Compute both options RELATIVE to current angle
         double forwardAngle  = closestEquivalentAngle(rawDesired, podAngle);
         double reversedAngle = closestEquivalentAngle(rawDesired + 180.0, podAngle);
-
         double forwardError  = Math.abs(forwardAngle - podAngle);
         double reversedError = Math.abs(reversedAngle - podAngle);
 
@@ -110,8 +109,8 @@ public class SwervePod {
         }
 
         servo.setPower(angleController.calculate(podAngle, angleSetpoint));
-        if (Math.abs(angleSetpoint - podAngle) > 10 && !xPattern) return 0.0;
-        return drivePower;
+        if (Math.abs(angleSetpoint - podAngle) > 20) return 0.0;
+        return drivePower + yawCorrectionOffset;
     }
 
     public void set(double power) {
