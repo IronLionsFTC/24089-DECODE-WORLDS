@@ -31,7 +31,7 @@ public class ProjectileMotion {
     public static class ShootOnTheMoveConstants {
         public static double turretLookahead = 0.1;
         public static int convergence = 15;
-        public static double timeOverestimate = 1.1;
+        public static double timeOverestimate = 1.5;
         public static double lastDistance = 1000;
     }
 

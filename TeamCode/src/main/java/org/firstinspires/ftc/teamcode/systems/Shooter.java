@@ -43,6 +43,7 @@ public class Shooter extends SystemBase {
     private PID turretpid;
     public final Vector3 target;
     public double targetVelocity;
+    public double currentLaunchSpeed;
     public double targetHood;
     public ArrayList<Double> rpmBuffer;
 
@@ -65,17 +66,17 @@ public class Shooter extends SystemBase {
 
         public static double targetXFar = -3500;
         public static double targetYFar = 0;
-        public static double targetZFar = 1100;
+        public static double targetZFar = 1000;
         public static double targetXClose = -3200;
         public static double targetYClose = 0;
-        public static double targetZClose = 1200;
+        public static double targetZClose = 1100;
 
         public static boolean useConvergence = true;
 
-        public static double overPower = 0.97;
-        public static double intakePower = 0.85;
+        public static double overPower = 0.99;
+        public static double intakePower = 1;
 
-        public static double expectedDrop = 600;
+        public static double expectedDrop = 800;
 
         public static double hoodAngle = 0;
         public static double launchVelocity = 0;
@@ -139,7 +140,7 @@ public class Shooter extends SystemBase {
 
         double sum = this.motors.getVelocityAverage(28.0);
         if (Double.isNaN(sum)) sum = 0;
-        double currentLaunchSpeed = Regressions.rpmToVelocity(sum);
+        currentLaunchSpeed = Regressions.rpmToVelocity(sum);
 
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
@@ -201,5 +202,9 @@ public class Shooter extends SystemBase {
     @Override
     public boolean needsPriority() {
         return this.state == State.Shooting;
+    }
+
+    public boolean atSpeed() {
+        return Math.abs(currentLaunchSpeed - targetVelocity) < 300 && currentLaunchSpeed > 3000;
     }
 }

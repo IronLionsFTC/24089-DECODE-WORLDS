@@ -14,7 +14,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
-import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
@@ -28,6 +27,7 @@ import java.util.function.DoubleSupplier;
 public class SwerveDrive extends SystemBase {
 
     private GoBildaPinpointDriver pinpoint;
+
     private SwervePod rightFront;
     private SwervePod leftFront;
     private SwervePod rightRear;
@@ -39,22 +39,18 @@ public class SwerveDrive extends SystemBase {
     private DoubleSupplier heading;
 
     private double targetHeading;
-    private PID headingController;
     private boolean turning;
 
     private final boolean xPattern;
 
-    public static class PinpointCache {
-        public static Position position;
-        public static Vector2 velocity;
-        public static double angularVelocity;
-    }
+    private double omegaCommand = 0;
+    private double filteredHeadingResponse = 0;
 
     @Config
     public static class HeadingPID {
-        public static double P = 0.02;
+        public static double P = 0.015;
         public static double I = 0;
-        public static double D = 0.001;
+        public static double D = 0.002;
     }
 
     @Config
@@ -64,16 +60,25 @@ public class SwerveDrive extends SystemBase {
         public static double D = 0;
     }
 
+    @Config
+    public static class HeadingFilter {
+        public static double smoothing = 0.2;
+    }
+
+    public static class PinpointCache {
+        public static Position position;
+        public static Vector2 velocity;
+        public static double angularVelocity;
+    }
+
     public SwerveDrive(Position startPosition, boolean xPattern) {
         this.startPosition = startPosition;
-        this.headingController = new PID(0, 0, 0);
         this.heading = () -> 0;
         this.xPattern = xPattern;
     }
 
     public SwerveDrive(Position startPosition, DoubleSupplier h, boolean xPattern) {
         this.startPosition = startPosition;
-        this.headingController = new PID(0, 0, 0);
         this.heading = h;
         this.xPattern = xPattern;
     }
@@ -91,98 +96,162 @@ public class SwerveDrive extends SystemBase {
         rightRearAnalog.read();
         leftRearAnalog.read();
 
-        this.pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-        this.pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        this.pinpoint.setOffsets(134.857, 0, DistanceUnit.MM);
-        this.pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        pinpoint.setEncoderDirections(
+                GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                GoBildaPinpointDriver.EncoderDirection.REVERSED
+        );
+        pinpoint.setOffsets(134.857, 0, DistanceUnit.MM);
+        pinpoint.setEncoderResolution(
+                GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD
+        );
 
-        PinpointCache.position = new Position(startPosition.position.x(), startPosition.position.y(), startPosition.heading);
-        PinpointCache.velocity = Vector2.cartesian(0, 0);
+        PinpointCache.position = new Position(
+                startPosition.position.x(),
+                startPosition.position.y(),
+                startPosition.heading
+        );
+        PinpointCache.velocity = Vector2.cartesian(0,0);
         PinpointCache.angularVelocity = 0;
-        LionMotor rightFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightFront);
-        LionMotor leftFront = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftFront);
-        LionMotor rightRear = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightRear);
-        LionMotor leftRear = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftRear);
-        rightFront.setReversed(MotorConstants.Reversed.rf);
-        rightFront.setZPB(MotorConstants.ZPB.driveMotors);
-        leftFront.setReversed(MotorConstants.Reversed.lf);
-        leftFront.setZPB(MotorConstants.ZPB.driveMotors);
-        rightRear.setReversed(MotorConstants.Reversed.rr);
-        rightRear.setZPB(MotorConstants.ZPB.driveMotors);
-        leftRear.setReversed(MotorConstants.Reversed.lr);
-        leftRear.setZPB(MotorConstants.ZPB.driveMotors);
-        rightFront.setReverseEncoder(true);
-        rightRear.setReverseEncoder(true);
 
-        this.rightFront = new SwervePod(rightFront, new LionCRServo(hardwareMap, ServoConstants.Names.rightFront), Vector2.cartesian(1, 1), Zeroing.podAngle(rightFrontAnalog.position(), ConstantsStorage.get("rf", 0.0)), xPattern);
-        this.leftFront = new SwervePod(leftFront, new LionCRServo(hardwareMap, ServoConstants.Names.leftFront), Vector2.cartesian(-1, 1), Zeroing.podAngle(leftFrontAnalog.position(), ConstantsStorage.get("lf", 0.0)), xPattern);
-        this.rightRear = new SwervePod(rightRear, new LionCRServo(hardwareMap, ServoConstants.Names.rightRear), Vector2.cartesian(1, -1), Zeroing.podAngle(rightRearAnalog.position(), ConstantsStorage.get("rr", 0.0)), xPattern);
-        this.leftRear = new SwervePod(leftRear, new LionCRServo(hardwareMap, ServoConstants.Names.leftRear), Vector2.cartesian(-1, -1), Zeroing.podAngle(leftRearAnalog.position(), ConstantsStorage.get("lr", 0.0)), xPattern);
+        LionMotor rightFrontMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightFront);
+        LionMotor leftFrontMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftFront);
+        LionMotor rightRearMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightRear);
+        LionMotor leftRearMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftRear);
+
+        rightFrontMotor.setReversed(MotorConstants.Reversed.rf);
+        leftFrontMotor.setReversed(MotorConstants.Reversed.lf);
+        rightRearMotor.setReversed(MotorConstants.Reversed.rr);
+        leftRearMotor.setReversed(MotorConstants.Reversed.lr);
+
+        rightFrontMotor.setZPB(MotorConstants.ZPB.driveMotors);
+        leftFrontMotor.setZPB(MotorConstants.ZPB.driveMotors);
+        rightRearMotor.setZPB(MotorConstants.ZPB.driveMotors);
+        leftRearMotor.setZPB(MotorConstants.ZPB.driveMotors);
+
+        rightFrontMotor.setReverseEncoder(true);
+        rightRearMotor.setReverseEncoder(true);
+
+        rightFront = new SwervePod(
+                rightFrontMotor,
+                new LionCRServo(hardwareMap, ServoConstants.Names.rightFront),
+                Vector2.cartesian(1,1),
+                Zeroing.podAngle(rightFrontAnalog.position(), ConstantsStorage.get("rf",0.0)),
+                xPattern
+        );
+
+        leftFront = new SwervePod(
+                leftFrontMotor,
+                new LionCRServo(hardwareMap, ServoConstants.Names.leftFront),
+                Vector2.cartesian(-1,1),
+                Zeroing.podAngle(leftFrontAnalog.position(), ConstantsStorage.get("lf",0.0)),
+                xPattern
+        );
+
+        rightRear = new SwervePod(
+                rightRearMotor,
+                new LionCRServo(hardwareMap, ServoConstants.Names.rightRear),
+                Vector2.cartesian(1,-1),
+                Zeroing.podAngle(rightRearAnalog.position(), ConstantsStorage.get("rr",0.0)),
+                xPattern
+        );
+
+        leftRear = new SwervePod(
+                leftRearMotor,
+                new LionCRServo(hardwareMap, ServoConstants.Names.leftRear),
+                Vector2.cartesian(-1,-1),
+                Zeroing.podAngle(leftRearAnalog.position(), ConstantsStorage.get("lr",0.0)),
+                xPattern
+        );
     }
 
     @Override
     public void init() {
-        this.pinpoint.resetPosAndIMU();
+        pinpoint.resetPosAndIMU();
         sleep(300);
-        this.pinpoint.setPosition(new Position(
+        pinpoint.setPosition(new Position(
                 startPosition.position.y(),
                 -startPosition.position.x(),
                 startPosition.heading
         ).pose());
-        this.targetHeading = startPosition.heading;
-        this.turning = false;
-        this.driveVector = Vector2.cartesian(0, 0);
+
+        targetHeading = startPosition.heading;
+        driveVector = Vector2.cartesian(0,0);
+        turning = false;
+        omegaCommand = 0;
+        filteredHeadingResponse = 0;
     }
 
     @Override
     public void update(Telemetry telemetry, boolean useTelemetry) {
 
-        this.headingController.setConstants(
-            HeadingPID.P,
-            HeadingPID.I,
-            HeadingPID.D
-        );
+        pinpoint.update();
+        Pose2D pos = pinpoint.getPosition();
 
-        this.pinpoint.update();
-
-        Pose2D position = this.pinpoint.getPosition();
         PinpointCache.position.update(
-                -position.getY(DistanceUnit.MM),
-                position.getX(DistanceUnit.MM),
-                position.getHeading(AngleUnit.DEGREES)
+                -pos.getY(DistanceUnit.MM),
+                pos.getX(DistanceUnit.MM),
+                pos.getHeading(AngleUnit.DEGREES)
         );
 
-        PinpointCache.angularVelocity = this.pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
+        PinpointCache.angularVelocity =
+                pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
+
         PinpointCache.velocity.update(
                 -pinpoint.getVelY(DistanceUnit.MM),
                 pinpoint.getVelX(DistanceUnit.MM)
         );
 
-        double error = angleDifference(this.targetHeading, PinpointCache.position.heading);
-        double h = heading.getAsDouble();
-        double response = Math.min(0.5, Math.max(-0.5, this.headingController.calculate(error, 0)));
+        double driverTurn = heading.getAsDouble();
+        double headingNow = PinpointCache.position.heading;
 
-        if (h != 0 || turning) {
-            this.turning = true;
-            this.targetHeading = PinpointCache.position.heading;
+        double error = angleDifference(headingNow, targetHeading);
 
-            if (Math.abs(PinpointCache.angularVelocity) < 5 && h == 0) {
-                this.turning = false;
+        if (Math.abs(error) < 0.5) error = 0;
+
+        // Adaptive proportional: smaller P at low angular velocity
+        double velocityFactor = Math.min(1.0, Math.abs(PinpointCache.angularVelocity) / 50.0);
+        double adaptiveP = HeadingPID.P * velocityFactor;
+
+        double rawResponse = adaptiveP * error + HeadingPID.D * PinpointCache.angularVelocity;
+
+        // Low-pass smoothing
+        filteredHeadingResponse += HeadingFilter.smoothing * (rawResponse - filteredHeadingResponse);
+
+        double response = filteredHeadingResponse;
+
+        double speed = PinpointCache.velocity.magnitude();
+        double correctionLimit = 1.0 - Math.min(speed / 3000.0, 0.6);
+        response = Math.max(-correctionLimit, Math.min(correctionLimit, response));
+
+        if (Math.abs(driverTurn) > 0.05) {
+            turning = true;
+            targetHeading = headingNow;
+        } else if (turning) {
+            if (Math.abs(PinpointCache.angularVelocity) < 5) {
+                turning = false;
+                targetHeading = headingNow;
             }
         }
 
-        double a = this.rightFront.update(driveVector, h, -response);
-        double b = this.leftFront.update(driveVector, h, response);
-        double c = this.rightRear.update(driveVector, h, -response);
-        double d = this.leftRear.update(driveVector, h, response);
+        double h;
+        if (turning) {
+            double maxAccel = 0.05;
+            omegaCommand += Math.max(-maxAccel, Math.min(maxAccel, driverTurn - omegaCommand));
+            h = omegaCommand;
+        } else {
+            omegaCommand = response;
+            h = response;
+        }
 
-        double maximum = Math.max(Math.max(Math.abs(a), Math.abs(b)), Math.max(Math.abs(c), Math.abs(d)));
+        double a = rightFront.update(driveVector, h);
+        double b = leftFront.update(driveVector, h);
+        double c = rightRear.update(driveVector, h);
+        double d = leftRear.update(driveVector, h);
 
-        if (maximum > 1) {
-            a /= maximum;
-            b /= maximum;
-            c /= maximum;
-            d /= maximum;
+        double max = Math.max(Math.max(Math.abs(a), Math.abs(b)), Math.max(Math.abs(c), Math.abs(d)));
+        if (max > 1) {
+            a /= max; b /= max; c /= max; d /= max;
         }
 
         rightFront.set(a);
@@ -191,17 +260,15 @@ public class SwerveDrive extends SystemBase {
         leftRear.set(d);
 
         if (useTelemetry) {
-            telemetry.addData("X POSITION", SwerveDrive.PinpointCache.position.position.x());
-            telemetry.addData("Y POSITION", SwerveDrive.PinpointCache.position.position.y());
+            telemetry.addData("X POSITION", PinpointCache.position.position.x());
+            telemetry.addData("Y POSITION", PinpointCache.position.position.y());
             telemetry.addData("HEADING", PinpointCache.position.heading);
-            telemetry.addData("HEADING START", startPosition.heading);
+            telemetry.addData("TARGET HEADING", targetHeading);
+            telemetry.addData("OMEGA CMD", omegaCommand);
+            telemetry.addData("ANGULAR VELOCITY", PinpointCache.angularVelocity);
         }
     }
 
-    /**
-     * Computes shortest angular difference from current to target in degrees.
-     * Result is in range [-180, 180].
-     */
     public static double angleDifference(double target, double current) {
         double delta = target - current;
         while (delta > 180) delta -= 360;
@@ -209,18 +276,8 @@ public class SwerveDrive extends SystemBase {
         return delta;
     }
 
-    public void setTargetHeading(double newHeading) {
-        this.targetHeading = newHeading;
-    }
-    public void setTargetVector(Vector2 vector) {
-        this.driveVector = vector;
-    }
-
-    public void relocalise() {
-        this.pinpoint.setPosition(startPosition.pose());
-    }
-
-    public void relocaliseTo(Position position) {
-        this.pinpoint.setPosition(position.pose());
-    }
+    public void setTargetHeading(double newHeading) { targetHeading = newHeading; }
+    public void setTargetVector(Vector2 vector) { driveVector = vector; }
+    public void relocalise() { pinpoint.setPosition(startPosition.pose()); }
+    public void relocaliseTo(Position position) { pinpoint.setPosition(position.pose()); }
 }

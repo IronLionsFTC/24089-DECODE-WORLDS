@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Sleep;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.WaitUntil;
 import org.firstinspires.ftc.teamcode.systems.Follower;
 import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
@@ -23,21 +24,68 @@ public class FarZoneBlue extends TaskOpMode {
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
+        Shooter.ShooterPID.useConvergence = false;
+
+        Position start = new Position(0, 1200, 180);
+        Position shoot = new Position(-200, 1300, 180);
+        Position wallIntake = new Position(0, 80, 180);
+        Position intakeAStart = new Position(-700, 900, 180);
+        Position intakeAEnd = new Position(-700, 300, 180);
+        Position intakeBStart = new Position(-1300, 900, 180);
+        Position intakeBEnd = new Position(-1300, 300, 180);
 
         return Jobs.create()
                 .addSeries(
-                        new Sleep(3),
+                        new WaitUntil(shooter::atSpeed).with(
+                                new Follow(follower, new Line(
+                                        start,
+                                        shoot
+                                ))
+                        ),
+                        new Sleep(1),
                         new Shoot(intake, shooter),
-                        new Sleep(3),
                         new Follow(follower, new Line(
-                                new Position(0, 1200, 180),
-                                new Position(-800, 400, 180)
-                        )).with(
+                                shoot, wallIntake
+                        )).race(
                                 new IntakeUntilFull(intake)
                         ),
                         new Follow(follower, new Line(
-                                new Position(-800, 400, 180),
-                                new Position(-150, 1200, 180)
+                                wallIntake,
+                                shoot
+                        )),
+                        new Sleep(1),
+                        new Shoot(intake, shooter),
+                        new Follow(follower, new Line(
+                                shoot,
+                                intakeAStart
+                        )).then(
+                                new Follow(follower, new Line(
+                                        intakeAStart,
+                                        intakeAEnd
+                                ))
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Follow(follower, new Line(
+                                intakeAEnd,
+                                shoot
+                        )),
+                        new Sleep(1),
+                        new Shoot(intake, shooter),
+                        new Follow(follower, new Line(
+                                shoot,
+                                intakeBStart
+                        )).then(
+                                new Follow(follower, new Line(
+                                        intakeBStart,
+                                        intakeBEnd
+                                ))
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Follow(follower, new Line(
+                                intakeBEnd,
+                                shoot
                         )),
                         new Sleep(1),
                         new Shoot(intake, shooter)

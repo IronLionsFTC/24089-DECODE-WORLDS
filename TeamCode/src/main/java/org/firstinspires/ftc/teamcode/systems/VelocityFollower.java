@@ -40,7 +40,7 @@ public class VelocityFollower extends SystemBase {
         public static double P = 0.01;
         public static double I = 0.0;
         public static double D = 0.003;
-        public static double kS = 0.2;
+        public static double kS = 0.05;
         public static double kV = 0.0;
     }
 
@@ -59,7 +59,7 @@ public class VelocityFollower extends SystemBase {
 
         this.targetFieldCentricVelocity = Vector2.cartesian(0, 0);
         this.targetRobotCentricVelocity = Vector2.cartesian(0, 0);
-        this.swerveDrive = new SwerveDrive(new Position(x, y, h), true);
+        this.swerveDrive = new SwerveDrive(new Position(x, y, h), false);
         this.holdpoint = new Position(x, y, h);
         this.state = State.Velocity;
     }
@@ -112,6 +112,7 @@ public class VelocityFollower extends SystemBase {
                 break;
 
             case Holdpoint:
+
                 this.holdpointController.setConstants(
                         HoldpointPID.P,
                         HoldpointPID.I,
@@ -120,25 +121,32 @@ public class VelocityFollower extends SystemBase {
 
                 this.holdpoint.position.sub_into(SwerveDrive.PinpointCache.position.position, this.targetFieldCentricVelocity);
                 double distance = this.targetFieldCentricVelocity.magnitude();
-                this.targetFieldCentricVelocity.normalise();
 
-                response = holdpointController.calculate(-distance, 0);
-                feedforward = HoldpointPID.kS;
-                if (Math.abs(response) > 0.05) response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
+                if (distance < 50) {
+                    targetRobotCentricVelocity.update(0, 0);
+                    this.swerveDrive.setTargetHeading(holdpoint.heading);
+                } else {
+                    this.targetFieldCentricVelocity.normalise();
 
-                // Translate the field centric movement back into robot centric
-                headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
-                c = Math.cos(headingRadians);
-                s = Math.sin(headingRadians);
+                    response = holdpointController.calculate(-distance, 0);
+                    feedforward = HoldpointPID.kS;
+                    if (Math.abs(response) > 0.05)
+                        response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
 
-                targetRobotCentricVelocity.update(
-                        targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s,
-                        -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
-                );
+                    // Translate the field centric movement back into robot centric
+                    headingRadians = Math.toRadians(SwerveDrive.PinpointCache.position.heading);
+                    c = Math.cos(headingRadians);
+                    s = Math.sin(headingRadians);
 
-                targetRobotCentricVelocity.normalise();
-                targetRobotCentricVelocity.multiply_mut(response);
-                this.swerveDrive.setTargetHeading(holdpoint.heading);
+                    targetRobotCentricVelocity.update(
+                            targetFieldCentricVelocity.x() * c + targetFieldCentricVelocity.y() * s,
+                            -targetFieldCentricVelocity.x() * s + targetFieldCentricVelocity.y() * c
+                    );
+
+                    targetRobotCentricVelocity.normalise();
+                    targetRobotCentricVelocity.multiply_mut(response);
+                    this.swerveDrive.setTargetHeading(holdpoint.heading);
+                }
                 break;
         }
 
