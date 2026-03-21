@@ -166,4 +166,10 @@ public class Vector3 {
     public boolean equals(Vector3 v, double tolerance) {
         return Math.abs(this.x - v.x) <= tolerance && Math.abs(this.y - v.y) <= tolerance && Math.abs(this.z - v.z) <= tolerance;
     }
+
+    public void addMut(Vector3 other) {
+        this.x += other.x;
+        this.y += other.y;
+        this.z += other.z;
+    }
 }
