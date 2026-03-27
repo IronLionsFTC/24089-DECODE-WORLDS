@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.tasks.Shoot;
 import org.firstinspires.ftc.teamcode.tasks.TeleopDriveVector;
 import org.firstinspires.ftc.teamcode.tasks.TeleopIntake;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp
-public class TeleOp extends TaskOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOpBlue")
+public class TeleOpBlue extends TaskOpMode {
 
     @Override
     public Jobs spawn() {

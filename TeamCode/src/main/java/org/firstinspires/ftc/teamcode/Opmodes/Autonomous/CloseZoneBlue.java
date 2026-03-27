@@ -27,20 +27,18 @@ public class CloseZoneBlue extends TaskOpMode {
         Shooter.ShooterPID.useConvergence = false;
 
         Position start = new Position(300, 600, 180);
-        Position shoot = new Position(1500, 1100, 150);
-        Position intakeAEnd = new Position(2300, 400, 180);
-        Position gateIntakeA = new Position(2100, 200, 150);
-        Position gateIntakeB = new Position(2400, 100, 135);
+        Position shoot = new Position(1800, 1100, 140);
+        Position intakeAEnd = new Position(2300, 200, 180);
+        Position gateIntakeA = new Position(2100, 250, 140);
+        Position gateIntakeB = new Position(2400, 200, 135);
         Position intakeBEnd = new Position(1400, 300, 180);
 
         return Jobs.create()
                 .addSeries(
-                        new WaitUntil(shooter::atSpeed).with(
-                                new Follow(follower, new Line(
-                                        start,
-                                        shoot
-                                ))
-                        ),
+                        new Follow(follower, new Line(
+                                start,
+                                shoot
+                        )),
                         new Sleep(1),
                         new Shoot(intake, shooter),
                         new Follow(follower, new Line(
@@ -54,10 +52,11 @@ public class CloseZoneBlue extends TaskOpMode {
                         )),
                         new Sleep(1),
                         new Shoot(intake, shooter),
+
                         new Follow(follower, new Line(
                                 shoot,
                                 gateIntakeA
-                        )).then(
+                        )).then(new Sleep(1)).then(
                                 new Follow(follower, new Line(
                                         gateIntakeA,
                                         gateIntakeB
@@ -65,8 +64,80 @@ public class CloseZoneBlue extends TaskOpMode {
                                 new Sleep(2)
                         ).race(
                                 new IntakeUntilFull(intake)
-                        )
-                )
+                        ),
+                        new Follow(follower, new Line(
+                                gateIntakeB, shoot
+                        )),
+                        new Sleep(1),
+                        new Shoot(intake, shooter),
+
+                        new Follow(follower, new Line(
+                                shoot,
+                                gateIntakeA
+                        )).then(new Sleep(1)).then(
+                                new Follow(follower, new Line(
+                                        gateIntakeA,
+                                        gateIntakeB
+                                )),
+                                new Sleep(2)
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Follow(follower, new Line(
+                                gateIntakeB, shoot
+                        )),
+                        new Sleep(1),
+                        new Shoot(intake, shooter),
+
+                        new Follow(follower, new Line(
+                                shoot,
+                                gateIntakeA
+                        )).then(new Sleep(1)).then(
+                                new Follow(follower, new Line(
+                                        gateIntakeA,
+                                        gateIntakeB
+                                )),
+                                new Sleep(2)
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Follow(follower, new Line(
+                                gateIntakeB, shoot
+                        )),
+                        new Sleep(1),
+                        new Shoot(intake, shooter),
+
+                        new Follow(follower, new Line(
+                                shoot,
+                                gateIntakeA
+                        )).then(new Sleep(1)).then(
+                                new Follow(follower, new Line(
+                                        gateIntakeA,
+                                        gateIntakeB
+                                )),
+                                new Sleep(2)
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Follow(follower, new Line(
+                                gateIntakeB, shoot
+                        )),
+                        new Sleep(1),
+                        new Shoot(intake, shooter),
+
+                        new Follow(follower, new Line(
+                                shoot,
+                                intakeBEnd
+                        )).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Follow(follower, new Line(
+                                intakeBEnd,
+                                shoot
+                        )),
+                        new Sleep(1),
+                        new Shoot(intake, shooter)
+                    )
                 .registerSystem(shooter)
                 .registerSystem(intake)
                 .registerSystem(follower);

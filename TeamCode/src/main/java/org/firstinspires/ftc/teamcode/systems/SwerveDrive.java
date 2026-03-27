@@ -224,7 +224,14 @@ public class SwerveDrive extends SystemBase {
         double correctionLimit = 1.0 - Math.min(speed / 3000.0, 0.6);
         response = Math.max(-correctionLimit, Math.min(correctionLimit, response));
 
-        if (Math.abs(driverTurn) > 0.05) {
+        // Deadband
+        double turnInput = driverTurn;
+        if (Math.abs(turnInput) < 0.05) turnInput = 0;
+
+        // Exponential shaping for snappy control
+        turnInput = Math.pow(turnInput, 3);
+
+        if (turnInput != 0) {
             turning = true;
             targetHeading = headingNow;
         } else if (turning) {
@@ -236,8 +243,8 @@ public class SwerveDrive extends SystemBase {
 
         double h;
         if (turning) {
-            double maxAccel = 0.05;
-            omegaCommand += Math.max(-maxAccel, Math.min(maxAccel, driverTurn - omegaCommand));
+            // Direct response for snappy rotation
+            omegaCommand = turnInput;
             h = omegaCommand;
         } else {
             omegaCommand = response;
@@ -279,14 +286,12 @@ public class SwerveDrive extends SystemBase {
     public void setTargetHeading(double newHeading) { targetHeading = newHeading; }
     public void setTargetVector(Vector2 vector) { driveVector = vector; }
     public void relocalise() {
+        pinpoint.setPosition(new Position(
+                startPosition.position.y(),
+                -startPosition.position.x(),
+                startPosition.heading
+        ).pose());
         this.targetHeading = startPosition.heading;
-        pinpoint.setPosition(new Pose2D(
-                DistanceUnit.MM,
-                this.startPosition.position.y(),
-                this.startPosition.position.x(),
-                AngleUnit.DEGREES,
-                this.startPosition.heading
-        ));
     }
     public void relocaliseTo(Position position) {
         this.targetHeading = position.heading;

@@ -62,18 +62,18 @@ public class Shooter extends SystemBase {
         public static double I = 0;
         public static double D = 0.00003;
         public static double kS = 0.0;
-        public static double kV = 0.0;
+        public static double kV = 0.0001;
 
         public static double targetXFar = 0;
         public static double targetYFar = 0;
         public static double targetZFar = 1000;
         public static double targetXClose = 0;
         public static double targetYClose = 0;
-        public static double targetZClose = 1100;
+        public static double targetZClose = 1200;
 
         public static boolean useConvergence = true;
 
-        public static double overPower = 0.97;
+        public static double overPower = 1;
         public static double intakePower = 0.85;
 
         public static double expectedDrop = 600;

@@ -32,8 +32,8 @@ public class Intake extends SystemBase {
 
     @Config
     public static class IntakeConstants {
-        public static double currentThreshold = 5;
-        public static double intakeThreshold = 5;
+        public static double currentThreshold = 6;
+        public static double intakeThreshold = 6;
     }
 
     public Intake() {
