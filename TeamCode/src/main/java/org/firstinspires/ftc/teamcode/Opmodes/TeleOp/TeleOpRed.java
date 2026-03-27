@@ -19,7 +19,7 @@ public class TeleOpRed extends TaskOpMode {
     public Jobs spawn() {
 
         SwerveDrive drivetrain = new SwerveDrive(
-            new Position(-3500, 0, 0),
+            new Position(3500, 0, 0),
             controller1.rightJoystick::x,
             true
         );
