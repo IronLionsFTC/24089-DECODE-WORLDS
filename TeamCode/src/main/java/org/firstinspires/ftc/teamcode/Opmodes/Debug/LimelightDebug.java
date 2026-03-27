@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.Opmodes.Debug;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.lioncore.hardware.LimelightProxy;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Forever;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Intake;
@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 import org.firstinspires.ftc.teamcode.tasks.LimelightRelocalise;
 import org.firstinspires.ftc.teamcode.tasks.Reloca;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
+import org.firstinspires.ftc.teamcode.tasks.TeleopDriveVector;
 import org.firstinspires.ftc.teamcode.tasks.TeleopIntake;
 
 @TeleOp
@@ -21,7 +22,7 @@ public class LimelightDebug extends TaskOpMode {
     public Jobs spawn() {
 
         SwerveDrive drivetrain = new SwerveDrive(
-                new Position(0, 0, 0),
+                new Position(3500, 0, 0),
                 controller1.rightJoystick::x,
                 true
         );
@@ -37,6 +38,11 @@ public class LimelightDebug extends TaskOpMode {
         controller1.Y.onPress(new LimelightRelocalise(drivetrain, limelight));
 
         return Jobs.create()
+                .addTask(new Forever(new TeleopDriveVector(
+                        drivetrain,
+                        () -> gamepad1.left_stick_x,
+                        () -> -gamepad1.left_stick_y
+                )))
                 .registerSystem(drivetrain)
                 .registerSystem(intake)
                 .registerSystem(shooter)

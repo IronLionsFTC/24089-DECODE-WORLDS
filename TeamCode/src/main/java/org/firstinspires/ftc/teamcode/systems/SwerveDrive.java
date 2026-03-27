@@ -280,7 +280,13 @@ public class SwerveDrive extends SystemBase {
     public void setTargetVector(Vector2 vector) { driveVector = vector; }
     public void relocalise() {
         this.targetHeading = startPosition.heading;
-        pinpoint.setPosition(startPosition.pose());
+        pinpoint.setPosition(new Pose2D(
+                DistanceUnit.MM,
+                this.startPosition.position.y(),
+                this.startPosition.position.x(),
+                AngleUnit.DEGREES,
+                this.startPosition.heading
+        ));
     }
     public void relocaliseTo(Position position) {
         this.targetHeading = position.heading;

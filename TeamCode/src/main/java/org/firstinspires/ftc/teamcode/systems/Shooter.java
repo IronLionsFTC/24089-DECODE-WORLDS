@@ -64,24 +64,25 @@ public class Shooter extends SystemBase {
         public static double kS = 0.0;
         public static double kV = 0.0;
 
-        public static double targetXFar = -3500;
+        public static double targetXFar = 0;
         public static double targetYFar = 0;
         public static double targetZFar = 1000;
-        public static double targetXClose = -3200;
+        public static double targetXClose = 0;
         public static double targetYClose = 0;
         public static double targetZClose = 1100;
 
         public static boolean useConvergence = true;
 
-        public static double overPower = 0.99;
-        public static double intakePower = 1;
+        public static double overPower = 0.97;
+        public static double intakePower = 0.85;
 
-        public static double expectedDrop = 800;
+        public static double expectedDrop = 600;
 
         public static double hoodAngle = 0;
         public static double launchVelocity = 0;
 
         public static double velocityScale = 2000;
+        public static boolean useVComp = true;
     }
 
     @Override
@@ -105,6 +106,7 @@ public class Shooter extends SystemBase {
         this.leftTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.leftTurretServo);
         this.rightTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightTurretServo);
         this.leftTurretServo.setReversed(true);
+        this.rightTurretServo.setReversed(true);
     }
 
     @Override

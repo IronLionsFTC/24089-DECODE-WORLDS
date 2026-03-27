@@ -125,6 +125,7 @@ public class ProjectileMotion {
 
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
 
+
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x(),
                 SwerveDrive.PinpointCache.position.position.y(),
@@ -147,8 +148,9 @@ public class ProjectileMotion {
 
 
         // Projectile math
-        double angle = solveAngle(currentVelocity, x, y);
         double velocity = alternativeFindSuitableVelocity(x, y);
+        if (!Shooter.ShooterPID.useVComp) currentVelocity = velocity;
+        double angle = solveAngle(currentVelocity, x, y);
 
         if (Double.isNaN(velocity)) velocity = 8500.0;
         if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
