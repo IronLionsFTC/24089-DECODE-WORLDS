@@ -28,18 +28,18 @@ public class VelocityFollower extends SystemBase {
 
     @Config
     public static class VelocityPID {
-        public static double P = 0.0005;
+        public static double P = 0.0002;
         public static double I = 0.0;
-        public static double D = 0.0;
-        public static double kS = 0.11;
-        public static double kV = 0.0005;
+        public static double D = 0.00005;
+        public static double kS = 0.1;
+        public static double kV = 0.0003;
     }
 
     @Config
     public static class HoldpointPID {
-        public static double P = 0.01;
+        public static double P = 0.002;
         public static double I = 0.0;
-        public static double D = 0.003;
+        public static double D = 0.0002;
         public static double kS = 0.05;
         public static double kV = 0.0;
     }

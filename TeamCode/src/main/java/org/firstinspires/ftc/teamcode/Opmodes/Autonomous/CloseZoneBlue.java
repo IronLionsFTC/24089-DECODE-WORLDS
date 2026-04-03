@@ -20,18 +20,18 @@ public class CloseZoneBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        Follower follower = new Follower(300, 600, 180);
+        Follower follower = new Follower(300, 800, 180);
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
         Shooter.ShooterPID.useConvergence = false;
 
-        Position start = new Position(300, 600, 180);
-        Position shoot = new Position(1800, 1100, 140);
-        Position intakeAEnd = new Position(2300, 200, 180);
-        Position gateIntakeA = new Position(2100, 250, 140);
-        Position gateIntakeB = new Position(2400, 200, 135);
-        Position intakeBEnd = new Position(1400, 300, 180);
+        Position start = new Position(300, 800, 180);
+        Position shoot = new Position(1600, 1400, 180);
+        Position intakeAEnd = new Position(2300, 400, 210);
+        Position gateIntakeA = new Position(2150, 300, 145);
+        Position gateIntakeB = new Position(2400, 200, 145);
+        Position intakeBEnd = new Position(1400, 700, 180);
 
         return Jobs.create()
                 .addSeries(
@@ -56,7 +56,7 @@ public class CloseZoneBlue extends TaskOpMode {
                         new Follow(follower, new Line(
                                 shoot,
                                 gateIntakeA
-                        )).then(new Sleep(1)).then(
+                        )).then(new Sleep(0.5)).then(
                                 new Follow(follower, new Line(
                                         gateIntakeA,
                                         gateIntakeB
@@ -74,7 +74,7 @@ public class CloseZoneBlue extends TaskOpMode {
                         new Follow(follower, new Line(
                                 shoot,
                                 gateIntakeA
-                        )).then(new Sleep(1)).then(
+                        )).then(new Sleep(0.5)).then(
                                 new Follow(follower, new Line(
                                         gateIntakeA,
                                         gateIntakeB
@@ -92,7 +92,7 @@ public class CloseZoneBlue extends TaskOpMode {
                         new Follow(follower, new Line(
                                 shoot,
                                 gateIntakeA
-                        )).then(new Sleep(1)).then(
+                        )).then(new Sleep(0.5)).then(
                                 new Follow(follower, new Line(
                                         gateIntakeA,
                                         gateIntakeB
@@ -110,7 +110,7 @@ public class CloseZoneBlue extends TaskOpMode {
                         new Follow(follower, new Line(
                                 shoot,
                                 gateIntakeA
-                        )).then(new Sleep(1)).then(
+                        )).then(new Sleep(0.5)).then(
                                 new Follow(follower, new Line(
                                         gateIntakeA,
                                         gateIntakeB

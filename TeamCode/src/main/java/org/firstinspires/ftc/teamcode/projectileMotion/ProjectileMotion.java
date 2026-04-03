@@ -66,7 +66,15 @@ public class ProjectileMotion {
         if (dscrm < 0) return Double.NaN;
         double plus = Math.atan((tx + Math.sqrt(dscrm)) / (2 * chunk));
         double minu = Math.atan((tx - Math.sqrt(dscrm)) / (2 * chunk));
-        return Math.min(plus, minu);
+
+        double a = Math.toDegrees(plus);
+        double b = Math.toDegrees(minu);
+
+        if (a > 60.0 || a < 30.0) return minu;
+        if (b > 60.0 || b < 30.0) return plus;
+
+        if (Shooter.ShooterPID.useMinimum) return Math.min(plus, minu);
+        else return Math.max(plus, minu);
     }
 
     /**
@@ -79,7 +87,7 @@ public class ProjectileMotion {
         double solution = 10000;
         double solutionWeight = 10000;
 
-        for (double angle = 35; angle < 57.0; angle += 1.0) {
+        for (double angle = 30; angle < 60.0; angle += 1.0) {
             double velocity = solveVelocity(Math.toRadians(angle), tx, ty);
             if (Double.isNaN(velocity)) continue;
             if (velocity > 9000) continue;
@@ -105,12 +113,14 @@ public class ProjectileMotion {
         double solution = 10000;
         double solutionWeight = 10000;
 
-        for (double velocity = 5000; velocity <= 8500; velocity += 100) {
-            double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
-            double b = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop, tx, ty));
-            double c = Math.toDegrees(solveAngle(velocity - Shooter.ShooterPID.expectedDrop * 2, tx, ty));
+        double expectedDrop = Shooter.ShooterPID.expectedDrop * (0.114 * tx + 42.85);
 
-            if (a >= 20 && b >= 20 && c >= 20 && a <= 52 && b <= 52 && c <= 52) {
+        for (double velocity = 4000; velocity <= 8000; velocity += 100) {
+            double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
+            double b = Math.toDegrees(solveAngle(velocity - expectedDrop, tx, ty));
+            double c = Math.toDegrees(solveAngle(velocity - expectedDrop * 2, tx, ty));
+
+            if (a >= 30 && b >= 30 && c >= 30 && a <= 60 && b <= 60 && c <= 60) {
                 double weight = velocity / Shooter.ShooterPID.velocityScale + Math.abs(c - a) / 20.0;
                 if (weight < solutionWeight) {
                     solution = velocity;
@@ -154,7 +164,7 @@ public class ProjectileMotion {
 
         if (Double.isNaN(velocity)) velocity = 8500.0;
         if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
-        if (Double.isNaN(angle)) angle = Math.toRadians(52);
+        if (Double.isNaN(angle)) angle = Math.toRadians(45);
 
         // Given that x = vt cos (a), t = x / (v cos (a))
         if (currentVelocity < 2500) currentVelocity = velocity;

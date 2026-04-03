@@ -29,7 +29,7 @@ public class Follower extends SystemBase {
     @Config
     public static class FollowerConstants {
         public static double translationP = 0.003;
-        public static double maxSpeed = 3000;
+        public static double maxSpeed = 1500;
     }
 
     public Follower(double x, double y, double h) {
@@ -86,7 +86,7 @@ public class Follower extends SystemBase {
         // Combine target velocities
         this.tangent.add_into(this.corrective, this.targetVelocity);
 
-        if (path.distanceRemaining() < 500) {
+        if (path.distanceRemaining() > 500) {
             // Apply into the velocityFollower
             this.drivetrain.state = VelocityFollower.State.Velocity;
             this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);

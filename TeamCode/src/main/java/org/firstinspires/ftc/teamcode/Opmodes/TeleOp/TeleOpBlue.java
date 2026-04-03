@@ -21,7 +21,7 @@ public class TeleOpBlue extends TaskOpMode {
         SwerveDrive drivetrain = new SwerveDrive(
             new Position(3500, 3100, 0),
             controller1.rightJoystick::x,
-            true
+            false
         );
 
         Intake intake = new Intake();

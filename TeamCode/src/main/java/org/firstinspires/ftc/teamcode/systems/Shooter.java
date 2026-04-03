@@ -65,24 +65,25 @@ public class Shooter extends SystemBase {
         public static double kV = 0.0001;
 
         public static double targetXFar = 0;
-        public static double targetYFar = 0;
+        public static double targetYFar = -50;
         public static double targetZFar = 1000;
         public static double targetXClose = 0;
-        public static double targetYClose = 0;
-        public static double targetZClose = 1200;
+        public static double targetYClose = -150;
+        public static double targetZClose = 1275;
 
         public static boolean useConvergence = true;
 
         public static double overPower = 1;
         public static double intakePower = 0.85;
 
-        public static double expectedDrop = 600;
+        public static double expectedDrop = 0.7;
 
         public static double hoodAngle = 0;
         public static double launchVelocity = 0;
 
         public static double velocityScale = 2000;
         public static boolean useVComp = true;
+        public static boolean useMinimum = true;
     }
 
     @Override
@@ -198,12 +199,7 @@ public class Shooter extends SystemBase {
     }
 
     public double calculateHoodAngleForDegrees(double degrees) {
-        return ((90 - degrees) - (90 - ServoConstants.Ratios.hoodZeroAngle)) / (ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle);
-    }
-
-    @Override
-    public boolean needsPriority() {
-        return this.state == State.Shooting;
+        return ((90 - degrees) - (90 - ServoConstants.Ratios.hoodZeroAngle)) / (ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle) + 0.015;
     }
 
     public boolean atSpeed() {
