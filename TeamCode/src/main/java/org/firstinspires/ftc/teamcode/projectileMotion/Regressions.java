@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.projectileMotion;
 import com.acmerobotics.dashboard.config.Config;
 
 public class Regressions {
+
+    @Config
     public static class Velocity {
-        public static double a = -17985.5239;
-        public static double b = -0.0000844472;
-        public static double c = 20000;
+        public static double a = -11380.7834;
+        public static double b = -0.000247539;
+        public static double c = 11431.9253;
     }
 
     @Config

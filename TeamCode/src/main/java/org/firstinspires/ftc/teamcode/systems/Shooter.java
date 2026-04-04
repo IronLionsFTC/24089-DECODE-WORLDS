@@ -65,18 +65,18 @@ public class Shooter extends SystemBase {
         public static double kV = 0.0001;
 
         public static double targetXFar = 0;
-        public static double targetYFar = -50;
-        public static double targetZFar = 1000;
+        public static double targetYFar = 150;
+        public static double targetZFar = 1100;
         public static double targetXClose = 0;
-        public static double targetYClose = -150;
+        public static double targetYClose = -50;
         public static double targetZClose = 1275;
 
         public static boolean useConvergence = true;
 
         public static double overPower = 1;
-        public static double intakePower = 0.85;
+        public static double intakePower = 1;
 
-        public static double expectedDrop = 0.7;
+        public static double expectedDrop = 0.6;
 
         public static double hoodAngle = 0;
         public static double launchVelocity = 0;
@@ -141,7 +141,7 @@ public class Shooter extends SystemBase {
                 ZeroTurret.TurretPID.D
         );
 
-        double sum = this.motors.getVelocityAverage(28.0);
+        double sum = this.motors.getVelocity(28.0);
         if (Double.isNaN(sum)) sum = 0;
         currentLaunchSpeed = Regressions.rpmToVelocity(sum);
 
@@ -176,8 +176,8 @@ public class Shooter extends SystemBase {
         if (ShooterPID.hoodAngle != 0) hoodAngle = Regressions.launchAngleToHoodAngle(ShooterPID.hoodAngle);
 
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
-        if (servoPosition < 0) servoPosition = 0;
-        if (servoPosition > 0.45) servoPosition = 0.45;
+        if (servoPosition > 1) servoPosition = 1;
+        if (servoPosition < 1 - 0.45) servoPosition = 1 - 0.45;
         hoodServo.setPosition(servoPosition);
 
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;
@@ -199,7 +199,7 @@ public class Shooter extends SystemBase {
     }
 
     public double calculateHoodAngleForDegrees(double degrees) {
-        return ((90 - degrees) - (90 - ServoConstants.Ratios.hoodZeroAngle)) / (ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle) + 0.015;
+        return 1 - (((90 - degrees) - (90 - ServoConstants.Ratios.hoodZeroAngle)) / (ServoConstants.Ratios.hoodRatio * ServoConstants.Ratios.hoodAngle) + 0.015);
     }
 
     public boolean atSpeed() {

@@ -150,11 +150,11 @@ public class ProjectileMotion {
         // Calculate the relative position of the target, on the ground, looking ahead in time to counteract turret lag.
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY())
                 .sub(SwerveDrive.PinpointCache.velocity.multiply(ShootOnTheMoveConstants.turretLookahead));
-        double direction = 180 + groundPlane.polarDirection()
+        double direction = groundPlane.polarDirection()
                 + SwerveDrive.PinpointCache.position.heading
                 + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.turretLookahead;
-        while (direction < -180) direction += 360;
-        while (direction >  180) direction -= 360;
+        while (direction < -183) direction += 360;
+        while (direction >  183) direction -= 360;
 
 
         // Projectile math

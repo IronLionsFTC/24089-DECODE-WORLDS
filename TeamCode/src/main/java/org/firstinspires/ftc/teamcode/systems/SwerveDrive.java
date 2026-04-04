@@ -55,7 +55,7 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class SwervePID {
-        public static double P = 0.01;
+        public static double P = 0.011;
         public static double I = 0;
         public static double D = 0;
     }

@@ -26,7 +26,7 @@ public class ServoConstants {
 
     public static class Ratios {
         public static double hoodRatio = (40.0 / 15.0) * (15.0 / 164.0);
-        public static double hoodAngle = 255;
+        public static double hoodAngle = 270;
         public static double hoodZeroAngle = 60;
     }
 }
