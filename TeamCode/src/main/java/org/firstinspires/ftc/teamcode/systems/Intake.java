@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
@@ -73,7 +74,7 @@ public class Intake extends SystemBase {
             case Shooting:
                 double power;
                 if (ProjectileMotion.far()) {
-                    power = Shooter.ShooterPID.intakePower;
+                    power = Shooter.ShooterPID.intakePower * TaskOpMode.Runtime.voltageCompensation;
                 } else {
                     power = 1;
                 }

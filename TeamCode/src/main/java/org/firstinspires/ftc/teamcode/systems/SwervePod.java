@@ -11,9 +11,10 @@ public class SwervePod {
     private final LionMotor motor;
     private final LionCRServo servo;
     private final Vector2 offset;
-    private final boolean xPattern;
 
+    private boolean xPattern;
     private final PID angleController;
+    private double lastAngleSetpoint;
 
     public SwervePod(
             LionMotor motor,
@@ -30,6 +31,7 @@ public class SwervePod {
         motor.resetPositionTo(startDegrees * (4096.0 / 360.0));
 
         this.angleController = new PID(0,0,0);
+        this.lastAngleSetpoint = startDegrees;
     }
 
     public double update(Vector2 translation, double omega) {
@@ -48,20 +50,40 @@ public class SwervePod {
         boolean commandedIdle = translationMag < 1e-6 && omegaMag < 1e-6;
 
         if (commandedIdle) {
+
             if (xPattern) {
-                // Classic X-pattern idle
-                double optionA = closestEquivalentAngle(wrapDeg(offset.polarDirection() + 90), podAngle);
-                double optionB = closestEquivalentAngle(wrapDeg(offset.polarDirection() - 90), podAngle);
-                double target = Math.abs(podAngle - optionA) < Math.abs(podAngle - optionB) ? optionA : optionB;
+
+                double optionA = closestEquivalentAngle(
+                        wrapDeg(offset.polarDirection() + 90),
+                        podAngle
+                );
+
+                double optionB = closestEquivalentAngle(
+                        wrapDeg(offset.polarDirection() - 90),
+                        podAngle
+                );
+
+                double target = Math.abs(wrapDeg(optionA - podAngle))
+                        < Math.abs(wrapDeg(optionB - podAngle))
+                        ? optionA
+                        : optionB;
+
                 servo.setPower(angleController.calculate(podAngle, target));
+
+                lastAngleSetpoint = target;
+
             } else {
-                servo.setPower(angleController.calculate(podAngle, podAngle));
+                servo.setPower(0);
             }
+
             return 0;
         }
 
-        // Normal movement
-        Vector2 rotationalVelocity = Vector2.cartesian(omega * offset.y(), -omega * offset.x());
+        Vector2 rotationalVelocity = Vector2.cartesian(
+                omega * offset.y(),
+                -omega * offset.x()
+        );
+
         Vector2 finalVelocity = translation.add(rotationalVelocity);
 
         if (finalVelocity.magnitude() < 1e-6) {
@@ -70,11 +92,12 @@ public class SwervePod {
         }
 
         double rawDesired = -finalVelocity.polarDirection();
+
         double forwardAngle = closestEquivalentAngle(rawDesired, podAngle);
         double reversedAngle = closestEquivalentAngle(rawDesired + 180, podAngle);
 
-        double forwardError = Math.abs(forwardAngle - podAngle);
-        double reversedError = Math.abs(reversedAngle - podAngle);
+        double forwardError = Math.abs(wrapDeg(forwardAngle - podAngle));
+        double reversedError = Math.abs(wrapDeg(reversedAngle - podAngle));
 
         double angleSetpoint;
         double drivePower;
@@ -87,9 +110,13 @@ public class SwervePod {
             drivePower = -finalVelocity.magnitude();
         }
 
+        lastAngleSetpoint = angleSetpoint;
+
         servo.setPower(angleController.calculate(podAngle, angleSetpoint));
 
-        if (Math.abs(angleSetpoint - podAngle) > 20) return 0;
+        if (Math.abs(wrapDeg(angleSetpoint - podAngle)) > 40) {
+            return 0;
+        }
 
         return drivePower;
     }
@@ -98,10 +125,16 @@ public class SwervePod {
         motor.setPower(power);
     }
 
+    public void setXPattern(boolean allowXPattern) {
+        this.xPattern = allowXPattern;
+    }
+
     private static double wrapDeg(double angle) {
         angle %= 360;
+
         if (angle <= -180) angle += 360;
         if (angle > 180) angle -= 360;
+
         return angle;
     }
 

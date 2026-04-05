@@ -48,14 +48,14 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class HeadingPID {
-        public static double P = 0.015;
+        public static double P = 0.017;
         public static double I = 0;
         public static double D = 0.002;
     }
 
     @Config
     public static class SwervePID {
-        public static double P = 0.011;
+        public static double P = 0.009;
         public static double I = 0;
         public static double D = 0;
     }
@@ -202,12 +202,12 @@ public class SwerveDrive extends SystemBase {
                 pinpoint.getVelX(DistanceUnit.MM)
         );
 
-        double driverTurn = heading.getAsDouble();
+        double driverTurn = heading.getAsDouble() * 1.5;
         double headingNow = PinpointCache.position.heading;
 
         double error = angleDifference(headingNow, targetHeading);
 
-        if (Math.abs(error) < 0.5) error = 0;
+        if (Math.abs(error) < 4) error = 0;
 
         // Adaptive proportional: smaller P at low angular velocity
         double velocityFactor = Math.min(1.0, Math.abs(PinpointCache.angularVelocity) / 50.0);
@@ -296,5 +296,12 @@ public class SwerveDrive extends SystemBase {
     public void relocaliseTo(Position position) {
         this.targetHeading = position.heading;
         pinpoint.setPosition(position.pose());
+    }
+
+    public void setXPattern(boolean allowXPattern) {
+        this.leftFront.setXPattern(allowXPattern);
+        this.rightFront.setXPattern(allowXPattern);
+        this.leftRear.setXPattern(allowXPattern);
+        this.rightRear.setXPattern(allowXPattern);
     }
 }
