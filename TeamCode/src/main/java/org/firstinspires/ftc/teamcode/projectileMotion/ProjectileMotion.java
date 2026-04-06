@@ -113,7 +113,7 @@ public class ProjectileMotion {
         double solution = 10000;
         double solutionWeight = 10000;
 
-        double expectedDrop = Shooter.ShooterPID.expectedDrop * (0.25 * tx + 40);
+        double expectedDrop = Shooter.ShooterPID.expectedDrop * (0.25 * tx - 40);
 
         for (double velocity = 4000; velocity <= 8000; velocity += 100) {
             double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
