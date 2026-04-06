@@ -65,16 +65,16 @@ public class Shooter extends SystemBase {
         public static double kV = 0.0001;
 
         public static double targetXFar = 0;
-        public static double targetYFar = -200;
-        public static double targetZFar = 1200;
+        public static double targetYFar = 0;
+        public static double targetZFar = 1100;
         public static double targetXClose = 0;
-        public static double targetYClose = -200;
+        public static double targetYClose = 100;
         public static double targetZClose = 1300;
 
         public static boolean useConvergence = true;
 
         public static double overPower = 1;
-        public static double intakePower = 0.95;
+        public static double intakePower = 0.8;
 
         public static double expectedDrop = 0.4;
 
@@ -176,8 +176,6 @@ public class Shooter extends SystemBase {
         if (ShooterPID.hoodAngle != 0) hoodAngle = Regressions.launchAngleToHoodAngle(ShooterPID.hoodAngle);
 
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
-        if (servoPosition > 1) servoPosition = 1;
-        if (servoPosition < 1 - 0.45) servoPosition = 1 - 0.45;
         hoodServo.setPosition(servoPosition);
 
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;

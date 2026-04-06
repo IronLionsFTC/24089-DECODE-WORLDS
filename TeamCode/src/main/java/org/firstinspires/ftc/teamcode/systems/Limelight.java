@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -18,6 +19,12 @@ public class Limelight extends SystemBase {
     private Limelight3A camera;
     public Limelight() {
         this.position = new Position(0, 0,0);
+    }
+
+    @Config
+    public static class LimelightOffset {
+        public static double x = -300;
+        public static double y = -300;
     }
 
     public final Position position;
@@ -41,10 +48,20 @@ public class Limelight extends SystemBase {
         List<LLResultTypes.FiducialResult> fedres = result.getFiducialResults();
         for (LLResultTypes.FiducialResult feducial : fedres) {
             Pose3D pose = feducial.getRobotPoseTargetSpace();
+
+            double y = pose.getPosition().z * - 1000;
+            double x = pose.getPosition().x * - 1000;
+
+            double s = Math.sin(Math.toRadians(35));
+            double c = Math.cos(Math.toRadians(35));
+
+            double xp = y * s + x * s;
+            double yp = x * c - y * c;
+
             this.position.update(
-                    pose.getPosition().z * 1000,
-                    pose.getPosition().x * -1000,
-            -pose.getOrientation().getPitch(AngleUnit.DEGREES));
+                    -yp + x,
+                    -xp + y,
+            180 - (pose.getOrientation().getPitch(AngleUnit.DEGREES) + 35));
 
             telemetry.addData("TX", position.position.x());
             telemetry.addData("TY", position.position.y());

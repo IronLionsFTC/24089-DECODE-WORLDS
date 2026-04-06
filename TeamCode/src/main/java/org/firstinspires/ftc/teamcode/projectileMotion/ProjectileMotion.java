@@ -113,7 +113,7 @@ public class ProjectileMotion {
         double solution = 10000;
         double solutionWeight = 10000;
 
-        double expectedDrop = Shooter.ShooterPID.expectedDrop * (0.114 * tx + 42.85);
+        double expectedDrop = Shooter.ShooterPID.expectedDrop * (0.25 * tx + 40);
 
         for (double velocity = 4000; velocity <= 8000; velocity += 100) {
             double a = Math.toDegrees(solveAngle(velocity,                       tx, ty));
@@ -165,6 +165,8 @@ public class ProjectileMotion {
         if (Double.isNaN(velocity)) velocity = 8500.0;
         if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
         if (Double.isNaN(angle)) angle = Math.toRadians(45);
+
+        if (x < 500) angle = Math.toRadians(60);
 
         // Given that x = vt cos (a), t = x / (v cos (a))
         if (currentVelocity < 2500) currentVelocity = velocity;

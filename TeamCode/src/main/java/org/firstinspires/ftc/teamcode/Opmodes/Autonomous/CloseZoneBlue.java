@@ -24,7 +24,6 @@ public class CloseZoneBlue extends TaskOpMode {
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
-        Shooter.ShooterPID.useConvergence = false;
 
         Position start = new Position(300, 800, 180);
         Position shoot = new Position(1600, 1400, 180);
