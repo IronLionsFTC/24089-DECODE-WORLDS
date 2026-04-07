@@ -51,6 +51,7 @@ public class SwerveDrive extends SystemBase {
         public static double P = 0.017;
         public static double I = 0;
         public static double D = 0.002;
+        public static double low = 0.5;
     }
 
     @Config
@@ -58,6 +59,10 @@ public class SwerveDrive extends SystemBase {
         public static double P = 0.009;
         public static double I = 0;
         public static double D = 0;
+        public static double kS = 0;
+        public static double deadband = 1;
+        public static double limitband = 10;
+        public static double limit = 1;
     }
 
     @Config
@@ -210,7 +215,7 @@ public class SwerveDrive extends SystemBase {
         if (Math.abs(error) < 4) error = 0;
 
         // Adaptive proportional: smaller P at low angular velocity
-        double velocityFactor = Math.min(1.0, Math.abs(PinpointCache.angularVelocity) / 50.0);
+        double velocityFactor = Math.max(Math.min(1.0, Math.abs(PinpointCache.angularVelocity) / 50.0), HeadingPID.low);
         double adaptiveP = HeadingPID.P * velocityFactor;
 
         double rawResponse = adaptiveP * error + HeadingPID.D * PinpointCache.angularVelocity;
@@ -235,7 +240,7 @@ public class SwerveDrive extends SystemBase {
             turning = true;
             targetHeading = headingNow;
         } else if (turning) {
-            if (Math.abs(PinpointCache.angularVelocity) < 5) {
+            if (Math.abs(PinpointCache.angularVelocity) < 10) {
                 turning = false;
                 targetHeading = headingNow;
             }

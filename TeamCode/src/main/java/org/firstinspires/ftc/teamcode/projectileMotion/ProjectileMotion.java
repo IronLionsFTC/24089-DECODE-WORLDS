@@ -151,6 +151,7 @@ public class ProjectileMotion {
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY())
                 .sub(SwerveDrive.PinpointCache.velocity.multiply(ShootOnTheMoveConstants.turretLookahead));
         double direction = groundPlane.polarDirection()
+                + 180
                 + SwerveDrive.PinpointCache.position.heading
                 + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.turretLookahead;
         while (direction < -183) direction += 360;

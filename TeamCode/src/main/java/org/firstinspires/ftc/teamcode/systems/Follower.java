@@ -86,7 +86,7 @@ public class Follower extends SystemBase {
         // Combine target velocities
         this.tangent.add_into(this.corrective, this.targetVelocity);
 
-        if (path.distanceRemaining() > 500) {
+        if (path.distanceRemaining() > 200) {
             // Apply into the velocityFollower
             this.drivetrain.state = VelocityFollower.State.Velocity;
             this.drivetrain.setTargetFieldCentricVelocity(this.targetVelocity);

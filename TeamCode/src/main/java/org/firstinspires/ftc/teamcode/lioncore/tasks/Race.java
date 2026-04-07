@@ -39,6 +39,7 @@ public class Race extends Task {
             if (this.tasks.get(i).finished()) {
                 this.tasks.get(i).end(false);
                 this.finished.set(i, true);
+                break;
             }
         }
     }
@@ -55,7 +56,7 @@ public class Race extends Task {
     @Override
     public void end(boolean interrupted) {
         // End all remaining tasks
-        for (int i = 0; i <this.tasks.size(); i++) {
+        for (int i = 0; i < this.tasks.size(); i++) {
             if (!this.finished.get(i)) {
                 this.tasks.get(i).end(interrupted);
             }

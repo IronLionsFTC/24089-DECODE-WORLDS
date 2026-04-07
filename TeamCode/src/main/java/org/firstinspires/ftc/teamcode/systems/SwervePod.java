@@ -4,6 +4,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 public class SwervePod {
@@ -47,7 +48,7 @@ public class SwervePod {
         double translationMag = translation.magnitude();
         double omegaMag = Math.abs(omega);
 
-        boolean commandedIdle = translationMag < 1e-6 && omegaMag < 1e-6;
+        boolean commandedIdle = translationMag < 0.1 && omegaMag < 0.1;
 
         if (commandedIdle) {
 
@@ -112,7 +113,15 @@ public class SwervePod {
 
         lastAngleSetpoint = angleSetpoint;
 
-        servo.setPower(angleController.calculate(podAngle, angleSetpoint));
+        double raw = angleController.calculate(podAngle, angleSetpoint);
+        raw += Math.signum(raw) * SwerveDrive.SwervePID.kS * TaskOpMode.Runtime.voltageCompensation;
+        if (Math.abs(podAngle - angleSetpoint) < SwerveDrive.SwervePID.deadband) raw = 0;
+        if (Math.abs(podAngle - angleSetpoint) < SwerveDrive.SwervePID.limitband) {
+            if (raw < -SwerveDrive.SwervePID.limit) raw = -SwerveDrive.SwervePID.limit;
+            if (raw >  SwerveDrive.SwervePID.limit) raw =  SwerveDrive.SwervePID.limit;
+        }
+
+        servo.setPower(raw);
 
         if (Math.abs(wrapDeg(angleSetpoint - podAngle)) > 40) {
             return 0;

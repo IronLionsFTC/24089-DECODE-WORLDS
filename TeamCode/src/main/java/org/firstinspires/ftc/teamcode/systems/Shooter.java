@@ -201,6 +201,6 @@ public class Shooter extends SystemBase {
     }
 
     public boolean atSpeed() {
-        return Math.abs(currentLaunchSpeed - targetVelocity) < 300 && currentLaunchSpeed > 3000;
+        return Math.abs(currentLaunchSpeed - targetVelocity) < 500 && currentLaunchSpeed > 3000;
     }
 }

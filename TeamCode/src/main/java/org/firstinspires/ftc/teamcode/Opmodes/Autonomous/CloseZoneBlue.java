@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Repeat;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Series;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Sleep;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.WaitUntil;
@@ -13,6 +15,7 @@ import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 import org.firstinspires.ftc.teamcode.tasks.Follow;
 import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFull;
+import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFullTimeout;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
 
 @Autonomous
@@ -26,116 +29,52 @@ public class CloseZoneBlue extends TaskOpMode {
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
         Position start = new Position(300, 800, 180);
-        Position shoot = new Position(1600, 1400, 180);
-        Position intakeAEnd = new Position(2300, 400, 210);
-        Position gateIntakeA = new Position(2150, 300, 145);
-        Position gateIntakeB = new Position(2400, 200, 145);
-        Position intakeBEnd = new Position(1400, 700, 180);
+        Position shootA = new Position(1600, 1400, 180);
+        Position shootB = new Position(1600, 1400, 145);
+        Position intakeAEnd = new Position(2300, 400, 180);
+        Position gateIntake = new Position(2200, 250, 145);
 
         return Jobs.create()
                 .addSeries(
                         new Follow(follower, new Line(
                                 start,
-                                shoot
-                        )),
-                        new Sleep(1),
-                        new Shoot(intake, shooter),
+                                shootA
+                        )).setMaxSpeed(800).with(
+                                new WaitUntil(shooter::atSpeed).then(
+                                        new Sleep(1).then(
+                                                new Shoot(intake, shooter)
+                                        )
+                                )
+                        ),
                         new Follow(follower, new Line(
-                                shoot, intakeAEnd
-                        )).race(
+                                shootA, intakeAEnd
+                        )).setMaxSpeed(800).race(
                                 new IntakeUntilFull(intake)
                         ),
                         new Follow(follower, new Line(
                                 intakeAEnd,
-                                shoot
+                                shootA
+                        )).with(new Sleep(1).then(
+                                new Shoot(intake, shooter)
                         )),
-                        new Sleep(1),
-                        new Shoot(intake, shooter),
 
-                        new Follow(follower, new Line(
-                                shoot,
-                                gateIntakeA
-                        )).then(new Sleep(0.5)).then(
-                                new Follow(follower, new Line(
-                                        gateIntakeA,
-                                        gateIntakeB
-                                )),
-                                new Sleep(2)
-                        ).race(
-                                new IntakeUntilFull(intake)
-                        ),
-                        new Follow(follower, new Line(
-                                gateIntakeB, shoot
-                        )),
-                        new Sleep(1),
-                        new Shoot(intake, shooter),
+                        new Repeat(
+                                new Series(
+                                    new Follow(follower, new Line(
+                                        shootB,
+                                        gateIntake
+                                    )).setMaxSpeed(900),
 
-                        new Follow(follower, new Line(
-                                shoot,
-                                gateIntakeA
-                        )).then(new Sleep(0.5)).then(
-                                new Follow(follower, new Line(
-                                        gateIntakeA,
-                                        gateIntakeB
-                                )),
-                                new Sleep(2)
-                        ).race(
-                                new IntakeUntilFull(intake)
-                        ),
-                        new Follow(follower, new Line(
-                                gateIntakeB, shoot
-                        )),
-                        new Sleep(1),
-                        new Shoot(intake, shooter),
+                                    new IntakeUntilFullTimeout(intake, 2),
 
-                        new Follow(follower, new Line(
-                                shoot,
-                                gateIntakeA
-                        )).then(new Sleep(0.5)).then(
-                                new Follow(follower, new Line(
-                                        gateIntakeA,
-                                        gateIntakeB
-                                )),
-                                new Sleep(2)
-                        ).race(
-                                new IntakeUntilFull(intake)
-                        ),
-                        new Follow(follower, new Line(
-                                gateIntakeB, shoot
-                        )),
-                        new Sleep(1),
-                        new Shoot(intake, shooter),
-
-                        new Follow(follower, new Line(
-                                shoot,
-                                gateIntakeA
-                        )).then(new Sleep(0.5)).then(
-                                new Follow(follower, new Line(
-                                        gateIntakeA,
-                                        gateIntakeB
-                                )),
-                                new Sleep(2)
-                        ).race(
-                                new IntakeUntilFull(intake)
-                        ),
-                        new Follow(follower, new Line(
-                                gateIntakeB, shoot
-                        )),
-                        new Sleep(1),
-                        new Shoot(intake, shooter),
-
-                        new Follow(follower, new Line(
-                                shoot,
-                                intakeBEnd
-                        )).race(
-                                new IntakeUntilFull(intake)
-                        ),
-                        new Follow(follower, new Line(
-                                intakeBEnd,
-                                shoot
-                        )),
-                        new Sleep(1),
-                        new Shoot(intake, shooter)
+                                    new Follow(follower, new Line(
+                                        gateIntake, shootB
+                                    )).setMaxSpeed(900).with(new Sleep(1).then(
+                                            new Shoot(intake, shooter))
+                                    )
+                                ),
+                            4
+                        )
                     )
                 .registerSystem(shooter)
                 .registerSystem(intake)

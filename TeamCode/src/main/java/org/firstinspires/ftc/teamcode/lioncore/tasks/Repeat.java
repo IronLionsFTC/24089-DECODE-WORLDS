@@ -23,7 +23,6 @@ public class Repeat extends Task {
 
     @Override
     public void init() {
-        this.counter = 0;
         this.running = true;
         this.task.init();
     }
@@ -32,11 +31,11 @@ public class Repeat extends Task {
     public void run() {
         if (!this.running) return;
         this.task.run();
-        this.counter -= 1;
-        if (this.task.finished()) {
+        if (this.task.finished() && counter > 0) {
             this.task.end(false);
             this.task.init();
         }
+        this.counter -= 1;
     }
 
     @Override
