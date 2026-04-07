@@ -30,16 +30,16 @@ public class CloseZoneBlue extends TaskOpMode {
 
         Position start = new Position(300, 800, 180);
         Position shootA = new Position(1600, 1400, 180);
-        Position shootB = new Position(1600, 1400, 145);
+        Position shootB = new Position(1600, 1400, 155);
         Position intakeAEnd = new Position(2300, 400, 180);
-        Position gateIntake = new Position(2200, 250, 145);
+        Position gateIntake = new Position(2200, 300, 155);
 
         return Jobs.create()
                 .addSeries(
                         new Follow(follower, new Line(
                                 start,
                                 shootA
-                        )).setMaxSpeed(800).with(
+                        )).setMaxSpeed(900).with(
                                 new WaitUntil(shooter::atSpeed).then(
                                         new Sleep(1).then(
                                                 new Shoot(intake, shooter)
@@ -48,7 +48,7 @@ public class CloseZoneBlue extends TaskOpMode {
                         ),
                         new Follow(follower, new Line(
                                 shootA, intakeAEnd
-                        )).setMaxSpeed(800).race(
+                        )).setMaxSpeed(500).race(
                                 new IntakeUntilFull(intake)
                         ),
                         new Follow(follower, new Line(
@@ -58,7 +58,6 @@ public class CloseZoneBlue extends TaskOpMode {
                                 new Shoot(intake, shooter)
                         )),
 
-                        new Repeat(
                                 new Series(
                                     new Follow(follower, new Line(
                                         shootB,
@@ -72,9 +71,7 @@ public class CloseZoneBlue extends TaskOpMode {
                                     )).setMaxSpeed(900).with(new Sleep(1).then(
                                             new Shoot(intake, shooter))
                                     )
-                                ),
-                            4
-                        )
+                                )
                     )
                 .registerSystem(shooter)
                 .registerSystem(intake)

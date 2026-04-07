@@ -28,19 +28,19 @@ public class VelocityFollower extends SystemBase {
 
     @Config
     public static class VelocityPID {
-        public static double P = 0.0002;
+        public static double P = 0.0001;
         public static double I = 0.0;
-        public static double D = 0.00005;
-        public static double kS = 0.1;
-        public static double kV = 0.0003;
+        public static double D = 0.00001;
+        public static double kS = 0.05;
+        public static double kV = 0.0006;
     }
 
     @Config
     public static class HoldpointPID {
-        public static double P = 0.002;
+        public static double P = 0.0015;
         public static double I = 0.0;
         public static double D = 0.0002;
-        public static double kS = 0.05;
+        public static double kS = 0.1;
     }
 
     public VelocityFollower(double x, double y, double h) {
@@ -121,7 +121,7 @@ public class VelocityFollower extends SystemBase {
                 this.holdpoint.position.sub_into(SwerveDrive.PinpointCache.position.position, this.targetFieldCentricVelocity);
                 double distance = this.targetFieldCentricVelocity.magnitude();
 
-                if (distance < 50) {
+                if (distance < 10) {
                     targetRobotCentricVelocity.update(0, 0);
                     this.swerveDrive.setTargetHeading(holdpoint.heading);
                 } else {

@@ -14,7 +14,7 @@ public class Regressions {
     @Config
     public static class Angle {
         public static double a = 1;
-        public static double c = 0;
+        public static double c = 3;
     }
 
     public static double rpmToVelocity(double rpm) {
