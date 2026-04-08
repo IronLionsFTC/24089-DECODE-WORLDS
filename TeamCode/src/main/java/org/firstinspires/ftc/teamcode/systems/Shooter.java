@@ -46,6 +46,7 @@ public class Shooter extends SystemBase {
     public double currentLaunchSpeed;
     public double targetHood;
     public ArrayList<Double> rpmBuffer;
+    private long startTime = 0;
 
     public Shooter(Encoder intakeEncoderForTurret) {
         this.quadrature = intakeEncoderForTurret;
@@ -129,6 +130,9 @@ public class Shooter extends SystemBase {
 
     @Override
     public void update(Telemetry telemetry, boolean useTelemetry) {
+
+        if (this.startTime == 0) this.startTime = System.nanoTime();
+
         this.pid.setConstants(
                 ShooterPID.P,
                 ShooterPID.I,
@@ -158,6 +162,7 @@ public class Shooter extends SystemBase {
         double targetRPM = Regressions.velocityToRpm(targetVelocity);
 
         double response = this.pid.calculate(sum, targetRPM);
+        if (System.nanoTime() - startTime > 1e9 && currentLaunchSpeed < 500) response = 0;
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
 
         if (!Double.isNaN(TaskOpMode.Runtime.voltageCompensation)) feedforward *= TaskOpMode.Runtime.voltageCompensation;
