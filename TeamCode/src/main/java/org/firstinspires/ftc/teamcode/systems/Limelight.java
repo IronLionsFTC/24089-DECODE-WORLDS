@@ -23,8 +23,8 @@ public class Limelight extends SystemBase {
 
     @Config
     public static class LimelightOffset {
-        public static double x = -300;
-        public static double y = -300;
+        public static double x = -700;
+        public static double y =  600;
     }
 
     public final Position position;
@@ -59,8 +59,8 @@ public class Limelight extends SystemBase {
             double yp = x * c - y * c;
 
             this.position.update(
-                    -yp + x,
-                    -xp + y,
+                    -yp + LimelightOffset.y,
+                    -xp + LimelightOffset.x,
             180 - (pose.getOrientation().getPitch(AngleUnit.DEGREES) + 35));
 
             telemetry.addData("TX", position.position.x());

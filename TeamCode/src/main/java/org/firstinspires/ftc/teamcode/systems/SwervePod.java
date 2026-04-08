@@ -69,7 +69,9 @@ public class SwervePod {
                         ? optionA
                         : optionB;
 
-                servo.setPower(angleController.calculate(podAngle, target));
+                double response = angleController.calculate(podAngle, target);
+                if (!Double.isNaN(response)) servo.setPower(response);
+                else servo.setPower(0);
 
                 lastAngleSetpoint = target;
 
@@ -121,7 +123,8 @@ public class SwervePod {
             if (raw >  SwerveDrive.SwervePID.limit) raw =  SwerveDrive.SwervePID.limit;
         }
 
-        servo.setPower(raw);
+        if (!Double.isNaN(raw)) servo.setPower(raw);
+        else servo.setPower(0);
 
         if (Math.abs(wrapDeg(angleSetpoint - podAngle)) > 40) {
             return 0;

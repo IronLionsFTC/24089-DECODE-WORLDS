@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Repeat;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Run;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Series;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Sleep;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
@@ -23,54 +24,54 @@ public class CloseZoneBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        Follower follower = new Follower(300, 800, 180);
+        Follower follower = new Follower(0, 800, 180);
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
-        Position start = new Position(300, 800, 180);
-        Position shootA = new Position(1600, 1400, 180);
-        Position shootB = new Position(1600, 1400, 155);
-        Position intakeAEnd = new Position(2300, 400, 180);
-        Position gateIntake = new Position(2200, 300, 155);
+        Position start = new Position(0, 800, 180);
+        Position shootA = new Position(1500, 1500, 190);
+        Position shootB = new Position(1300, 1400, 160);
+        Position intakeAEnd = new Position(2000, 200, 180);
+        Position gateIntake = new Position(1900, 250, 160);
 
         return Jobs.create()
                 .addSeries(
+                        new Run(() -> Shooter.ShooterPID.targetZClose = 1300),
                         new Follow(follower, new Line(
                                 start,
                                 shootA
-                        )).setMaxSpeed(900).with(
+                        )).setMaxSpeed(800).with(
                                 new WaitUntil(shooter::atSpeed).then(
-                                        new Sleep(1).then(
-                                                new Shoot(intake, shooter)
-                                        )
+                                        new Sleep(0.5).then(new Shoot(intake, shooter))
                                 )
                         ),
+                        new Run(() -> Shooter.ShooterPID.targetZClose = 1500),
                         new Follow(follower, new Line(
                                 shootA, intakeAEnd
-                        )).setMaxSpeed(500).race(
+                        )).race(
                                 new IntakeUntilFull(intake)
                         ),
                         new Follow(follower, new Line(
                                 intakeAEnd,
-                                shootA
-                        )).with(new Sleep(1).then(
-                                new Shoot(intake, shooter)
+                                shootB
                         )),
+                        new Sleep(0.8),
+                        new Shoot(intake, shooter),
 
                                 new Series(
                                     new Follow(follower, new Line(
                                         shootB,
                                         gateIntake
-                                    )).setMaxSpeed(900),
+                                    )),
 
                                     new IntakeUntilFullTimeout(intake, 2),
 
                                     new Follow(follower, new Line(
                                         gateIntake, shootB
-                                    )).setMaxSpeed(900).with(new Sleep(1).then(
-                                            new Shoot(intake, shooter))
-                                    )
+                                    )),
+                                    new Sleep(0.8),
+                                    new Shoot(intake, shooter)
                                 )
                     )
                 .registerSystem(shooter)

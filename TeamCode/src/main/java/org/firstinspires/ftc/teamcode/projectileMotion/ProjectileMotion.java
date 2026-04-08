@@ -154,13 +154,13 @@ public class ProjectileMotion {
                 + 180
                 + SwerveDrive.PinpointCache.position.heading
                 + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.turretLookahead;
-        while (direction < -183) direction += 360;
-        while (direction >  183) direction -= 360;
+        while (direction < -190) direction += 360;
+        while (direction >  190) direction -= 360;
 
 
         // Projectile math
         double velocity = alternativeFindSuitableVelocity(x, y);
-        if (!Shooter.ShooterPID.useVComp) currentVelocity = velocity;
+        if (!Shooter.ShooterPID.useVComp || currentVelocity < 1000) currentVelocity = velocity;
         double angle = solveAngle(currentVelocity, x, y);
 
         if (Double.isNaN(velocity)) velocity = 8500.0;
