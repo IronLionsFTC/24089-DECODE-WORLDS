@@ -135,7 +135,6 @@ public class ProjectileMotion {
 
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
 
-
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x(),
                 SwerveDrive.PinpointCache.position.position.y(),
@@ -154,8 +153,8 @@ public class ProjectileMotion {
                 + 180
                 + SwerveDrive.PinpointCache.position.heading
                 + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.turretLookahead;
-        while (direction < -190) direction += 360;
-        while (direction >  190) direction -= 360;
+        while (direction < -210) direction += 360;
+        while (direction >  210) direction -= 360;
 
 
         // Projectile math

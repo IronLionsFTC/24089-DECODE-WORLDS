@@ -19,6 +19,7 @@ public class Limelight extends SystemBase {
     private Limelight3A camera;
     public Limelight() {
         this.position = new Position(0, 0,0);
+        this.cache = new Position(0, 0,0);
     }
 
     @Config
@@ -27,6 +28,7 @@ public class Limelight extends SystemBase {
         public static double y =  300;
     }
 
+    public final Position cache;
     public final Position position;
     public boolean isValid = false;
     public boolean running = false;
@@ -46,7 +48,7 @@ public class Limelight extends SystemBase {
     @Override
     public void update(Telemetry telemetry, boolean updateTelemetry) {
 
-        if (running) {
+        if (running && !isValid) {
 
             LLResult result = this.camera.getLatestResult();
             if (!result.isValid()) return;
@@ -63,19 +65,18 @@ public class Limelight extends SystemBase {
                 double xp = y * s + x * s;
                 double yp = x * c - y * c;
 
-                this.position.update(
+                this.cache.update(
                         -yp + LimelightOffset.y,
                         -xp + LimelightOffset.x,
                         180 - (pose.getOrientation().getPitch(AngleUnit.DEGREES) + 35));
 
-                telemetry.addData("TX", position.position.x());
-                telemetry.addData("TY", position.position.y());
-                telemetry.addData("T_YAW", pose.getOrientation().getPitch(AngleUnit.DEGREES));
-
-                if (position.position.x() != 0 && position.position.y() != 0 && position.heading != 0) {
-                    this.isValid = true;
-                } else {
-                    this.isValid = false;
+                this.isValid = cache.position.x() != 0 && cache.position.y() != 0 && cache.heading != 0;
+                if (this.isValid) {
+                    this.position.update(
+                            this.cache.position.x(),
+                            this.cache.position.y(),
+                            this.cache.heading
+                    );
                 }
             }
         }
@@ -83,13 +84,14 @@ public class Limelight extends SystemBase {
 
     // TOOD - Red side
     public void start() {
+        this.running = true;
         this.isValid = false;
         this.camera.start();
         this.camera.pipelineSwitch(0);
-        this.running = true;
     }
 
     public void stop() {
+        this.running = false;
         this.isValid = false;
         this.camera.pipelineSwitch(7);
         this.camera.pause();

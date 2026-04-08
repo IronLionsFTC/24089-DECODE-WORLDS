@@ -48,6 +48,9 @@ public class Shooter extends SystemBase {
     public ArrayList<Double> rpmBuffer;
     private long startTime = 0;
 
+    public boolean onTarget = false;
+    public boolean validEncoder = true;
+
     public Shooter(Encoder intakeEncoderForTurret) {
         this.quadrature = intakeEncoderForTurret;
         this.targetVelocity = 0;
@@ -74,8 +77,8 @@ public class Shooter extends SystemBase {
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 0.99;
-        public static double overPowerClose = 0.99;
+        public static double overPowerFar = 1;
+        public static double overPowerClose = 1.05;
 
         public static double intakePower = 0.75;
         public static double expectedDrop = 0.4;
@@ -86,6 +89,8 @@ public class Shooter extends SystemBase {
         public static double velocityScale = 2000;
         public static boolean useVComp = true;
         public static boolean useMinimum = true;
+        public static boolean negativePID = false;
+        public static boolean fullpowerRecovery = false;
     }
 
     @Override
@@ -167,7 +172,12 @@ public class Shooter extends SystemBase {
         double targetRPM = Regressions.velocityToRpm(targetVelocity);
 
         double response = this.pid.calculate(sum, targetRPM);
-        if (System.nanoTime() - startTime > 1e9 && currentLaunchSpeed < 500) response = 0;
+
+        validEncoder = true;
+        if (System.nanoTime() - startTime > 1e9 && currentLaunchSpeed < 500) {
+            response = 0;
+            validEncoder = false;
+        }
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
 
         if (!Double.isNaN(TaskOpMode.Runtime.voltageCompensation)) feedforward *= TaskOpMode.Runtime.voltageCompensation;
@@ -175,11 +185,11 @@ public class Shooter extends SystemBase {
 
         telemetry.addData("RESPONSE", response);
 
-        if (response < 0) response = 0;
+        if (response < 0 && !ShooterPID.negativePID) response = 0;
 
-        if (this.state == State.Cruising) this.motors.setPower(response);
+        if (this.state == State.Cruising || !ShooterPID.fullpowerRecovery) this.motors.setPower(response);
         else {
-            this.motors.setPower(response);
+            this.motors.setPower(1);
         }
 
         double hoodAngle = Regressions.launchAngleToHoodAngle(solution.altitude);
@@ -192,6 +202,9 @@ public class Shooter extends SystemBase {
         response = this.turretpid.calculate(quadraturePosition, solution.azimuth);
         if (Math.abs(quadraturePosition - solution.azimuth) > 1) {
             response += ZeroTurret.TurretPID.kS * Math.signum(solution.azimuth - quadraturePosition);
+            onTarget = false;
+        } else {
+            onTarget = true;
         }
         this.leftTurretServo.setPower(response);
         this.rightTurretServo.setPower(response);
