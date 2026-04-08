@@ -66,7 +66,7 @@ public class Shooter extends SystemBase {
         public static double I = 0;
         public static double D = 0.00003;
         public static double kS = 0.0;
-        public static double kV = 0.0001;
+        public static double kV = 0.00015;
 
         public static double targetXFar = 0;
         public static double targetYFar = 0;
@@ -137,6 +137,7 @@ public class Shooter extends SystemBase {
     @Override
     public void update(Telemetry telemetry, boolean useTelemetry) {
 
+        double quadraturePosition = quadrature.getPosition() / 4096 * 360;
         if (this.startTime == 0) this.startTime = System.nanoTime();
 
         this.pid.setConstants(
@@ -161,9 +162,9 @@ public class Shooter extends SystemBase {
 
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
-            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower);
+            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower, quadraturePosition);
         else
-            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower);
+            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower, quadraturePosition);
 
         this.targetVelocity = solution.velocity * overPower;
         if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
@@ -198,7 +199,6 @@ public class Shooter extends SystemBase {
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
         hoodServo.setPosition(servoPosition);
 
-        double quadraturePosition = quadrature.getPosition() / 4096 * 360;
         response = this.turretpid.calculate(quadraturePosition, solution.azimuth);
         if (Math.abs(quadraturePosition - solution.azimuth) > 1) {
             response += ZeroTurret.TurretPID.kS * Math.signum(solution.azimuth - quadraturePosition);

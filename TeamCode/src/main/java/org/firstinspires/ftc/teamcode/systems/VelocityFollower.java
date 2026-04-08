@@ -37,10 +37,10 @@ public class VelocityFollower extends SystemBase {
 
     @Config
     public static class HoldpointPID {
-        public static double P = 0.0015;
+        public static double P = 0.0012;
         public static double I = 0.0;
         public static double D = 0.0002;
-        public static double kS = 0.1;
+        public static double kS = 0.2;
     }
 
     public VelocityFollower(double x, double y, double h) {
@@ -128,7 +128,12 @@ public class VelocityFollower extends SystemBase {
                     this.targetFieldCentricVelocity.normalise();
 
                     response = holdpointController.calculate(-distance, 0);
+
                     feedforward = HoldpointPID.kS;
+
+                    // Brake
+                    if (SwerveDrive.PinpointCache.velocity.magnitude() > 400) feedforward *= -2;
+
                     if (Math.abs(response) > 0.05)
                         response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
 

@@ -16,15 +16,17 @@ public class ProjectileMotion {
     public double azimuth;
     public boolean possible;
     public double time;
+    public double groundDist;
 
     private static final Vector3 target = Vector3.zero();
 
-    public ProjectileMotion(double velocity, double angle, double yaw, double timeOfFlight, boolean possible) {
+    public ProjectileMotion(double velocity, double angle, double yaw, double timeOfFlight, boolean possible, double groundDist) {
         this.velocity = velocity;
         this.altitude = angle;
         this.azimuth = yaw;
         this.time = timeOfFlight;
         this.possible = possible;
+        this.groundDist = groundDist;
     }
 
     @Config
@@ -133,7 +135,7 @@ public class ProjectileMotion {
         return solution;
     }
 
-    public static ProjectileMotion calculate(Vector3 target, double currentVelocity) {
+    public static ProjectileMotion calculate(Vector3 target, double currentVelocity, double currentAngle) {
 
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x(),
@@ -149,13 +151,29 @@ public class ProjectileMotion {
         // Calculate the relative position of the target, on the ground, looking ahead in time to counteract turret lag.
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY())
                 .sub(SwerveDrive.PinpointCache.velocity.multiply(ShootOnTheMoveConstants.turretLookahead));
-        double direction = groundPlane.polarDirection()
-                + 180
-                + SwerveDrive.PinpointCache.position.heading
-                + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.turretLookahead;
-        while (direction < -210) direction += 360;
-        while (direction >  210) direction -= 360;
 
+        double rawDirection =
+                groundPlane.polarDirection()
+                        + 180
+                        + SwerveDrive.PinpointCache.position.heading
+                        + SwerveDrive.PinpointCache.angularVelocity * ShootOnTheMoveConstants.turretLookahead;
+
+        // --- Normalize raw direction to [-180, 180] ---
+        while (rawDirection > 180) rawDirection -= 360;
+        while (rawDirection < -180) rawDirection += 360;
+
+        // --- Choose equivalent closest to current turret angle ---
+        double direction = rawDirection;
+
+        while (direction - currentAngle > 180) direction -= 360;
+        while (direction - currentAngle < -180) direction += 360;
+
+        // --- Enforce turret mechanical limits (-210 to +210) ---
+        if (direction > 210) direction -= 360;
+        if (direction < -210) direction += 360;
+
+        // Final safety clamp (guarantee never exceeding limits)
+        direction = Math.max(-210, Math.min(210, direction));
 
         // Projectile math
         double velocity = alternativeFindSuitableVelocity(x, y);
@@ -171,7 +189,8 @@ public class ProjectileMotion {
         // Given that x = vt cos (a), t = x / (v cos (a))
         if (currentVelocity < 2500) currentVelocity = velocity;
         double timeOfFlight = x / (currentVelocity * Math.cos(angle));
-        return new ProjectileMotion(velocity, Math.toDegrees(angle), direction, timeOfFlight, true);
+
+        return new ProjectileMotion(velocity, Math.toDegrees(angle), direction, timeOfFlight, true, x);
     }
 
     /**
@@ -180,15 +199,17 @@ public class ProjectileMotion {
      * @param currentVelocity The current flywheel velocity, in mm
      * @return The aiming parameters that should work even accounting for robot velocity
      */
-    public static ProjectileMotion calculateConvergence(Vector3 target, double currentVelocity) {
-        ProjectileMotion solution = calculate(target, currentVelocity);
+    public static ProjectileMotion calculateConvergence(Vector3 target, double currentVelocity, double currentAngle) {
+        ProjectileMotion solution = calculate(target, currentVelocity, currentAngle);
+        if (solution.groundDist < 800) return solution;
+
         Vector3 expectedMotion;
 
         for (int convergence = 0; convergence < ShootOnTheMoveConstants.convergence; convergence++) {
             expectedMotion = new Vector3(SwerveDrive.PinpointCache.velocity.x(), SwerveDrive.PinpointCache.velocity.y(), 0.0)
                     .scale(solution.time * ShootOnTheMoveConstants.timeOverestimate);
             Vector3 trueTarget = target.subtract(expectedMotion);
-            solution = calculate(trueTarget, currentVelocity);
+            solution = calculate(trueTarget, currentVelocity, currentAngle);
         }
 
         return solution;

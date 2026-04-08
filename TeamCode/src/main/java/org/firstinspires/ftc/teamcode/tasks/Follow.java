@@ -29,9 +29,9 @@ public class Follow extends Task {
     }
 
     @Override
-    // Finishes when the follower is within 1cm of the target.
+    // Finishes when the follower is within 15cm of the target.
     public boolean finished() {
-        return follower.getDistance() < 50;
+        return follower.getDistance() < 150;
     }
 
     @Override

@@ -30,49 +30,98 @@ public class CloseZoneBlue extends TaskOpMode {
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
         Position start = new Position(0, 800, 180);
-        Position shootA = new Position(1500, 1500, 190);
-        Position shootB = new Position(1300, 1400, 160);
+        Position shootA = new Position(1600, 1500, 180);
+        Position shootB = new Position(1300, 1200, 160);
+        Position shootBLeaving = new Position(1300, 1200, 160);
         Position intakeAEnd = new Position(2000, 200, 180);
-        Position gateIntake = new Position(1900, 250, 160);
+        Position gateIntakeA = new Position(1900, 200, 160);
+        Position gateIntakeB = new Position(1900, 200, 160);
 
         return Jobs.create()
                 .addSeries(
-                        new Run(() -> Shooter.ShooterPID.targetZClose = 1300),
                         new Follow(follower, new Line(
                                 start,
                                 shootA
-                        )).setMaxSpeed(800).with(
+                        )).setMaxSpeed(800).race(
                                 new WaitUntil(shooter::atSpeed).then(
                                         new Sleep(0.5).then(new Shoot(intake, shooter))
                                 )
                         ),
-                        new Run(() -> Shooter.ShooterPID.targetZClose = 1500),
                         new Follow(follower, new Line(
                                 shootA, intakeAEnd
                         )).race(
                                 new IntakeUntilFull(intake)
                         ),
+                        new Run(() -> Shooter.ShooterPID.useConvergence = false),
                         new Follow(follower, new Line(
                                 intakeAEnd,
                                 shootB
                         )),
-                        new Sleep(0.8),
                         new Shoot(intake, shooter),
 
-                                new Series(
-                                    new Follow(follower, new Line(
-                                        shootB,
-                                        gateIntake
-                                    )),
+                        // GATE CYCLE
 
-                                    new IntakeUntilFullTimeout(intake, 2),
+                        new Series(
+                            new Follow(follower, new Line(
+                                shootBLeaving,
+                                gateIntakeA
+                            )).setMaxSpeed(900),
 
-                                    new Follow(follower, new Line(
-                                        gateIntake, shootB
-                                    )),
-                                    new Sleep(0.8),
-                                    new Shoot(intake, shooter)
-                                )
+                            new IntakeUntilFullTimeout(intake, 2),
+
+                            new Follow(follower, new Line(
+                                gateIntakeA, shootB
+                            )),
+                            new Shoot(intake, shooter)
+                        ),
+
+                        // GATE CYCLE
+
+                        new Series(
+                                new Follow(follower, new Line(
+                                        shootBLeaving,
+                                        gateIntakeB
+                                )).setMaxSpeed(900),
+
+                                new IntakeUntilFullTimeout(intake, 2),
+
+                                new Follow(follower, new Line(
+                                        gateIntakeB, shootB
+                                )),
+                                new Shoot(intake, shooter)
+                        ),
+
+                        // GATE CYCLE
+
+                        new Series(
+                                new Follow(follower, new Line(
+                                        shootBLeaving,
+                                        gateIntakeB
+                                )).setMaxSpeed(900),
+
+                                new IntakeUntilFullTimeout(intake, 2),
+
+                                new Follow(follower, new Line(
+                                        gateIntakeB, shootB
+                                )),
+                                new Shoot(intake, shooter)
+                        ),
+
+                        // GATE CYCLE
+
+                        new Series(
+                                new Follow(follower, new Line(
+                                        shootBLeaving,
+                                        gateIntakeB
+                                )).setMaxSpeed(900),
+
+                                new IntakeUntilFullTimeout(intake, 2),
+
+                                new Follow(follower, new Line(
+                                        gateIntakeB, shootB
+                                )),
+                                new Shoot(intake, shooter)
+                        )
                     )
                 .registerSystem(shooter)
                 .registerSystem(intake)
