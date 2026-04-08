@@ -14,7 +14,8 @@ public class Regressions {
     @Config
     public static class Angle {
         public static double a = 1;
-        public static double c = 3;
+        public static double cFar = 3;
+        public static double cClose = -1;
     }
 
     public static double rpmToVelocity(double rpm) {
@@ -26,6 +27,9 @@ public class Regressions {
     }
 
     public static double launchAngleToHoodAngle(double launchAngle) {
-        return (launchAngle - Angle.c) / Angle.a;
+        double c;
+        if (ProjectileMotion.far()) c = Angle.cFar;
+        else c = Angle.cClose;
+        return (launchAngle - c) / Angle.a;
     }
 }

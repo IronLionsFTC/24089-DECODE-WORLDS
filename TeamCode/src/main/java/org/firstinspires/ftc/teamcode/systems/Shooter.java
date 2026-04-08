@@ -70,13 +70,14 @@ public class Shooter extends SystemBase {
         public static double targetZFar = 1000;
         public static double targetXClose = 0;
         public static double targetYClose = 100;
-        public static double targetZClose = 1500;
+        public static double targetZClose = 1200;
 
         public static boolean useConvergence = true;
 
-        public static double overPower = 0.99;
-        public static double intakePower = 0.7;
+        public static double overPowerFar = 0.99;
+        public static double overPowerClose = 0.99;
 
+        public static double intakePower = 0.75;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
@@ -149,13 +150,17 @@ public class Shooter extends SystemBase {
         if (Double.isNaN(sum)) sum = 0;
         currentLaunchSpeed = Regressions.rpmToVelocity(sum);
 
+        double overPower;
+        if (ProjectileMotion.far()) overPower = ShooterPID.overPowerFar;
+        else overPower = ShooterPID.overPowerClose;
+
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
-            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
+            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower);
         else
-            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / ShooterPID.overPower);
+            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower);
 
-        this.targetVelocity = solution.velocity * ShooterPID.overPower;
+        this.targetVelocity = solution.velocity * overPower;
         if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
 
         if (this.targetVelocity < 4000 || Double.isNaN(targetVelocity)) targetVelocity = 8500;

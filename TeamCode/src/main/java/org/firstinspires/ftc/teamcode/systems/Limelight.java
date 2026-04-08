@@ -23,12 +23,13 @@ public class Limelight extends SystemBase {
 
     @Config
     public static class LimelightOffset {
-        public static double x = -700;
-        public static double y =  600;
+        public static double x = -300;
+        public static double y =  300;
     }
 
     public final Position position;
     public boolean isValid = false;
+    public boolean running = false;
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
@@ -38,40 +39,59 @@ public class Limelight extends SystemBase {
     @Override
     public void init() {
         this.camera.start();
-        this.camera.pipelineSwitch(0);
+        this.camera.pipelineSwitch(7);
+        this.camera.pause();
     }
 
     @Override
     public void update(Telemetry telemetry, boolean updateTelemetry) {
-        LLResult result = this.camera.getLatestResult();
-        if (!result.isValid()) return;
-        List<LLResultTypes.FiducialResult> fedres = result.getFiducialResults();
-        for (LLResultTypes.FiducialResult feducial : fedres) {
-            Pose3D pose = feducial.getRobotPoseTargetSpace();
 
-            double y = pose.getPosition().z * - 1000;
-            double x = pose.getPosition().x * - 1000;
+        if (running) {
 
-            double s = Math.sin(Math.toRadians(35));
-            double c = Math.cos(Math.toRadians(35));
+            LLResult result = this.camera.getLatestResult();
+            if (!result.isValid()) return;
+            List<LLResultTypes.FiducialResult> fedres = result.getFiducialResults();
+            for (LLResultTypes.FiducialResult feducial : fedres) {
+                Pose3D pose = feducial.getRobotPoseTargetSpace();
 
-            double xp = y * s + x * s;
-            double yp = x * c - y * c;
+                double y = pose.getPosition().z * -1000;
+                double x = pose.getPosition().x * -1000;
 
-            this.position.update(
-                    -yp + LimelightOffset.y,
-                    -xp + LimelightOffset.x,
-            180 - (pose.getOrientation().getPitch(AngleUnit.DEGREES) + 35));
+                double s = Math.sin(Math.toRadians(35));
+                double c = Math.cos(Math.toRadians(35));
 
-            telemetry.addData("TX", position.position.x());
-            telemetry.addData("TY", position.position.y());
-            telemetry.addData("T_YAW", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+                double xp = y * s + x * s;
+                double yp = x * c - y * c;
 
-            if (position.position.x() != 0 && position.position.y() != 0 && position.heading != 0) {
-                this.isValid = true;
-            } else {
-                this.isValid = false;
+                this.position.update(
+                        -yp + LimelightOffset.y,
+                        -xp + LimelightOffset.x,
+                        180 - (pose.getOrientation().getPitch(AngleUnit.DEGREES) + 35));
+
+                telemetry.addData("TX", position.position.x());
+                telemetry.addData("TY", position.position.y());
+                telemetry.addData("T_YAW", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+
+                if (position.position.x() != 0 && position.position.y() != 0 && position.heading != 0) {
+                    this.isValid = true;
+                } else {
+                    this.isValid = false;
+                }
             }
         }
+    }
+
+    // TOOD - Red side
+    public void start() {
+        this.isValid = false;
+        this.camera.start();
+        this.camera.pipelineSwitch(0);
+        this.running = true;
+    }
+
+    public void stop() {
+        this.isValid = false;
+        this.camera.pipelineSwitch(7);
+        this.camera.pause();
     }
 }

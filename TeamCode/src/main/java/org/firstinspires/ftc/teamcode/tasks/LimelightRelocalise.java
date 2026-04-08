@@ -8,6 +8,9 @@ public class LimelightRelocalise extends Task {
 
     private SwerveDrive drivetrain;
     private Limelight limelight;
+    private long startTime;
+
+    private boolean foundSolution = false;
 
     public LimelightRelocalise(SwerveDrive drivetrain, Limelight limelight) {
         this.drivetrain = drivetrain;
@@ -16,11 +19,25 @@ public class LimelightRelocalise extends Task {
 
     @Override
     public void init() {
-        this.drivetrain.relocaliseTo(limelight.position);
+        this.limelight.start();
+        this.startTime = System.nanoTime();
+    }
+
+    @Override
+    public void run() {
+        if (this.limelight.isValid) {
+            this.drivetrain.relocaliseTo(limelight.position);
+            this.foundSolution = true;
+        }
     }
 
     @Override
     public boolean finished() {
-        return true;
+        return foundSolution || System.nanoTime() - startTime > 1e9;
+    }
+
+    @Override
+    public void end(boolean i) {
+        this.limelight.stop();
     }
 }
