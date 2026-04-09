@@ -16,23 +16,23 @@ import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFull;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
 
 @Autonomous
-public class FarZoneRed extends TaskOpMode {
+public class FarZoneGateCycleBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        Follower follower = new Follower(-3500, 1300, 180);
+        Follower follower = new Follower(3500, 1300, 180);
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
         Shooter.ShooterPID.useConvergence = false;
 
-        Position start = new Position(-3500, 1300, 180);
-        Position shoot = new Position(-3300, 1400, 180);
-        Position wallIntake = new Position(-3500, 180, 180);
-        Position intakeAStart = new Position(-2800, 1100, 180);
-        Position intakeAEnd = new Position(-2800, 400, 180);
-        Position intakeBStart = new Position(-2200, 1000, 180);
-        Position intakeBEnd = new Position(-2200, 400, 180);
+        Position start = new Position(3500, 1300, 180);
+        Position shoot = new Position(3300, 1400, 180);
+        Position wallIntake = new Position(3500, 180, 180);
+        Position intakeAStart = new Position(2800, 1100, 180);
+        Position intakeAEnd = new Position(2800, 400, 180);
+        Position intakeBStart = new Position(2200, 1000, 180);
+        Position intakeBEnd = new Position(2200, 400, 180);
 
         return Jobs.create()
                 .addSeries(

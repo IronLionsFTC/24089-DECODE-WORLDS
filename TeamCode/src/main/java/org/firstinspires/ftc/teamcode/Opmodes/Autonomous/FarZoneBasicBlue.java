@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFull;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
 
 @Autonomous
-public class FarZoneBlue extends TaskOpMode {
+public class FarZoneBasicBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
