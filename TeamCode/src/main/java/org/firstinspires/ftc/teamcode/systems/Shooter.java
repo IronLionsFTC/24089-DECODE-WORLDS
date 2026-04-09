@@ -71,7 +71,7 @@ public class Shooter extends SystemBase {
         public static double targetXFar = 0;
         public static double targetYFar = 0;
         public static double targetZFar = 1000;
-        public static double targetXClose = 0;
+        public static double targetXClose = 300;
         public static double targetYClose = 100;
         public static double targetZClose = 1200;
 
@@ -80,7 +80,7 @@ public class Shooter extends SystemBase {
         public static double overPowerFar = 1;
         public static double overPowerClose = 1.05;
 
-        public static double intakePower = 0.75;
+        public static double intakePower = 0.7;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
@@ -90,7 +90,10 @@ public class Shooter extends SystemBase {
         public static boolean useVComp = true;
         public static boolean useMinimum = true;
         public static boolean negativePID = false;
-        public static boolean fullpowerRecovery = false;
+        public static boolean fullpowerRecovery = true;
+
+        public static double farZoneDistanceOffset = 200;
+        public static double closeZoneDistanceOffset = 400;
     }
 
     @Override
@@ -186,10 +189,13 @@ public class Shooter extends SystemBase {
 
         telemetry.addData("RESPONSE", response);
 
-        if (response < 0 && !ShooterPID.negativePID) response = 0;
+        if (response < 0) {
+            if (ShooterPID.negativePID) response *= 0.2;
+            else { response = 0;}
+        }
 
         if (this.state == State.Cruising || !ShooterPID.fullpowerRecovery) this.motors.setPower(response);
-        else {
+        else if (this.currentLaunchSpeed < this.targetVelocity * 0.97) {
             this.motors.setPower(1);
         }
 

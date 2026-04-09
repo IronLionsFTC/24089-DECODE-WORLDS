@@ -148,6 +148,9 @@ public class ProjectileMotion {
         ShootOnTheMoveConstants.lastDistance = x;
         double y = relativeTarget.getZ();
 
+        if (far()) x += Shooter.ShooterPID.farZoneDistanceOffset;
+        else x += Shooter.ShooterPID.closeZoneDistanceOffset;
+
         // Calculate the relative position of the target, on the ground, looking ahead in time to counteract turret lag.
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY())
                 .sub(SwerveDrive.PinpointCache.velocity.multiply(ShootOnTheMoveConstants.turretLookahead));
