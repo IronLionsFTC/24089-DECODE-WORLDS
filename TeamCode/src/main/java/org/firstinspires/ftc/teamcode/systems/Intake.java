@@ -22,7 +22,7 @@ public class Intake extends SystemBase {
         Off,
         Shooting,
         TopOnly,
-        Reverse
+        Reverse,
     }
 
     private LionMotor intakeMotor;

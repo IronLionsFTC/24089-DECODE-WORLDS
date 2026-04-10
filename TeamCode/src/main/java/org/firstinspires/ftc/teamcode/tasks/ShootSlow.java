@@ -1,18 +1,16 @@
 package org.firstinspires.ftc.teamcode.tasks;
 
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
-import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 
-public class Shoot extends Task {
+public class ShootSlow extends Task {
 
     private final Intake intake;
     private final Shooter shooter;
     private long initTime;
-    private long endTime;
 
-    public Shoot(Intake intake, Shooter shooter) {
+    public ShootSlow(Intake intake, Shooter shooter) {
         this.intake = intake;
         this.shooter = shooter;
     }
@@ -20,19 +18,20 @@ public class Shoot extends Task {
     @Override
     public void init() {
         this.initTime = System.nanoTime();
-        this.intake.setState(Intake.State.Shooting);
+        this.intake.setState(Intake.State.TopOnly);
         this.shooter.state = Shooter.State.Shooting;
+    }
 
-        if (ProjectileMotion.far()) {
-            this.endTime = (long) (this.initTime + 1e9);
-        } else {
-            this.endTime = (long) (this.initTime + 4e8);
+    @Override
+    public void run() {
+        if (System.nanoTime() - this.initTime > 5e8) {
+            this.intake.setState(Intake.State.Shooting);
         }
     }
 
     @Override
     public boolean finished() {
-        return (System.nanoTime() > endTime);
+        return (System.nanoTime() - initTime) > 1e9;
     }
 
     @Override

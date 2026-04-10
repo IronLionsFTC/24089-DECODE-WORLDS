@@ -40,7 +40,7 @@ public class Limelight extends SystemBase {
 
     @Override
     public void init() {
-        this.camera.pipelineSwitch(7);
+        this.camera.pipelineSwitch(0);
     }
 
     @Override
@@ -85,12 +85,10 @@ public class Limelight extends SystemBase {
         this.cache.update(0, 0, 0);
         this.running = true;
         this.isValid = false;
-        this.camera.pipelineSwitch(0);
     }
 
     public void stop() {
         this.running = false;
         this.isValid = false;
-        this.camera.pipelineSwitch(7);
     }
 }

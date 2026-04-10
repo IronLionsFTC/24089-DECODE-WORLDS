@@ -47,9 +47,12 @@ public class Shooter extends SystemBase {
     public double targetHood;
     public ArrayList<Double> rpmBuffer;
     private long startTime = 0;
-
     public boolean onTarget = false;
     public boolean validEncoder = true;
+
+    // Lookahead
+    private double lastVelocity;
+    private long lastTime;
 
     public Shooter(Encoder intakeEncoderForTurret) {
         this.quadrature = intakeEncoderForTurret;
@@ -77,10 +80,10 @@ public class Shooter extends SystemBase {
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 0.98;
+        public static double overPowerFar = 0.92;
         public static double overPowerClose = 1;
 
-        public static double intakePower = 0.7;
+        public static double intakePower = 0.5;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
@@ -92,8 +95,11 @@ public class Shooter extends SystemBase {
         public static boolean negativePID = false;
         public static boolean fullpowerRecovery = false;
 
-        public static double farZoneDistanceOffset = 400;
+        public static double farZoneDistanceOffset = 600;
         public static double closeZoneDistanceOffset = 400;
+
+        public static boolean useLookahead = false;
+        public static double lookaheadTime = 0.1;
     }
 
     @Override
@@ -122,6 +128,10 @@ public class Shooter extends SystemBase {
 
     @Override
     public void init() {
+
+        this.lastVelocity = 0;
+        this.lastTime = System.nanoTime();
+
         this.pid = new PID(
                 ShooterPID.P,
                 ShooterPID.I,
@@ -140,6 +150,8 @@ public class Shooter extends SystemBase {
     @Override
     public void update(Telemetry telemetry, boolean useTelemetry) {
 
+        long currentTime = System.nanoTime();
+
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;
         if (this.startTime == 0) this.startTime = System.nanoTime();
 
@@ -156,6 +168,17 @@ public class Shooter extends SystemBase {
         );
 
         double sum = this.motors.getVelocity(28.0);
+        double record = sum;
+        double velocityChange = sum - lastVelocity;
+        double timeChange = (currentTime - lastTime) / 1e9;
+        double acceleration = velocityChange / timeChange;
+        this.lastTime = currentTime;
+        this.lastVelocity = record;
+
+        if (ShooterPID.useLookahead) {
+            sum += acceleration * ShooterPID.lookaheadTime;
+        }
+
         if (Double.isNaN(sum)) sum = 0;
         currentLaunchSpeed = Regressions.rpmToVelocity(sum);
 
@@ -178,7 +201,7 @@ public class Shooter extends SystemBase {
         double response = this.pid.calculate(sum, targetRPM);
 
         validEncoder = true;
-        if (System.nanoTime() - startTime > 1e9 && currentLaunchSpeed < 500) {
+        if (currentTime - startTime > 1e9 && currentLaunchSpeed < 500) {
             response = 0;
             validEncoder = false;
         }
