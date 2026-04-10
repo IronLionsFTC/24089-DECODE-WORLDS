@@ -20,11 +20,10 @@ public class FarZoneBasicBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        Follower follower = new Follower(3500, 1300, 180);
+        Follower follower = new Follower(3200, 1200, 180);
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
-        Shooter.ShooterPID.useConvergence = false;
 
         Position start = new Position(3500, 1300, 180);
         Position shoot = new Position(3300, 1400, 180);

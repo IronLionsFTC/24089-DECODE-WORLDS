@@ -24,8 +24,9 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        double xOffset = -200;
-        double yOffset = 250;
+        double shootDelay = 0.2;
+        double xOffset = -100;
+        double yOffset = 150;
 
         Follower follower = new Follower(0 + xOffset, 500 + yOffset, 180);
         Intake intake = new Intake();
@@ -33,39 +34,41 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
         Position start = new Position(0 + xOffset, 500 + yOffset, 180);
-        Position sotmDest = new Position(1900 + xOffset, 1800 + yOffset, 180);
-        Position shootA = new Position(1400 + xOffset, 1300 + yOffset, 150);
+        Position firstThree = new Position(1000 + xOffset, 800 + yOffset, 180);
+        Position elbow = new Position(1900 + xOffset, 800 + yOffset, 180);
+        Position shootA = new Position(1500 + xOffset, 1200 + yOffset, 150);
         Position shootB = new Position(1300 + xOffset, 1000 + yOffset, 150);
-        Position intakeAEnd = new Position(2000 + xOffset, -150 + yOffset, 150);
-        Position intakeBEnd = new Position(1350 + xOffset, -60 + yOffset, 150);
-        Position gateIntake = new Position(1900 + xOffset, -100 + yOffset, 150);
+        Position intakeAEnd = new Position(2000 + xOffset, -150 + yOffset, 180);
+        Position intakeBEnd = new Position(1350 + xOffset, -60 + yOffset, 180);
+        Position gateIntake = new Position(1920 + xOffset, -100 + yOffset, 150);
         Position endPoint = new Position(2000 + xOffset, 300 + yOffset, 150);
 
         return Jobs.create()
                 .addSeries(
+                        new Run(() -> Shooter.ShooterPID.useConvergence = false),
                         new Follow(follower, new Line(
                                 start,
-                                sotmDest
-                        )).setMaxSpeed(800).race(
-                            new WaitUntil(shooter::atSpeed).then(
-                                new Sleep(0.4).then(
-                                    new Shoot(intake, shooter)
-                                        .then(new Sleep(0.8))
-                                )
-                            )
-                        ),
+                                firstThree
+                        )).setMaxSpeed(800),
+
+                        new Sleep(shootDelay).then(new Shoot(intake, shooter)),
+
                         new Follow(follower, new Line(
-                                sotmDest, intakeAEnd
+                                firstThree,
+                                elbow
+                        )),
+
+                        new Follow(follower, new Line(
+                                elbow, intakeAEnd
                         )).setMaxSpeed(900).race(
                                 new IntakeUntilFull(intake)
                         ),
-                        new Run(() -> Shooter.ShooterPID.useConvergence = false),
                         new Follow(follower, new Line(
                                 intakeAEnd,
                                 shootA
                         )),
 
-                        new Shoot(intake, shooter),
+                        new Sleep(shootDelay).then(new Shoot(intake, shooter)),
 
                         // GATE CYCLE
 
@@ -80,7 +83,7 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
                             new Follow(follower, new Line(
                                 gateIntake, shootA
                             )),
-                            new Shoot(intake, shooter)
+                            new Sleep(shootDelay).then(new Shoot(intake, shooter))
                         ),
 
                         // SECOND PREPLACED ROW
@@ -96,7 +99,7 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
                                 shootB
                         )),
 
-                        new Shoot(intake, shooter),
+                        new Sleep(shootDelay).then(new Shoot(intake, shooter)),
 
                         // GATE CYCLE
 
@@ -111,7 +114,7 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
                                 new Follow(follower, new Line(
                                         gateIntake, shootB
                                 )),
-                                new Shoot(intake, shooter)
+                                new Sleep(shootDelay).then(new Shoot(intake, shooter))
                         ),
 
                         // GATE CYCLE
@@ -127,23 +130,7 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
                                 new Follow(follower, new Line(
                                         gateIntake, shootB
                                 )),
-                                new Shoot(intake, shooter)
-                        ),
-
-                        // GATE CYCLE
-
-                        new Series(
-                                new Follow(follower, new Line(
-                                        shootB,
-                                        gateIntake
-                                )).setMaxSpeed(900),
-
-                                new IntakeUntilFullTimeout(intake, 2),
-
-                                new Follow(follower, new Line(
-                                        gateIntake, shootB
-                                )),
-                                new Shoot(intake, shooter)
+                                new Sleep(shootDelay).then(new Shoot(intake, shooter))
                         ),
 
                         new Run(() -> Shooter.ShooterPID.useConvergence = true),

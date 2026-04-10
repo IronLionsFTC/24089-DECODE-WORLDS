@@ -132,7 +132,7 @@ public class VelocityFollower extends SystemBase {
                     feedforward = HoldpointPID.kS;
 
                     // Brake
-                    if (SwerveDrive.PinpointCache.velocity.magnitude() > 500) {
+                    if (SwerveDrive.PinpointCache.velocity.magnitude() > 500 && distance < 250) {
                         response = 0;
                         feedforward = 0;
                     }
