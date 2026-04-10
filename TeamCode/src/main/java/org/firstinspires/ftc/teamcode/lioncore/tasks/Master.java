@@ -18,6 +18,7 @@ public class Master extends Task {
     public Master(Task master, Task... slaves) {
         this.master = master;
         this.slaves = new ArrayList<>();
+        this.slaveStatus = new ArrayList<>();
         for (Task slave : slaves) {
             this.slaves.add(slave);
             this.slaveStatus.add(false);
@@ -43,7 +44,7 @@ public class Master extends Task {
         this.master.run();
 
         for (int i = 0; i < this.slaves.size(); i++) {
-            if (this.slaveStatus.get(i)) this.slaves.get(i).init();
+            if (this.slaveStatus.get(i)) this.slaves.get(i).run();
         }
     }
 

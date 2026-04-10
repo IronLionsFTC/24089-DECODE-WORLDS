@@ -62,23 +62,23 @@ public class Shooter extends SystemBase {
     // PID constants
     @Config
     public static class ShooterPID {
-        public static double P = 0.003;
+        public static double P = 0.002;
         public static double I = 0;
-        public static double D = 0.00003;
+        public static double D = 0;
         public static double kS = 0.0;
-        public static double kV = 0.00015;
+        public static double kV = 0.00017;
 
         public static double targetXFar = 0;
         public static double targetYFar = 0;
         public static double targetZFar = 1000;
-        public static double targetXClose = 300;
-        public static double targetYClose = 100;
+        public static double targetXClose = 0;
+        public static double targetYClose = 0;
         public static double targetZClose = 1200;
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 1;
-        public static double overPowerClose = 1.05;
+        public static double overPowerFar = 0.98;
+        public static double overPowerClose = 1;
 
         public static double intakePower = 0.7;
         public static double expectedDrop = 0.4;
@@ -90,9 +90,9 @@ public class Shooter extends SystemBase {
         public static boolean useVComp = true;
         public static boolean useMinimum = true;
         public static boolean negativePID = false;
-        public static boolean fullpowerRecovery = true;
+        public static boolean fullpowerRecovery = false;
 
-        public static double farZoneDistanceOffset = 200;
+        public static double farZoneDistanceOffset = 400;
         public static double closeZoneDistanceOffset = 400;
     }
 
@@ -195,8 +195,10 @@ public class Shooter extends SystemBase {
         }
 
         if (this.state == State.Cruising || !ShooterPID.fullpowerRecovery) this.motors.setPower(response);
-        else if (this.currentLaunchSpeed < this.targetVelocity * 0.97) {
+        else if (this.currentLaunchSpeed < this.targetVelocity) {
             this.motors.setPower(1);
+        } else {
+            this.motors.setPower(response);
         }
 
         double hoodAngle = Regressions.launchAngleToHoodAngle(solution.altitude);

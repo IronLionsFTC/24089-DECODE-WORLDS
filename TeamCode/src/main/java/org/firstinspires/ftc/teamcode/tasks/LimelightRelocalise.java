@@ -25,7 +25,7 @@ public class LimelightRelocalise extends Task {
 
     @Override
     public void run() {
-        if (this.limelight.isValid) {
+        if (this.limelight.isValid && !this.foundSolution) {
             this.drivetrain.relocaliseTo(limelight.position);
             this.foundSolution = true;
         }

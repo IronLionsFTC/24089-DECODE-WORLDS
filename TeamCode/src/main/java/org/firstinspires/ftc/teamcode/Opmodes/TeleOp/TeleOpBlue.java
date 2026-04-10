@@ -43,7 +43,7 @@ public class TeleOpBlue extends TaskOpMode {
 
         controller1.dpad.left.onPress(new Reloca(drivetrain));
         controller1.dpad.up.onPress(new LimelightRelocalise(drivetrain, limelight));
-        controller1.dpad.right.onPress(new RelocaliseTo(drivetrain, new Position(500, -500, 135)));
+        controller1.dpad.right.onPress(new RelocaliseTo(drivetrain, new Position(500, 0, 90)));
 
         return Jobs.create()
                 .addTask(

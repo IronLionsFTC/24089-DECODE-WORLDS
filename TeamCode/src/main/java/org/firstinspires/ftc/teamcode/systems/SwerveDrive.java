@@ -52,6 +52,7 @@ public class SwerveDrive extends SystemBase {
         public static double I = 0;
         public static double D = 0.001;
         public static double low = 0.2;
+        public static double limit = 0.4;
     }
 
     @Config
@@ -207,7 +208,7 @@ public class SwerveDrive extends SystemBase {
                 pinpoint.getVelX(DistanceUnit.MM)
         );
 
-        double driverTurn = heading.getAsDouble() * 1.5;
+        double driverTurn = heading.getAsDouble() * 0.75;
         double headingNow = PinpointCache.position.heading;
 
         double error = angleDifference(headingNow, targetHeading);
@@ -226,21 +227,17 @@ public class SwerveDrive extends SystemBase {
         double response = filteredHeadingResponse;
 
         double speed = PinpointCache.velocity.magnitude();
-        double correctionLimit = 1.0 - Math.min(speed / 3000.0, 0.6);
-        response = Math.max(-correctionLimit, Math.min(correctionLimit, response));
+        response = Math.max(-HeadingPID.limit, Math.min(HeadingPID.limit, response));
 
         // Deadband
         double turnInput = driverTurn;
         if (Math.abs(turnInput) < 0.05) turnInput = 0;
 
-        // Exponential shaping for snappy control
-        turnInput = Math.pow(turnInput, 3);
-
         if (turnInput != 0) {
             turning = true;
             targetHeading = headingNow;
         } else if (turning) {
-            if (Math.abs(PinpointCache.angularVelocity) < 10) {
+            if (Math.abs(PinpointCache.angularVelocity) < 25) {
                 turning = false;
                 targetHeading = headingNow;
             }

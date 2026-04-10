@@ -24,10 +24,10 @@ public class ZeroTurret extends OpMode {
 
     @Config
     public static class TurretPID {
-        public static double P = 0.012;
+        public static double P = 0.01;
         public static double I = 0.0;
         public static double D = 0.00075;
-        public static double kS = 0.0;
+        public static double kS = 0.02;
     }
 
     @Override

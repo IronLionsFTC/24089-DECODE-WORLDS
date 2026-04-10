@@ -14,7 +14,7 @@ public class Regressions {
     @Config
     public static class Angle {
         public static double a = 1;
-        public static double cFar = 3;
+        public static double cFar = 0;
         public static double cClose = -1;
     }
 

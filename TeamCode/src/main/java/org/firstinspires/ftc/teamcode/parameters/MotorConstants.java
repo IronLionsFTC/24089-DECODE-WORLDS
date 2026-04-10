@@ -27,7 +27,7 @@ public class MotorConstants {
 
     public static class ZPB {
         public static DcMotor.ZeroPowerBehavior shooterMotors = DcMotor.ZeroPowerBehavior.FLOAT;
-        public static DcMotor.ZeroPowerBehavior driveMotors = DcMotor.ZeroPowerBehavior.FLOAT;
+        public static DcMotor.ZeroPowerBehavior driveMotors = DcMotor.ZeroPowerBehavior.BRAKE;
         public static DcMotor.ZeroPowerBehavior intakeMotors = DcMotor.ZeroPowerBehavior.BRAKE;
     }
 }

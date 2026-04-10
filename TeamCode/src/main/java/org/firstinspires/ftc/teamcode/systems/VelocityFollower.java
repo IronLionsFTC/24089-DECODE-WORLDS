@@ -37,7 +37,7 @@ public class VelocityFollower extends SystemBase {
 
     @Config
     public static class HoldpointPID {
-        public static double P = 0.0012;
+        public static double P = 0.0015;
         public static double I = 0.0;
         public static double D = 0.0002;
         public static double kS = 0.2;
@@ -132,9 +132,12 @@ public class VelocityFollower extends SystemBase {
                     feedforward = HoldpointPID.kS;
 
                     // Brake
-                    if (SwerveDrive.PinpointCache.velocity.magnitude() > 400) feedforward *= -2;
+                    if (SwerveDrive.PinpointCache.velocity.magnitude() > 500) {
+                        response = 0;
+                        feedforward = 0;
+                    }
 
-                    if (Math.abs(response) > 0.05)
+                    if (Math.abs(response) > 0.01)
                         response = Math.max(0, Math.min(1, response + feedforward * TaskOpMode.Runtime.voltageCompensation));
 
                     // Translate the field centric movement back into robot centric
