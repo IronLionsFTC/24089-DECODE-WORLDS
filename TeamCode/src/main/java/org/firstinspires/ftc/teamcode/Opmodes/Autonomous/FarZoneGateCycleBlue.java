@@ -22,7 +22,7 @@ public class FarZoneGateCycleBlue extends TaskOpMode {
     public Jobs spawn() {
 
         double xOffset = 0;
-        double yOffset = -190;
+        double yOffset = -150;
 
         Follower follower = new Follower(3200 + xOffset, 1200 + yOffset, 180);
         Intake intake = new Intake();

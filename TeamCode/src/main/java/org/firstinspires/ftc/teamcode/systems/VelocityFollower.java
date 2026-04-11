@@ -65,6 +65,7 @@ public class VelocityFollower extends SystemBase {
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
+        this.swerveDrive.clear();
         this.swerveDrive.loadHardware(hardwareMap);
     }
 

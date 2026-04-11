@@ -80,7 +80,7 @@ public class Shooter extends SystemBase {
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 0.92;
+        public static double overPowerFar = 0.935;
         public static double overPowerClose = 1;
 
         public static double intakePower = 0.5;

@@ -92,6 +92,10 @@ public class SwerveDrive extends SystemBase {
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
 
+        if (PinpointCache.position != null) {
+            this.startPosition = PinpointCache.position;
+        }
+
         AbsoluteEncoder rightFrontAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightFrontAnalog);
         AbsoluteEncoder leftFrontAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.leftFrontAnalog);
         AbsoluteEncoder rightRearAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightRearAnalog);
@@ -175,6 +179,7 @@ public class SwerveDrive extends SystemBase {
     public void init() {
         pinpoint.resetPosAndIMU();
         sleep(300);
+
         pinpoint.setPosition(new Position(
                 startPosition.position.y(),
                 -startPosition.position.x(),
@@ -305,5 +310,11 @@ public class SwerveDrive extends SystemBase {
         this.rightFront.setXPattern(allowXPattern);
         this.leftRear.setXPattern(allowXPattern);
         this.rightRear.setXPattern(allowXPattern);
+    }
+
+    public void clear() {
+        PinpointCache.position = null;
+        PinpointCache.velocity = null;
+        PinpointCache.angularVelocity = 0;
     }
 }
