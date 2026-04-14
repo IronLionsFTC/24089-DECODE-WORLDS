@@ -74,9 +74,9 @@ public class Intake extends SystemBase {
             case Shooting:
                 double power;
                 if (ProjectileMotion.far()) {
-                    power = Shooter.ShooterPID.intakePower * TaskOpMode.Runtime.voltageCompensation;
+                    power = Shooter.ShooterPID.intakePowerFar * TaskOpMode.Runtime.voltageCompensation;
                 } else {
-                    power = 1;
+                    power = Shooter.ShooterPID.intakePowerClose * TaskOpMode.Runtime.voltageCompensation;
                 }
                 this.intakeMotor.setPower(power);
                 this.transferMotor.setPower(power);

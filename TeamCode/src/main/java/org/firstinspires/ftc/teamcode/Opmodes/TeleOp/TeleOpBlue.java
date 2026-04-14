@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Opmodes.TeleOp;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Forever;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Run;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Indicator;
 import org.firstinspires.ftc.teamcode.systems.Intake;
@@ -46,7 +47,9 @@ public class TeleOpBlue extends TaskOpMode {
         controller1.dpad.up.onPress(new LimelightRelocalise(drivetrain, limelight));
         controller1.dpad.right.onPress(new RelocaliseTo(drivetrain, new Position(500, 0, 90)));
 
-        controller1.bumpers.right.onPress(new ShootSlow(intake, shooter));
+        controller1.A.onPress(new Run(() -> drivetrain.setTargetHeading(155)));
+        controller1.bumpers.right.onPress(new Run(() -> drivetrain.bumpRight()));
+        controller1.bumpers.left.onPress(new Run(() -> drivetrain.bumpLeft()));
 
         return Jobs.create()
                 .addTask(

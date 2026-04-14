@@ -83,7 +83,8 @@ public class Shooter extends SystemBase {
         public static double overPowerFar = 0.935;
         public static double overPowerClose = 1;
 
-        public static double intakePower = 0.5;
+        public static double intakePowerFar = 0.5;
+        public static double intakePowerClose = 0.85;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;

@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
+import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 
 import java.util.function.DoubleSupplier;
 
@@ -48,22 +49,25 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class HeadingPID {
-        public static double P = 0.015;
-        public static double I = 0;
-        public static double D = 0.001;
-        public static double low = 0.2;
-        public static double limit = 0.4;
+
+        public static double low = 0.5;
+        public static double limit = 1;
+
+        public static double scale = 0;
+        public static double offset = 0.025;
+        public static double dScale = 0;
+        public static double dOffset = 0.003;
     }
 
     @Config
     public static class SwervePID {
-        public static double P = 0.009;
+        public static double P = 0.0085;
         public static double I = 0;
         public static double D = 0;
         public static double kS = 0;
-        public static double deadband = 1;
+        public static double deadband = 10;
         public static double limitband = 10;
-        public static double limit = 1;
+        public static double limit = 0.7;
     }
 
     @Config
@@ -220,18 +224,20 @@ public class SwerveDrive extends SystemBase {
 
         if (Math.abs(error) < 4) error = 0;
 
+        double velocity = PinpointCache.velocity.magnitude();
+        double hP = velocity * HeadingPID.scale + HeadingPID.offset;
+        double hD = hP * HeadingPID.dScale + HeadingPID.dOffset;
+
         // Adaptive proportional: smaller P at low angular velocity
         double velocityFactor = Math.max(Math.min(1.0, Math.abs(PinpointCache.angularVelocity) / 50.0), HeadingPID.low);
-        double adaptiveP = HeadingPID.P * velocityFactor;
+        double adaptiveP = hP * velocityFactor;
 
-        double rawResponse = adaptiveP * error + HeadingPID.D * PinpointCache.angularVelocity;
+        double rawResponse = adaptiveP * error + hD * PinpointCache.angularVelocity;
 
         // Low-pass smoothing
         filteredHeadingResponse += HeadingFilter.smoothing * (rawResponse - filteredHeadingResponse);
 
         double response = filteredHeadingResponse;
-
-        double speed = PinpointCache.velocity.magnitude();
         response = Math.max(-HeadingPID.limit, Math.min(HeadingPID.limit, response));
 
         // Deadband
@@ -316,5 +322,17 @@ public class SwerveDrive extends SystemBase {
         PinpointCache.position = null;
         PinpointCache.velocity = null;
         PinpointCache.angularVelocity = 0;
+    }
+
+    public void bumpRight() {
+        this.targetHeading = this.targetHeading - 45;
+        while (this.targetHeading >=  180) this.targetHeading -= 360;
+        while (this.targetHeading <= -180) this.targetHeading += 360;
+    }
+
+    public void bumpLeft() {
+        this.targetHeading = this.targetHeading + 45;
+        while (this.targetHeading >=  180) this.targetHeading -= 360;
+        while (this.targetHeading <= -180) this.targetHeading += 360;
     }
 }
