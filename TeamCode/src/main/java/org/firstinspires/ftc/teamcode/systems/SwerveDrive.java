@@ -47,6 +47,8 @@ public class SwerveDrive extends SystemBase {
     private double omegaCommand = 0;
     private double filteredHeadingResponse = 0;
 
+    private final boolean yawCorrection;
+
     @Config
     public static class HeadingPID {
 
@@ -54,18 +56,18 @@ public class SwerveDrive extends SystemBase {
         public static double limit = 1;
 
         public static double scale = 0;
-        public static double offset = 0.025;
+        public static double offset = 0.01;
         public static double dScale = 0;
-        public static double dOffset = 0.003;
+        public static double dOffset = 0.0005;
     }
 
     @Config
     public static class SwervePID {
-        public static double P = 0.0085;
+        public static double P = 0.0092;
         public static double I = 0;
         public static double D = 0;
         public static double kS = 0;
-        public static double deadband = 10;
+        public static double deadband = 5;
         public static double limitband = 10;
         public static double limit = 0.7;
     }
@@ -81,16 +83,18 @@ public class SwerveDrive extends SystemBase {
         public static double angularVelocity;
     }
 
-    public SwerveDrive(Position startPosition, boolean xPattern) {
+    public SwerveDrive(Position startPosition, boolean xPattern, boolean yawCorrection) {
         this.startPosition = startPosition;
         this.heading = () -> 0;
         this.xPattern = xPattern;
+        this.yawCorrection = yawCorrection;
     }
 
-    public SwerveDrive(Position startPosition, DoubleSupplier h, boolean xPattern) {
+    public SwerveDrive(Position startPosition, DoubleSupplier h, boolean xPattern, boolean yawCorrection) {
         this.startPosition = startPosition;
         this.heading = h;
         this.xPattern = xPattern;
+        this.yawCorrection = yawCorrection;
     }
 
     @Override
@@ -239,6 +243,8 @@ public class SwerveDrive extends SystemBase {
 
         double response = filteredHeadingResponse;
         response = Math.max(-HeadingPID.limit, Math.min(HeadingPID.limit, response));
+
+        if (!yawCorrection) response = 0;
 
         // Deadband
         double turnInput = driverTurn;

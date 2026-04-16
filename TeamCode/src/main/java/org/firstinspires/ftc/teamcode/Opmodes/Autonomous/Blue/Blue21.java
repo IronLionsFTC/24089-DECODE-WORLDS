@@ -33,7 +33,6 @@ public class Blue21 extends TaskOpMode {
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
         Position start = new Position(0 + xOffset, 500 + yOffset, 180);
-        Position firstThree = new Position(1000 + xOffset, 800 + yOffset, 180);
         Position elbow = new Position(1900 + xOffset, 800 + yOffset, 180);
         Position shootA = new Position(1500 + xOffset, 1200 + yOffset, 150);
         Position shootB = new Position(1300 + xOffset, 1000 + yOffset, 150);
@@ -76,7 +75,7 @@ public class Blue21 extends TaskOpMode {
                                 gateIntake
                             )).setMaxSpeed(900),
 
-                            new IntakeUntilFullTimeout(intake, 2),
+                            new IntakeUntilFullTimeout(intake, 1.8),
 
                             new Follow(follower, new Line(
                                 gateIntake, shootA
@@ -107,7 +106,7 @@ public class Blue21 extends TaskOpMode {
                                         gateIntake
                                 )).setMaxSpeed(900),
 
-                                new IntakeUntilFullTimeout(intake, 2),
+                                new IntakeUntilFullTimeout(intake, 1.8),
 
                                 new Follow(follower, new Line(
                                         gateIntake, shootB
@@ -123,7 +122,23 @@ public class Blue21 extends TaskOpMode {
                                         gateIntake
                                 )).setMaxSpeed(900),
 
-                                new IntakeUntilFullTimeout(intake, 2),
+                                new IntakeUntilFullTimeout(intake, 1.8),
+
+                                new Follow(follower, new Line(
+                                        gateIntake, shootB
+                                )),
+                                new Sleep(shootDelay).then(new Shoot(intake, shooter))
+                        ),
+
+                        // GATE CYCLE
+
+                        new Series(
+                                new Follow(follower, new Line(
+                                        shootB,
+                                        gateIntake
+                                )).setMaxSpeed(900),
+
+                                new IntakeUntilFullTimeout(intake, 1.8),
 
                                 new Follow(follower, new Line(
                                         gateIntake, shootB

@@ -24,7 +24,8 @@ public class LimelightDebug extends TaskOpMode {
         SwerveDrive drivetrain = new SwerveDrive(
                 new Position(3500, 0, 0),
                 controller1.rightJoystick::x,
-                true
+                true,
+                false
         );
 
         Intake intake = new Intake();

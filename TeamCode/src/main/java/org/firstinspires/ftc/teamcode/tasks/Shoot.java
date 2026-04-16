@@ -26,7 +26,7 @@ public class Shoot extends Task {
         if (ProjectileMotion.far()) {
             this.endTime = (long) (this.initTime + 1e9);
         } else {
-            this.endTime = (long) (this.initTime + 4e8);
+            this.endTime = (long) (this.initTime + 6e8);
         }
     }
 
