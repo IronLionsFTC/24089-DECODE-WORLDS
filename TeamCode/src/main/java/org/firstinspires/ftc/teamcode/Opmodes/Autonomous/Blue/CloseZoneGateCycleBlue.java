@@ -39,6 +39,7 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
         Position intakeAEnd = new Position(2000 + xOffset, -150 + yOffset, 180);
         Position intakeBEnd = new Position(1350 + xOffset, -60 + yOffset, 180);
         Position gateIntake = new Position(1920 + xOffset, -100 + yOffset, 150);
+        Position gateIntakeB = new Position(2020 + xOffset, -100 + yOffset, 150);
         Position endPoint = new Position(2000 + xOffset, 300 + yOffset, 150);
 
         return Jobs.create()
@@ -76,10 +77,14 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
                                 gateIntake
                             )).setMaxSpeed(900),
 
-                            new IntakeUntilFullTimeout(intake, 2),
+                            new IntakeUntilFullTimeout(intake, 2).with(
+                                    new Follow(follower, new Line(
+                                            gateIntake, gateIntakeB
+                                    ))
+                            ),
 
                             new Follow(follower, new Line(
-                                gateIntake, shootA
+                                gateIntakeB, shootA
                             )),
                             new Sleep(shootDelay).then(new Shoot(intake, shooter))
                         ),
@@ -107,10 +112,14 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
                                         gateIntake
                                 )).setMaxSpeed(900),
 
-                                new IntakeUntilFullTimeout(intake, 2),
+                                new IntakeUntilFullTimeout(intake, 2).with(
+                                        new Follow(follower, new Line(
+                                                gateIntake, gateIntakeB
+                                        ))
+                                ),
 
                                 new Follow(follower, new Line(
-                                        gateIntake, shootB
+                                        gateIntakeB, shootB
                                 )),
                                 new Sleep(shootDelay).then(new Shoot(intake, shooter))
                         ),
@@ -123,10 +132,14 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
                                         gateIntake
                                 )).setMaxSpeed(900),
 
-                                new IntakeUntilFullTimeout(intake, 2),
+                                new IntakeUntilFullTimeout(intake, 2).with(
+                                        new Follow(follower, new Line(
+                                                gateIntake, gateIntakeB
+                                        ))
+                                ),
 
                                 new Follow(follower, new Line(
-                                        gateIntake, shootB
+                                        gateIntakeB, shootB
                                 )),
                                 new Sleep(shootDelay).then(new Shoot(intake, shooter))
                         ),
