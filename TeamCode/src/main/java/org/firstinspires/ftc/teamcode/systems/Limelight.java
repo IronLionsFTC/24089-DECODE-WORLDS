@@ -16,10 +16,29 @@ import java.util.List;
 
 public class Limelight extends SystemBase {
 
+    public enum Team {
+        Red,
+        Blue
+    }
+
     private Limelight3A camera;
-    public Limelight() {
+    private Team team;
+
+    private final double s;
+    private final double c;
+
+    public Limelight(Team team) {
         this.position = new Position(0, 0,0);
         this.cache = new Position(0, 0,0);
+        this.team = team;
+
+        if (this.team == Team.Blue) {
+            this.s = Math.sin(Math.toRadians(35));
+            this.c = Math.cos(Math.toRadians(35));
+        } else {
+            this.s = Math.sin(Math.toRadians(55));
+            this.c = Math.cos(Math.toRadians(55));
+        }
     }
 
     @Config
@@ -40,7 +59,8 @@ public class Limelight extends SystemBase {
 
     @Override
     public void init() {
-        this.camera.pipelineSwitch(0);
+        if (this.team == Team.Blue) this.camera.pipelineSwitch(0);
+        else this.camera.pipelineSwitch(1);
     }
 
     @Override
@@ -57,11 +77,14 @@ public class Limelight extends SystemBase {
                 double y = pose.getPosition().z * -1000;
                 double x = pose.getPosition().x * -1000;
 
-                double s = Math.sin(Math.toRadians(35));
-                double c = Math.cos(Math.toRadians(35));
-
                 double xp = y * s + x * s;
                 double yp = x * c - y * c;
+
+                if (this.team == Team.Red) {
+                    double cache = xp;
+                    xp = yp;
+                    yp = cache;
+                }
 
                 this.cache.update(
                         -yp + LimelightOffset.y,
@@ -80,7 +103,6 @@ public class Limelight extends SystemBase {
         }
     }
 
-    // TOOD - Red side
     public void start() {
         this.cache.update(0, 0, 0);
         this.running = true;
