@@ -31,7 +31,7 @@ public class TeleOpBlue extends TaskOpMode {
             new Position(3500, 3100, 0),
             controller1.rightJoystick::x,
             false,
-            false
+            true
         );
 
         Intake intake = new Intake();
