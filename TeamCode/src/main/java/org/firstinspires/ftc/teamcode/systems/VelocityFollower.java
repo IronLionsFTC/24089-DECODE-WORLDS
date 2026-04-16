@@ -10,6 +10,8 @@ import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 
+import java.util.function.DoubleSupplier;
+
 public class VelocityFollower extends SystemBase {
 
     private final SwerveDrive swerveDrive;
@@ -18,12 +20,15 @@ public class VelocityFollower extends SystemBase {
     private final Vector2 targetFieldCentricVelocity;
     private final Vector2 targetRobotCentricVelocity;
     private final Position holdpoint;
+    private final Vector2 driveInput;
+    private boolean xPattern;
 
     public State state;
 
     public enum State {
         Velocity,
-        Holdpoint
+        Holdpoint,
+        Driver
     }
 
     @Config
@@ -44,6 +49,9 @@ public class VelocityFollower extends SystemBase {
     }
 
     public VelocityFollower(double x, double y, double h) {
+        this.xPattern = true;
+        this.driveInput = Vector2.cartesian(0, 0);
+
         this.velocityController = new PID(
                 VelocityPID.P,
                 VelocityPID.I,
@@ -61,6 +69,29 @@ public class VelocityFollower extends SystemBase {
         this.swerveDrive = new SwerveDrive(new Position(x, y, h), true, true);
         this.holdpoint = new Position(x, y, h);
         this.state = State.Velocity;
+    }
+
+    public VelocityFollower(double x, double y, double h, DoubleSupplier heading) {
+        this.xPattern = false;
+        this.driveInput = Vector2.cartesian(0, 0);
+
+        this.velocityController = new PID(
+                VelocityPID.P,
+                VelocityPID.I,
+                VelocityPID.D
+        );
+
+        this.holdpointController = new PID(
+                HoldpointPID.P,
+                HoldpointPID.I,
+                HoldpointPID.D
+        );
+
+        this.targetFieldCentricVelocity = Vector2.cartesian(0, 0);
+        this.targetRobotCentricVelocity = Vector2.cartesian(0, 0);
+        this.swerveDrive = new SwerveDrive(new Position(x, y, h), heading, true, true);
+        this.holdpoint = new Position(x, y, h);
+        this.state = State.Driver;
     }
 
     @Override
@@ -83,9 +114,14 @@ public class VelocityFollower extends SystemBase {
         double response;
         double feedforward;
 
+        if (this.driveInput.magnitude() > 0) {
+            this.state = State.Driver;
+        }
+
         switch (this.state) {
 
             case Velocity:
+                this.swerveDrive.setXPattern(true);
                 this.velocityController.setConstants(
                         VelocityPID.P,
                         VelocityPID.I,
@@ -112,7 +148,7 @@ public class VelocityFollower extends SystemBase {
                 break;
 
             case Holdpoint:
-
+                this.swerveDrive.setXPattern(true);
                 this.holdpointController.setConstants(
                         HoldpointPID.P,
                         HoldpointPID.I,
@@ -156,6 +192,11 @@ public class VelocityFollower extends SystemBase {
                     this.swerveDrive.setTargetHeading(holdpoint.heading);
                 }
                 break;
+
+            case Driver:
+                this.swerveDrive.setXPattern(this.xPattern);
+                targetRobotCentricVelocity.update(this.driveInput.x(), this.driveInput.y());
+                break;
         }
 
         swerveDrive.setTargetVector(targetRobotCentricVelocity);
@@ -185,6 +226,22 @@ public class VelocityFollower extends SystemBase {
     }
 
     public void setPosition(Position position) {
+        this.swerveDrive.relocaliseTo(position);
+    }
+
+    public void setDriveInput(Vector2 driveInput) {
+        this.driveInput.copy(driveInput);
+    }
+
+    public void setxPattern(boolean xPattern) {
+        this.xPattern = xPattern;
+    }
+
+    public void relocalise() {
+        this.swerveDrive.relocalise();
+    }
+
+    public void relocaliseTo(Position position) {
         this.swerveDrive.relocaliseTo(position);
     }
 }

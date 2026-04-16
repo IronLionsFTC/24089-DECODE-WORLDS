@@ -2,13 +2,13 @@ package org.firstinspires.ftc.teamcode.tasks;
 
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
-import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.systems.Follower;
 
 public class RelocaliseTo extends Task {
-    private SwerveDrive swerveDrive;
+    private Follower swerveDrive;
     private Position position;
 
-    public RelocaliseTo(SwerveDrive swerveDrive, Position position) {
+    public RelocaliseTo(Follower swerveDrive, Position position) {
         this.swerveDrive = swerveDrive;
         this.position = position;
     }

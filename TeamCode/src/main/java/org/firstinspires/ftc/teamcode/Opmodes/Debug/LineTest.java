@@ -7,10 +7,7 @@ import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Follower;
-import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 import org.firstinspires.ftc.teamcode.tasks.Follow;
-import org.firstinspires.ftc.teamcode.tasks.Reloca;
-import org.firstinspires.ftc.teamcode.tasks.SetPosition;
 
 @Autonomous
 public class LineTest extends TaskOpMode {

@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.tasks;
 
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
-import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.systems.Follower;
 
-public class Reloca extends Task {
-    private SwerveDrive swerveDrive;
+public class RelocaliseToStart extends Task {
+    private Follower swerveDrive;
 
-    public Reloca(SwerveDrive swerveDrive) {
+    public RelocaliseToStart(Follower swerveDrive) {
         this.swerveDrive = swerveDrive;
     }
 

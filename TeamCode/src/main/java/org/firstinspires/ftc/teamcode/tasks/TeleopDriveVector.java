@@ -2,17 +2,17 @@ package org.firstinspires.ftc.teamcode.tasks;
 
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
-import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.systems.Follower;
 
 import java.util.function.DoubleSupplier;
 
 public class TeleopDriveVector extends Task {
     private final Vector2 driveVector;
-    private final SwerveDrive swerveDrive;
+    private final Follower swerveDrive;
     private final DoubleSupplier x;
     private final DoubleSupplier y;
 
-    public TeleopDriveVector(SwerveDrive swerveDrive, DoubleSupplier x, DoubleSupplier y) {
+    public TeleopDriveVector(Follower swerveDrive, DoubleSupplier x, DoubleSupplier y) {
         this.swerveDrive = swerveDrive;
         this.x = x;
         this.y = y;
@@ -25,6 +25,6 @@ public class TeleopDriveVector extends Task {
                 x.getAsDouble(),
                 y.getAsDouble()
         );
-        this.swerveDrive.setTargetVector(driveVector);
+        this.swerveDrive.setDriveInput(driveVector);
     }
 }

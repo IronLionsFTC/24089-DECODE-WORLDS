@@ -10,6 +10,8 @@ import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 
+import java.util.function.DoubleSupplier;
+
 public class Follower extends SystemBase {
 
     private final VelocityFollower drivetrain;
@@ -34,6 +36,17 @@ public class Follower extends SystemBase {
 
     public Follower(double x, double y, double h) {
         this.drivetrain = new VelocityFollower(x, y, h);
+        this.closest = new Position(0, 0, h);
+        this.discreteStep = new Position(0, 0, h);
+        this.tangent = Vector2.cartesian(0, 0);
+        this.normal = Vector2.cartesian(0, 0);
+        this.corrective = Vector2.cartesian(0, 0);
+        this.targetVelocity = Vector2.cartesian(0, 0);
+        this.targetSpeed = 0;
+    }
+
+    public Follower(double x, double y, double h, DoubleSupplier heading) {
+        this.drivetrain = new VelocityFollower(x, y, h, heading);
         this.closest = new Position(0, 0, h);
         this.discreteStep = new Position(0, 0, h);
         this.tangent = Vector2.cartesian(0, 0);
@@ -116,5 +129,21 @@ public class Follower extends SystemBase {
 
     public void setPosition(Position position) {
         this.drivetrain.setPosition(position);
+    }
+
+    public void setDriveInput(Vector2 driveInput) {
+        this.drivetrain.setDriveInput(driveInput);
+    }
+
+    public void setXPattern(boolean xPattern) {
+        this.drivetrain.setxPattern(xPattern);
+    }
+
+    public void relocalise() {
+        this.drivetrain.relocalise();
+    }
+
+    public void relocaliseTo(Position position) {
+        this.drivetrain.relocaliseTo(position);
     }
 }

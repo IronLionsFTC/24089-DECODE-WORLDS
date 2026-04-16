@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.tasks;
 
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
-import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.systems.Follower;
 
 public class StartXPattern extends Task {
-    private SwerveDrive swerveDrive;
+    private Follower swerveDrive;
 
-    public StartXPattern(SwerveDrive swerveDrive) {
+    public StartXPattern(Follower swerveDrive) {
         this.swerveDrive = swerveDrive;
     }
 
