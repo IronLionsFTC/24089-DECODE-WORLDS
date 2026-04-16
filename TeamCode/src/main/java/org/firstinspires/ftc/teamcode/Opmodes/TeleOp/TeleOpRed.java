@@ -4,10 +4,10 @@ import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Forever;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
+import org.firstinspires.ftc.teamcode.systems.Follower;
 import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.Limelight;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
-import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 import org.firstinspires.ftc.teamcode.tasks.EndXPattern;
 import org.firstinspires.ftc.teamcode.tasks.Jetison;
 import org.firstinspires.ftc.teamcode.tasks.LimelightRelocalise;
@@ -24,11 +24,9 @@ public class TeleOpRed extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        SwerveDrive drivetrain = new SwerveDrive(
-                new Position(-3500, 3100, 0),
-                controller1.rightJoystick::x,
-                false,
-                true
+        Follower drivetrain = new Follower(
+                -3500, 3100, 0,
+                controller1.rightJoystick::x
         );
 
         Intake intake = new Intake();
