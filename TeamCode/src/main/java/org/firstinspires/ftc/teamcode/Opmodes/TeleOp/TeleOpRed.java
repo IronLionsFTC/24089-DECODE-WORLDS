@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.systems.Limelight;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
 import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 import org.firstinspires.ftc.teamcode.tasks.EndXPattern;
+import org.firstinspires.ftc.teamcode.tasks.Jetison;
 import org.firstinspires.ftc.teamcode.tasks.LimelightRelocalise;
 import org.firstinspires.ftc.teamcode.tasks.Reloca;
 import org.firstinspires.ftc.teamcode.tasks.RelocaliseTo;
@@ -45,6 +46,7 @@ public class TeleOpRed extends TaskOpMode {
         controller1.dpad.left.onPress(new Reloca(drivetrain));
         controller1.dpad.up.onPress(new LimelightRelocalise(drivetrain, limelight));
         controller1.dpad.right.onPress(new RelocaliseTo(drivetrain, new Position(-500, 0, 90)));
+        controller1.bumpers.left.onPress(new Jetison(intake));
 
         return Jobs.create()
                 .addTask(
