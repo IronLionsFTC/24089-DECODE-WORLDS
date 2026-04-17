@@ -1,22 +1,25 @@
 package org.firstinspires.ftc.teamcode.tasks;
 
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Path;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
+import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Task;
 import org.firstinspires.ftc.teamcode.systems.Follower;
+import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 
-public class Follow extends Task {
+public class Goto extends Task {
     private final Follower follower;
-    private final Path path;
+    private final Position target;
 
     private double previousMaximumSpeed = 0;
     private double maxSpeed = Follower.FollowerConstants.maxSpeed;
 
-    public Follow(Follower follower, Path path) {
+    public Goto(Follower follower, Position target) {
         this.follower = follower;
-        this.path = path;
+        this.target = target;
     }
 
-    public Follow setMaxSpeed(double speed) {
+    public Goto setMaxSpeed(double speed) {
         this.maxSpeed = speed;
         return this;
     }
@@ -25,13 +28,16 @@ public class Follow extends Task {
     public void init() {
         this.previousMaximumSpeed = Follower.FollowerConstants.maxSpeed;
         Follower.FollowerConstants.maxSpeed = this.maxSpeed;
-        follower.follow(path);
+        follower.follow(new Line(
+                SwerveDrive.PinpointCache.position,
+                target
+        ));
     }
 
     @Override
     // Finishes when the follower is within 15cm of the target.
     public boolean finished() {
-        return follower.getDistance() < 150 || follower.driver();
+        return follower.getDistance() < 100 || follower.driver();
     }
 
     @Override

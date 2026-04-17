@@ -146,4 +146,12 @@ public class Follower extends SystemBase {
     public void relocaliseTo(Position position) {
         this.drivetrain.relocaliseTo(position);
     }
+
+    public void setHeading(double heading) {
+        this.drivetrain.forceHeading(heading);
+    }
+
+    public boolean driver() {
+        return this.drivetrain.state == VelocityFollower.State.Driver;
+    }
 }

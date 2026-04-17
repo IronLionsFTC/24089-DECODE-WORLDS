@@ -244,4 +244,8 @@ public class VelocityFollower extends SystemBase {
     public void relocaliseTo(Position position) {
         this.swerveDrive.relocaliseTo(position);
     }
+
+    public void forceHeading(double heading) {
+        this.swerveDrive.setTargetHeading(heading);
+    }
 }

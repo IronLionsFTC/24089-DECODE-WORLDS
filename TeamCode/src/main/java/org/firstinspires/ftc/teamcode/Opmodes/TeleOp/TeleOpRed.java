@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Opmodes.TeleOp;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Forever;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Run;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Follower;
 import org.firstinspires.ftc.teamcode.systems.Intake;
@@ -32,12 +33,13 @@ public class TeleOpRed extends TaskOpMode {
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
-        Limelight limelight = new Limelight();
+        Limelight limelight = new Limelight(Limelight.Team.Red);
 
         controller1.leftTrigger.asButton.onPress(new TeleopIntake(intake));
         controller1.rightTrigger.asButton.onPress(new Shoot(intake, shooter));
         controller1.X.onPress(new StartXPattern(drivetrain));
         controller1.X.onRelease(new EndXPattern(drivetrain));
+        controller1.A.onPress(new Run(() -> drivetrain.setHeading(205)));
 
         controller1.dpad.left.onPress(new RelocaliseToStart(drivetrain));
         controller1.dpad.up.onPress(new LimelightRelocalise(drivetrain, limelight));

@@ -22,7 +22,7 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        double shootDelay = 0.2;
+        double shootDelay = 0.4;
         double xOffset = -100;
         double yOffset = 150;
 
