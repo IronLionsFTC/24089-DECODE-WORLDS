@@ -59,6 +59,7 @@ public class Limelight extends SystemBase {
 
     @Override
     public void init() {
+        this.start();
         if (this.team == Team.Blue) this.camera.pipelineSwitch(0);
         else this.camera.pipelineSwitch(1);
     }

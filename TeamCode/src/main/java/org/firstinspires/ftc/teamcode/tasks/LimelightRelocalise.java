@@ -19,7 +19,6 @@ public class LimelightRelocalise extends Task {
 
     @Override
     public void init() {
-        this.limelight.start();
         this.startTime = System.nanoTime();
     }
 
@@ -33,11 +32,6 @@ public class LimelightRelocalise extends Task {
 
     @Override
     public boolean finished() {
-        return foundSolution || System.nanoTime() - startTime > 1e9;
-    }
-
-    @Override
-    public void end(boolean i) {
-        this.limelight.stop();
+        return foundSolution || System.nanoTime() - startTime > 3e9;
     }
 }

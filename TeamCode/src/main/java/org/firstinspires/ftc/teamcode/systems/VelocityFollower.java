@@ -33,7 +33,7 @@ public class VelocityFollower extends SystemBase {
 
     @Config
     public static class VelocityPID {
-        public static double P = 0.0001;
+        public static double P = 0.0005;
         public static double I = 0.0;
         public static double D = 0.00001;
         public static double kS = 0.05;

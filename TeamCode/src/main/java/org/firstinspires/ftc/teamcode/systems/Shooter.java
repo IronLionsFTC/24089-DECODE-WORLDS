@@ -76,11 +76,12 @@ public class Shooter extends SystemBase {
         public static double targetZFar = 1000;
         public static double targetXClose = 0;
         public static double targetYClose = 0;
-        public static double targetZClose = 1200;
+        public static double targetZClose = 1250;
+        public static double targetZMedium = 1100;
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 0.935;
+        public static double overPowerFar = 0.92;
         public static double overPowerClose = 1;
 
         public static double intakePowerFar = 0.58;
@@ -123,7 +124,7 @@ public class Shooter extends SystemBase {
 
         this.leftTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.leftTurretServo);
         this.rightTurretServo = new LionCRServo(hardwareMap, ServoConstants.Names.rightTurretServo);
-        this.leftTurretServo.setReversed(true);
+        this.leftTurretServo.setReversed(false);
         this.rightTurretServo.setReversed(true);
     }
 

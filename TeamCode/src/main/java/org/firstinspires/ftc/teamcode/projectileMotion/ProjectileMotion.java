@@ -223,6 +223,11 @@ public class ProjectileMotion {
         return distance > 2500;
     }
 
+    public static boolean mid() {
+        double distance = SwerveDrive.PinpointCache.position.position.sub( Vector2.cartesian(Shooter.ShooterPID.targetXFar, Shooter.ShooterPID.targetYFar) ).magnitude();
+        return distance > 1800;
+    }
+
     public static Vector3 getTarget() {
         if (far()) {
             target.setX(Shooter.ShooterPID.targetXFar);
@@ -231,7 +236,11 @@ public class ProjectileMotion {
         } else {
             target.setX(Shooter.ShooterPID.targetXClose);
             target.setY(Shooter.ShooterPID.targetYClose);
-            target.setZ(Shooter.ShooterPID.targetZClose);
+            if (mid()) {
+                target.setZ(Shooter.ShooterPID.targetZMedium);
+            } else {
+                target.setZ(Shooter.ShooterPID.targetZClose);
+            }
         } return target;
     }
 }

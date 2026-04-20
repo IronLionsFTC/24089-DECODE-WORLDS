@@ -38,8 +38,8 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
         Position shootB = new Position(1300 + xOffset, 1000 + yOffset, 150);
         Position intakeAEnd = new Position(2000 + xOffset, -150 + yOffset, 180);
         Position intakeBEnd = new Position(1350 + xOffset, -60 + yOffset, 180);
-        Position gateIntake = new Position(1920 + xOffset, -100 + yOffset, 150);
-        Position gateIntakeB = new Position(2020 + xOffset, -100 + yOffset, 150);
+        Position gateIntake = new Position(1960 + xOffset, -150 + yOffset, 150);
+        Position gateIntakeB = new Position(2020 + xOffset, -150 + yOffset, 150);
         Position endPoint = new Position(2000 + xOffset, 300 + yOffset, 150);
 
         return Jobs.create()

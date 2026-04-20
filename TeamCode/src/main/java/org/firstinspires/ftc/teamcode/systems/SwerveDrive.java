@@ -49,6 +49,13 @@ public class SwerveDrive extends SystemBase {
 
     private final boolean yawCorrection;
 
+    public enum Pod {
+        Fr,
+        Fl,
+        Rr,
+        Rl
+    }
+
     @Config
     public static class HeadingPID {
 
@@ -63,13 +70,25 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class SwervePID {
-        public static double P = 0.0092;
-        public static double I = 0;
-        public static double D = 0;
-        public static double kS = 0;
-        public static double deadband = 5;
+        public static double Pfr = 0.006;
+        public static double Dfr = 0.0;
+        public static double Pfl = 0.006;
+        public static double Dfl = 0.0;
+        public static double Prr = 0.006;
+        public static double Drr = 0.0;
+        public static double Prl = 0.006;
+        public static double Drl = 0.0;
+
+        public static double kSfr = 0.1;
+        public static double kSfl = 0.1;
+        public static double kSrr = 0.1;
+        public static double kSrl = 0.1;
+
+        public static double deadband = 10;
         public static double limitband = 10;
-        public static double limit = 0.7;
+        public static double limit = 0.75;
+
+        public static double latency = 0.03;
     }
 
     @Config
@@ -155,7 +174,8 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.rightFront),
                 Vector2.cartesian(1,1),
                 Zeroing.podAngle(rightFrontAnalog.position(), ConstantsStorage.get("rf",0.0)),
-                xPattern
+                xPattern,
+                Pod.Fr
         );
 
         leftFront = new SwervePod(
@@ -163,7 +183,8 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.leftFront),
                 Vector2.cartesian(-1,1),
                 Zeroing.podAngle(leftFrontAnalog.position(), ConstantsStorage.get("lf",0.0)),
-                xPattern
+                xPattern,
+                Pod.Fl
         );
 
         rightRear = new SwervePod(
@@ -171,7 +192,8 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.rightRear),
                 Vector2.cartesian(1,-1),
                 Zeroing.podAngle(rightRearAnalog.position(), ConstantsStorage.get("rr",0.0)),
-                xPattern
+                xPattern,
+                Pod.Rr
         );
 
         leftRear = new SwervePod(
@@ -179,7 +201,8 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.leftRear),
                 Vector2.cartesian(-1,-1),
                 Zeroing.podAngle(leftRearAnalog.position(), ConstantsStorage.get("lr",0.0)),
-                xPattern
+                xPattern,
+                Pod.Rl
         );
     }
 
@@ -292,6 +315,15 @@ public class SwerveDrive extends SystemBase {
             telemetry.addData("TARGET HEADING", targetHeading);
             telemetry.addData("OMEGA CMD", omegaCommand);
             telemetry.addData("ANGULAR VELOCITY", PinpointCache.angularVelocity);
+
+            telemetry.addData("frontRightTarget", rightFront.targetAngle);
+            telemetry.addData("frontRightActual", rightFront.currentAngle);
+            telemetry.addData("frontLeftTarget", leftFront.targetAngle);
+            telemetry.addData("frontLeftActual", leftFront.currentAngle);
+            telemetry.addData("rearRightTarget", rightRear.targetAngle);
+            telemetry.addData("rearRightActual", rightRear.currentAngle);
+            telemetry.addData("rearLeftTarget", leftRear.targetAngle);
+            telemetry.addData("rearLeftActual", leftRear.currentAngle);
         }
     }
 
