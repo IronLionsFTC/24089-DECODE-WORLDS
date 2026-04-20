@@ -49,6 +49,8 @@ public class Shooter extends SystemBase {
     private long startTime = 0;
     public boolean onTarget = false;
     public boolean validEncoder = true;
+    public double lastTurretAngle = 0;
+    public long lastTurretTimestamp = 0;
 
     // Lookahead
     private double lastVelocity;
@@ -155,6 +157,13 @@ public class Shooter extends SystemBase {
         long currentTime = System.nanoTime();
 
         double quadraturePosition = quadrature.getPosition() / 4096 * 360;
+        double deltaAngle = quadraturePosition - this.lastTurretAngle;
+        this.lastTurretAngle = quadraturePosition;
+        double deltaTime = (double)(currentTime - lastTurretTimestamp) / 1e9;
+        this.lastTurretTimestamp = currentTime;
+        double turretVelocity = deltaAngle / deltaTime;
+        quadraturePosition += turretVelocity * ZeroTurret.TurretPID.latency;
+
         if (this.startTime == 0) this.startTime = System.nanoTime();
 
         this.pid.setConstants(
@@ -212,8 +221,6 @@ public class Shooter extends SystemBase {
         if (!Double.isNaN(TaskOpMode.Runtime.voltageCompensation)) feedforward *= TaskOpMode.Runtime.voltageCompensation;
         if (targetRPM != 0) response += feedforward;
 
-        telemetry.addData("RESPONSE", response);
-
         if (response < 0) {
             if (ShooterPID.negativePID) response *= 0.2;
             else { response = 0;}
@@ -242,9 +249,9 @@ public class Shooter extends SystemBase {
         this.leftTurretServo.setPower(response);
         this.rightTurretServo.setPower(response);
 
-        telemetry.addData("currentLaunchVelocity", currentLaunchSpeed);
-
         if (useTelemetry) {
+            telemetry.addData("RESPONSE", response);
+            telemetry.addData("currentLaunchVelocity", currentLaunchSpeed);
             telemetry.addData("launchAngle", solution.altitude);
             telemetry.addData("hoodAngle", hoodAngle);
             telemetry.addData("targetVelocity", targetVelocity);

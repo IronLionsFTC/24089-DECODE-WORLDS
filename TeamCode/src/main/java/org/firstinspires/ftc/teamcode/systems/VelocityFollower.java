@@ -124,7 +124,7 @@ public class VelocityFollower extends SystemBase {
         switch (this.state) {
 
             case Velocity:
-                this.swerveDrive.setXPattern(true);
+                this.swerveDrive.setOPattern(true);
                 this.velocityController.setConstants(
                         VelocityPID.P,
                         VelocityPID.I,
@@ -151,7 +151,7 @@ public class VelocityFollower extends SystemBase {
                 break;
 
             case Holdpoint:
-                this.swerveDrive.setXPattern(true);
+                this.swerveDrive.setOPattern(true);
                 this.holdpointController.setConstants(
                         HoldpointPID.P,
                         HoldpointPID.I,
@@ -197,7 +197,7 @@ public class VelocityFollower extends SystemBase {
                 break;
 
             case Driver:
-                this.swerveDrive.setXPattern(this.xPattern);
+                this.swerveDrive.setOPattern(this.xPattern);
                 targetRobotCentricVelocity.update(this.driveInput.x(), this.driveInput.y());
                 break;
         }

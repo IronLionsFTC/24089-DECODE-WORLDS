@@ -28,6 +28,7 @@ public class ZeroTurret extends OpMode {
         public static double I = 0.0;
         public static double D = 0.00075;
         public static double kS = 0.05;
+        public static double latency = 0.05;
     }
 
     @Override
