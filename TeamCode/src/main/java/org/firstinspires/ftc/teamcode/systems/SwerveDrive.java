@@ -21,7 +21,6 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
-import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 
 import java.util.function.DoubleSupplier;
 
@@ -49,13 +48,6 @@ public class SwerveDrive extends SystemBase {
 
     private final boolean yawCorrection;
 
-    public enum Pod {
-        Fr,
-        Fl,
-        Rr,
-        Rl
-    }
-
     @Config
     public static class HeadingPID {
 
@@ -70,21 +62,11 @@ public class SwerveDrive extends SystemBase {
 
     @Config
     public static class SwervePID {
-        public static double Pfr = 0.006;
-        public static double Dfr = 0.0;
-        public static double Pfl = 0.006;
-        public static double Dfl = 0.0;
-        public static double Prr = 0.006;
-        public static double Drr = 0.0;
-        public static double Prl = 0.006;
-        public static double Drl = 0.0;
+        public static double P = 0.006;
+        public static double D = 0.0;
+        public static double kS = 0.08;
 
-        public static double kSfr = 0.1;
-        public static double kSfl = 0.1;
-        public static double kSrr = 0.1;
-        public static double kSrl = 0.1;
-
-        public static double deadband = 10;
+        public static double deadband = 8;
         public static double limitband = 10;
         public static double limit = 0.75;
 
@@ -174,8 +156,7 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.rightFront),
                 Vector2.cartesian(1,1),
                 Zeroing.podAngle(rightFrontAnalog.position(), ConstantsStorage.get("rf",0.0)),
-                xPattern,
-                Pod.Fr
+                xPattern
         );
 
         leftFront = new SwervePod(
@@ -183,8 +164,7 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.leftFront),
                 Vector2.cartesian(-1,1),
                 Zeroing.podAngle(leftFrontAnalog.position(), ConstantsStorage.get("lf",0.0)),
-                xPattern,
-                Pod.Fl
+                xPattern
         );
 
         rightRear = new SwervePod(
@@ -192,8 +172,7 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.rightRear),
                 Vector2.cartesian(1,-1),
                 Zeroing.podAngle(rightRearAnalog.position(), ConstantsStorage.get("rr",0.0)),
-                xPattern,
-                Pod.Rr
+                xPattern
         );
 
         leftRear = new SwervePod(
@@ -201,8 +180,7 @@ public class SwerveDrive extends SystemBase {
                 new LionCRServo(hardwareMap, ServoConstants.Names.leftRear),
                 Vector2.cartesian(-1,-1),
                 Zeroing.podAngle(leftRearAnalog.position(), ConstantsStorage.get("lr",0.0)),
-                xPattern,
-                Pod.Rl
+                xPattern
         );
     }
 

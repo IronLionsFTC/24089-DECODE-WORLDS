@@ -32,9 +32,11 @@ public class ProjectileMotion {
     @Config
     public static class ShootOnTheMoveConstants {
         public static double turretLookahead = 0.1;
-        public static int convergence = 15;
+        public static int convergence = 3;
         public static double timeOverestimate = 1.5;
         public static double lastDistance = 1000;
+        public static double calcDistance = 1000;
+        public static double lastVelocity = 1000;
     }
 
     /**
@@ -145,6 +147,8 @@ public class ProjectileMotion {
 
         Vector3 relativeTarget = target.subtract(shooterPositionInField);
         double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY());
+        double distanceChange = Math.abs(ShootOnTheMoveConstants.calcDistance - x);
+
         ShootOnTheMoveConstants.lastDistance = x;
         double y = relativeTarget.getZ();
 
@@ -179,7 +183,15 @@ public class ProjectileMotion {
         direction = Math.max(-210, Math.min(210, direction));
 
         // Projectile math
-        double velocity = alternativeFindSuitableVelocity(x, y);
+        double velocity;
+
+        if (distanceChange > 150){
+            velocity = alternativeFindSuitableVelocity(x, y);
+            ShootOnTheMoveConstants.calcDistance = x;
+            ShootOnTheMoveConstants.lastVelocity = velocity;
+        }
+        else velocity = ShootOnTheMoveConstants.lastVelocity;
+
         if (!Shooter.ShooterPID.useVComp || currentVelocity < 1000) currentVelocity = velocity;
         double angle = solveAngle(currentVelocity, x, y);
 
@@ -204,7 +216,7 @@ public class ProjectileMotion {
      */
     public static ProjectileMotion calculateConvergence(Vector3 target, double currentVelocity, double currentAngle) {
         ProjectileMotion solution = calculate(target, currentVelocity, currentAngle);
-        if (solution.groundDist < 800) return solution;
+        if (solution.groundDist < 800 || SwerveDrive.PinpointCache.velocity.magnitude() < 100) return solution;
 
         Vector3 expectedMotion;
 

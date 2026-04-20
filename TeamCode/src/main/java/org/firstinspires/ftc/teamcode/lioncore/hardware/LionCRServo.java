@@ -22,6 +22,9 @@ public class LionCRServo {
 
     public void setPower(double newPower) {
         if (Math.abs(power - newPower) < 0.05 && newPower != 0) { return; }
+        if (power == newPower) return;
+        if (power >= 1 && newPower >= 1) return;
+        if (power <=-1 && newPower <=-1) return;
         this.power = newPower;
         this.hardware.setPower(power);
     }

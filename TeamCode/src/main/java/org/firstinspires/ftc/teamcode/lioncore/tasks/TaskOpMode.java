@@ -114,7 +114,7 @@ public abstract class TaskOpMode extends OpMode {
 
         if (!this.acceptPriority) {
             for (int idx = 0; idx < this.systems.size(); idx++) {
-                this.systems.get(idx).update(this.telemetry, this.telemetryCounter == 20);
+                this.systems.get(idx).update(this.telemetry, this.telemetryCounter == 40);
             }
         } else {
             this.systems.get(priority).update(this.telemetry, false);
@@ -122,7 +122,7 @@ public abstract class TaskOpMode extends OpMode {
 
         this.mainloop();
 
-        if (this.telemetryCounter == 20) {
+        if (this.telemetryCounter == 40) {
             this.telemetry.addData("Loopfreq", rounded_hz);
             this.telemetry.update();
             telemetryCounter = 0;

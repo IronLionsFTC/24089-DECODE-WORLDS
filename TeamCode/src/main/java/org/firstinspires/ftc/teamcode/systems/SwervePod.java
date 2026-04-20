@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
-import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
@@ -15,7 +14,6 @@ public class SwervePod {
 
     private boolean xPattern;
     private double lastAngleSetpoint;
-    private final SwerveDrive.Pod pod;
 
     public double currentAngle = 0;
     public double targetAngle = 0;
@@ -29,10 +27,8 @@ public class SwervePod {
             LionCRServo servo,
             Vector2 offset,
             double startDegrees,
-            boolean xPattern,
-            SwerveDrive.Pod pod
+            boolean xPattern
     ) {
-        this.pod = pod;
         this.motor = motor;
         this.servo = servo;
         this.offset = offset;
@@ -63,36 +59,9 @@ public class SwervePod {
         lastPodAngle = podAngle;
         lastTime = now;
 
-        double p;
-        double d;
-        double kS;
-
-        switch (this.pod) {
-            case Fr:
-                p = SwerveDrive.SwervePID.Pfr;
-                d = SwerveDrive.SwervePID.Dfr;
-                kS = SwerveDrive.SwervePID.kSfr;
-                break;
-            case Fl:
-                p = SwerveDrive.SwervePID.Pfl;
-                d = SwerveDrive.SwervePID.Dfl;
-                kS = SwerveDrive.SwervePID.kSfl;
-                break;
-            case Rr:
-                p = SwerveDrive.SwervePID.Prr;
-                d = SwerveDrive.SwervePID.Drr;
-                kS = SwerveDrive.SwervePID.kSrr;
-                break;
-            case Rl:
-                p = SwerveDrive.SwervePID.Prl;
-                d = SwerveDrive.SwervePID.Drl;
-                kS = SwerveDrive.SwervePID.kSrl;
-                break;
-            default:
-                p = 0.009;
-                d = 0;
-                kS = 0;
-        }
+        double p = SwerveDrive.SwervePID.P;
+        double d = SwerveDrive.SwervePID.D;
+        double kS = SwerveDrive.SwervePID.kS;
 
         double translationMag = translation.magnitude();
         double omegaMag = Math.abs(omega);
@@ -172,7 +141,7 @@ public class SwervePod {
         // PD with derivative on measurement
         double raw =
                 p * error
-                - d * angularVelocity;
+                        - d * angularVelocity;
 
         raw += Math.signum(error) * kS * TaskOpMode.Runtime.voltageCompensation;
         if (Math.abs(podAngle - angleSetpoint) < SwerveDrive.SwervePID.deadband) raw = 0;

@@ -22,6 +22,7 @@ public class VelocityFollower extends SystemBase {
     private final Position holdpoint;
     private final Vector2 driveInput;
     private boolean xPattern;
+    private final boolean teleop;
 
     public State state;
 
@@ -49,6 +50,7 @@ public class VelocityFollower extends SystemBase {
     }
 
     public VelocityFollower(double x, double y, double h) {
+        this.teleop = false;
         this.xPattern = true;
         this.driveInput = Vector2.cartesian(0, 0);
 
@@ -72,6 +74,7 @@ public class VelocityFollower extends SystemBase {
     }
 
     public VelocityFollower(double x, double y, double h, DoubleSupplier heading) {
+        this.teleop = true;
         this.xPattern = false;
         this.driveInput = Vector2.cartesian(0, 0);
 
@@ -89,14 +92,14 @@ public class VelocityFollower extends SystemBase {
 
         this.targetFieldCentricVelocity = Vector2.cartesian(0, 0);
         this.targetRobotCentricVelocity = Vector2.cartesian(0, 0);
-        this.swerveDrive = new SwerveDrive(new Position(x, y, h), heading, true, true);
+        this.swerveDrive = new SwerveDrive(new Position(x, y, h), heading, false, true);
         this.holdpoint = new Position(x, y, h);
         this.state = State.Driver;
     }
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
-        this.swerveDrive.clear();
+        if (!this.teleop) this.swerveDrive.clear();
         this.swerveDrive.loadHardware(hardwareMap);
     }
 
