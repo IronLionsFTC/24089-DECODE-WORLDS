@@ -184,7 +184,7 @@ public class SwerveDrive extends SystemBase {
             omegaCommand = (driverTurn != 0.0) ? driverTurn : 0.0;
         }
 
-        boolean idle = driveVector.magnitude() < 0.05 && Math.abs(omegaCommand) < 0.05;
+        boolean idle = driveVector.magnitude() < 0.05 && Math.abs(omegaCommand) < 0.15;
 
         double a, b, c, d;
         if (idle) {

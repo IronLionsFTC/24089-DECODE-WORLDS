@@ -10,37 +10,26 @@ public class SwervePod {
     public static final double GEAR_RATIO = 23.0 / 16.0 * 180 / 150;
     public static final double POD_RANGE_DEG  = SERVO_RANGE_DEG * GEAR_RATIO;
     public static final double POD_HALF_RANGE = POD_RANGE_DEG / 2.0;
-    public static final boolean CCW_POSITIVE = false;
-
-    // ── Hardware ──────────────────────────────────────────────────────────────
 
     private final LionMotor motor;
     private final LionServo servo;
-    private final Vector2   offset;   // unit wheel position (±1, ±1) in robot frame
+    private final Vector2   offset;
 
     public double currentAngle = 0.0;
     public double targetAngle  = 0.0;
 
     public final double offsetDeg;
 
-    // ── Construction ──────────────────────────────────────────────────────────
-
-    /**
-     * @param motor  Drive wheel motor.
-     * @param servo  Steering servo (position 0.5 = pod forward at init).
-     * @param offset Normalised wheel position in robot frame, e.g. (±1, ±1).
-     */
     public SwervePod(LionMotor motor, LionServo servo, Vector2 offset, double offsetDeg) {
-        this.motor  = motor;
-        this.servo  = servo;
-        this.offset = offset;
+        this.motor     = motor;
+        this.servo     = servo;
+        this.offset    = offset;
         this.offsetDeg = offsetDeg;
         setServo(0.0);
     }
 
     public double update(Vector2 translation, double omega) {
-        Vector2 rotComponent  = Vector2.cartesian( omega * offset.y(),
-                -omega * offset.x());
+        Vector2 rotComponent  = Vector2.cartesian(omega * offset.y(), -omega * offset.x());
         Vector2 wheelVelocity = translation.add(rotComponent);
 
         if (wheelVelocity.magnitude() < 1e-6) {
@@ -48,41 +37,62 @@ public class SwervePod {
         }
 
         double desired = -wheelVelocity.polarDirection();
-        double fwdTarget = closestEquivalent(desired,         currentAngle);
-        double revTarget = closestEquivalent(desired + 180.0, currentAngle);
 
-        double fwdTravel = Math.abs(wrapDeg(fwdTarget - currentAngle));
-        double revTravel = Math.abs(wrapDeg(revTarget - currentAngle));
+        double bestTarget   = currentAngle;
+        double bestTravel   = Double.MAX_VALUE;
+        double bestMotorDir = 1.0;
 
-        double newAngle;
-        double power;
-        if (fwdTravel <= revTravel) {
-            newAngle = fwdTarget;
-            power    = +wheelVelocity.magnitude();
-        } else {
-            newAngle = revTarget;
-            power    = -wheelVelocity.magnitude();
+        for (int i = 0; i < 2; i++) {
+            double heading  = desired + i * 180.0;
+            double motorDir = (i == 0) ? +1.0 : -1.0;
+            double base     = currentAngle + wrapDeg(heading - currentAngle);
+
+            for (int k = -1; k <= 1; k++) {
+                double candidate = base + k * 360.0;
+                if (candidate >= -POD_HALF_RANGE && candidate <= POD_HALF_RANGE) {
+                    double travel = Math.abs(candidate - currentAngle);
+                    if (travel < bestTravel) {
+                        bestTravel   = travel;
+                        bestTarget   = candidate;
+                        bestMotorDir = motorDir;
+                    }
+                }
+            }
         }
 
-        double delta      = Math.abs(wrapDeg(newAngle - currentAngle));
-        double cosineFactor = Math.max(0.0, Math.cos(Math.toRadians(delta)));
-        currentAngle = newAngle;
-        targetAngle  = newAngle;
-        setServo(newAngle);
+        double cosineFactor = Math.max(0.0, Math.cos(Math.toRadians(bestTravel)));
+        currentAngle = bestTarget;
+        targetAngle  = bestTarget;
+        setServo(bestTarget);
 
-        return power * cosineFactor;
+        return bestMotorDir * wheelVelocity.magnitude() * cosineFactor;
     }
 
     public double updateIdle(boolean oPattern) {
         if (oPattern) {
-            double tangent = wrapDeg(offset.polarDirection() + 90.0);
-            double optA    = closestEquivalent(tangent,         currentAngle);
-            double optB    = closestEquivalent(tangent + 180.0, currentAngle);
-            double target  = Math.abs(wrapDeg(optA - currentAngle))
-                    <= Math.abs(wrapDeg(optB - currentAngle)) ? optA : optB;
-            currentAngle = target;
-            targetAngle  = target;
-            setServo(target);
+            double tangent    = wrapDeg(offset.polarDirection() + 90.0);
+            double bestTarget = currentAngle;
+            double bestTravel = Double.MAX_VALUE;
+
+            for (int i = 0; i < 2; i++) {
+                double heading = tangent + i * 180.0;
+                double base    = currentAngle + wrapDeg(heading - currentAngle);
+
+                for (int k = -1; k <= 1; k++) {
+                    double candidate = base + k * 360.0;
+                    if (candidate >= -POD_HALF_RANGE && candidate <= POD_HALF_RANGE) {
+                        double travel = Math.abs(candidate - currentAngle);
+                        if (travel < bestTravel) {
+                            bestTravel = travel;
+                            bestTarget = candidate;
+                        }
+                    }
+                }
+            }
+
+            currentAngle = bestTarget;
+            targetAngle  = bestTarget;
+            setServo(bestTarget);
         }
         return 0.0;
     }
@@ -101,11 +111,11 @@ public class SwervePod {
         double pos = 0.5 - angleDeg / POD_RANGE_DEG;
 
         while (pos > 1) {
-            pos -= 360 / POD_RANGE_DEG;
+            pos -= 360.0 / POD_RANGE_DEG;
         }
 
         while (pos < 0) {
-            pos += 360 / POD_RANGE_DEG;
+            pos += 360.0 / POD_RANGE_DEG;
         }
 
         servo.setPosition(pos);
@@ -115,9 +125,5 @@ public class SwervePod {
         a = ((a % 360.0) + 360.0) % 360.0;
         if (a > 180.0) a -= 360.0;
         return a;
-    }
-
-    private static double closestEquivalent(double target, double reference) {
-        return reference + wrapDeg(target - reference);
     }
 }
