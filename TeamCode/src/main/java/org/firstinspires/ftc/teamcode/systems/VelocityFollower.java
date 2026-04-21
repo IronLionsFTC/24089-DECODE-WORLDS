@@ -47,6 +47,9 @@ public class VelocityFollower extends SystemBase {
         public static double I = 0.0;
         public static double D = 0.0002;
         public static double kS = 0.2;
+
+        public static double breakVelocity = 500;
+        public static double breakDistance = 350;
     }
 
     public VelocityFollower(double x, double y, double h) {
@@ -172,7 +175,7 @@ public class VelocityFollower extends SystemBase {
                     feedforward = HoldpointPID.kS;
 
                     // Brake
-                    if (SwerveDrive.PinpointCache.velocity.magnitude() > 500 && distance < 250) {
+                    if (SwerveDrive.PinpointCache.velocity.magnitude() > HoldpointPID.breakVelocity && distance < HoldpointPID.breakDistance) {
                         response = 0;
                         feedforward = 0;
                     }

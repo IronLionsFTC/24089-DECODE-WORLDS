@@ -15,14 +15,19 @@ public class LineTest extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        Follower follower = new Follower(0, 1000, 90);
+        Follower follower = new Follower(0, 0, 90);
 
         return Jobs.create()
                 .addSeries(
                         new Follow(follower, new Line(
-                            new Position(0, 1000, 90),
-                            new Position(0, 1200, 90)
-                        )).setMaxSpeed(200)
+                            new Position(0, 0, 90),
+                            new Position(0, 1500, 60)
+                        )).setMaxSpeed(1200),
+
+                        new Follow(follower, new Line(
+                                new Position(0, 0, 90),
+                                new Position(0, 1500, 90)
+                        )).setMaxSpeed(1200)
                 )
                 .registerSystem(follower);
     }
