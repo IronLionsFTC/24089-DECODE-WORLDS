@@ -5,6 +5,7 @@ import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Forever;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Run;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Sleep;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Follower;
 import org.firstinspires.ftc.teamcode.systems.Intake;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.systems.Shooter;
 import org.firstinspires.ftc.teamcode.tasks.EndXPattern;
 import org.firstinspires.ftc.teamcode.tasks.Follow;
 import org.firstinspires.ftc.teamcode.tasks.Goto;
+import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFullTimeout;
 import org.firstinspires.ftc.teamcode.tasks.Jetison;
 import org.firstinspires.ftc.teamcode.tasks.LimelightRelocalise;
 import org.firstinspires.ftc.teamcode.tasks.RelocaliseToStart;
@@ -38,24 +40,31 @@ public class TeleOpBlue extends TaskOpMode {
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
         Limelight limelight = new Limelight(Limelight.Team.Blue);
 
-        double xOffset = -250;
+        double xOffset = 0;
         double yOffset = 150;
-        Position gateIntake = new Position(1920 + xOffset, -100 + yOffset, 150);
-        Position gateIntakeB = new Position(2020 + xOffset, -100 + yOffset, 150);
+        Position gateIntake = new Position(1920 + xOffset, -50 + yOffset, 150);
+        Position gateIntakeB = new Position(1700 + xOffset, -50 + yOffset, 150);
+        Position shoot = new Position(1500 + xOffset, 1200 + yOffset, 150);
 
         controller1.leftTrigger.asButton.onPress(new TeleopIntake(intake));
         controller1.rightTrigger.asButton.onPress(new Shoot(intake, shooter));
         controller1.X.onPress(new StartXPattern(drivetrain));
         controller1.X.onRelease(new EndXPattern(drivetrain));
-        controller1.A.onPress(new Run(() -> drivetrain.setHeading(155)));
-        controller1.bumpers.right.onPress(
-                new Goto(drivetrain, gateIntake).setMaxSpeed(900).with(
-                        new Run(() -> intake.setState(Intake.State.IntakingEmpty))
-                ).then(
+        controller1.A.onPress(new Run(() -> drivetrain.setHeading(150)));
+
+        controller1.bumpers.right.onPress( new Goto(drivetrain, gateIntake).setMaxSpeed(900).then(
                         new Follow(drivetrain, new Line(
                                 gateIntake,
                                 gateIntakeB
-                        ))
+                        )).then(new Sleep(1)).with(
+                                new IntakeUntilFullTimeout(intake, 3)
+                        )
+                ).then(
+                        new Follow(drivetrain, new Line(gateIntakeB, shoot)).setMaxSpeed(900).then(
+                                new Sleep(0.5)
+                        ).then(
+                                new Shoot(intake, shooter)
+                        )
                 )
         );
 

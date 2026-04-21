@@ -55,7 +55,7 @@ public class SwerveDrive extends SystemBase {
         /** Derivative gain on measured angular velocity (deg/s → output). Keep positive. */
         public static double kD = 0.0001;
         /** Integral gain on accumulated heading error. Start small (~0.0001). */
-        public static double kI = 0.0005;
+        public static double kI = 0.0001;
         /** Heading error (deg) below which no correction is applied. */
         public static double errorDeadband = 4.0;
         /** Maximum yaw-correction output magnitude. */
@@ -75,7 +75,7 @@ public class SwerveDrive extends SystemBase {
         /** Heading error (deg) window within which the integrator accumulates. */
         public static double integralWindow = 15.0;
         /** Latency compensation. */
-        public static double latency = 0.05;
+        public static double latency = 0.001;
     }
 
     @Config
@@ -85,21 +85,21 @@ public class SwerveDrive extends SystemBase {
         /** Derivative gain on measured pod angular velocity (deg/s → output). Keep positive. */
         public static double kD = 0.0;
         /** Velocity feedforward gain (setpoint deg/s → output). Tune until pod tracks rotating targets without lag. */
-        public static double kV = 0.002;
+        public static double kV = 0.001;
         /** Static-friction feedforward, scaled by runtime voltage compensation. */
-        public static double kS = 0.08;
+        public static double kS = 0.02;
         /** Transition width (deg) for the soft-sign kS ramp. Smaller = sharper transition. */
         public static double kSTransition = 5.0;
         /** EMA coefficient for pod angular velocity estimate [0 = frozen … 1 = fully raw]. */
         public static double velocityFilter = 0.3;
         /** Steering error (deg) below which servo output is cut to zero. */
-        public static double errorDeadband = 8.0;
+        public static double errorDeadband = 10.0;
         /** Steering error (deg) below which output is clamped to ±outputLimit. */
-        public static double limitband = 10.0;
+        public static double limitband = 15.0;
         /** Maximum servo output when inside the limitband. */
         public static double outputLimit = 0.75;
         /** Estimated sensor/actuator latency (s) for predictive angle compensation. */
-        public static double latency = 0.05;
+        public static double latency = 0.001;
     }
 
     public static class PinpointCache {

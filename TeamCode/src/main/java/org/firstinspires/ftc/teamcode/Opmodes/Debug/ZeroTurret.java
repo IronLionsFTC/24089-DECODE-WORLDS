@@ -26,9 +26,9 @@ public class ZeroTurret extends OpMode {
     public static class TurretPID {
         public static double P = 0.0075;
         public static double I = 0.0;
-        public static double D = 0.00075;
-        public static double kS = 0.05;
-        public static double latency = 0.05;
+        public static double D = 0.0001;
+        public static double kS = 0.03;
+        public static double latency = 0;
     }
 
     @Override
