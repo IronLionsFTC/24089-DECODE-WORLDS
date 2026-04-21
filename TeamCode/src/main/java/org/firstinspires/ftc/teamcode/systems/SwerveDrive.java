@@ -11,96 +11,94 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
-import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
-import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
-import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 import java.util.function.DoubleSupplier;
 
+/**
+ * Swerve drive system with GoBilda Pinpoint odometry and a three-state
+ * heading controller.
+ *
+ * ── Heading controller states ──────────────────────────────────────────────
+ *
+ *   TURNING   Driver is actively commanding rotation.
+ *             omega = scaled driver input; targetHeading tracks live heading
+ *             so it is already at the right value the moment the stick releases.
+ *
+ *   SETTLING  Driver released the turn stick but the robot is still spinning
+ *             faster than settleOmega.  A small −kD·ω braking term is applied
+ *             to help the robot decelerate and lock cleanly.
+ *
+ *   HOLDING   Robot is settled.  A PD loop drives heading error to zero:
+ *               ω_cmd = kP·error − kD·ω_measured
+ *             clipped to ±maxOutput, with an errorDeadband near zero.
+ *
+ * ── yawCorrection flag ─────────────────────────────────────────────────────
+ *
+ *   When false the entire heading-hold stack is bypassed.  Driver turn input
+ *   is still passed through normally; the robot simply does not self-correct.
+ */
 public class SwerveDrive extends SystemBase {
 
-    private GoBildaPinpointDriver pinpoint;
-
-    private SwervePod rightFront;
-    private SwervePod leftFront;
-    private SwervePod rightRear;
-    private SwervePod leftRear;
-
-    private Position       startPosition;
-    private Vector2        driveVector;
-    private DoubleSupplier heading;
-
-    private double  targetHeading;
-    private boolean turning;
-    private boolean oPattern;
-
-    private double omegaCommand            = 0;
-    private double filteredHeadingResponse = 0;
-    private double headingIntegral         = 0;
-    private double filteredOmega           = 0;
-
-    private final boolean yawCorrection;
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Tuning — edit via FTC Dashboard or directly here
+    // ══════════════════════════════════════════════════════════════════════════
 
     @Config
     public static class HeadingControl {
-        /** Proportional gain on heading error (deg → output). */
-        public static double kP = 0.01;
-        /** Derivative gain on measured angular velocity (deg/s → output). Keep positive. */
-        public static double kD = 0.0001;
-        /** Integral gain on accumulated heading error. Start small (~0.0001). */
-        public static double kI = 0.0001;
-        /** Heading error (deg) below which no correction is applied. */
-        public static double errorDeadband = 4.0;
-        /** Maximum yaw-correction output magnitude. */
-        public static double outputLimit = 1.0;
-        /** Low-pass coefficient for the heading response [0 = frozen … 1 = fully raw]. */
-        public static double filterSmoothing = 0.2;
-        /** EMA coefficient for the angular velocity derivative term [0 = frozen … 1 = fully raw]. */
-        public static double omegaFilter = 0.25;
-        /** Driver turn input scale factor. */
-        public static double driverScale = 0.75;
-        /** Driver turn inputs below this magnitude are treated as zero. */
+
+        /**
+         * Proportional gain: heading error (deg) → omega command.
+         * Increase until heading snaps back firmly without oscillating.
+         * Starting point for 20 Hz: ~0.012.
+         */
+        public static double kP = 0.012;
+
+        /**
+         * Derivative gain: measured angular velocity (deg/s) → omega command.
+         * Provides damping.  Applied in both HOLDING (dampen oscillation) and
+         * SETTLING (help decelerate after turning).
+         * Starting point: ~0.0015.
+         */
+        public static double kD = 0.0015;
+
+        /**
+         * Output clamp on the heading-hold correction.
+         * Prevents the heading controller from saturating the drivetrain when
+         * heading error is large (e.g. after an auto relocalisaton).
+         */
+        public static double maxOutput = 0.6;
+
+        /**
+         * Heading error (deg) below which the HOLDING correction is zeroed.
+         * Prevents buzzing/micro-corrections near the target.
+         */
+        public static double errorDeadband = 2.5;
+
+        /** Scale applied to the raw driver turn-stick value. */
+        public static double driverScale = 0.70;
+
+        /** Turn-stick values below this magnitude are treated as zero. */
         public static double driverDeadband = 0.05;
-        /** Angular velocity (deg/s) below which the robot is considered settled after releasing the turn stick. */
-        public static double turnSettleOmega = 25.0;
-        /** Maximum integrator contribution magnitude, prevents windup. */
-        public static double integralLimit = 0.2;
-        /** Heading error (deg) window within which the integrator accumulates. */
-        public static double integralWindow = 15.0;
-        /** Latency compensation. */
-        public static double latency = 0.001;
+
+        /**
+         * Angular velocity (deg/s) below which the robot is considered settled
+         * after the driver releases the turn stick.  The system transitions
+         * SETTLING → HOLDING only when |ω| drops below this value.
+         * Increase if heading locks inconsistently; decrease if it waits too long.
+         */
+        public static double settleOmega = 20.0;
     }
 
-    @Config
-    public static class PodControl {
-        /** Proportional gain on steering angle error. */
-        public static double kP = 0.007;
-        /** Derivative gain on measured pod angular velocity (deg/s → output). Keep positive. */
-        public static double kD = 0.0;
-        /** Velocity feedforward gain (setpoint deg/s → output). Tune until pod tracks rotating targets without lag. */
-        public static double kV = 0.001;
-        /** Static-friction feedforward, scaled by runtime voltage compensation. */
-        public static double kS = 0.02;
-        /** Transition width (deg) for the soft-sign kS ramp. Smaller = sharper transition. */
-        public static double kSTransition = 5.0;
-        /** EMA coefficient for pod angular velocity estimate [0 = frozen … 1 = fully raw]. */
-        public static double velocityFilter = 0.3;
-        /** Steering error (deg) below which servo output is cut to zero. */
-        public static double errorDeadband = 10.0;
-        /** Steering error (deg) below which output is clamped to ±outputLimit. */
-        public static double limitband = 15.0;
-        /** Maximum servo output when inside the limitband. */
-        public static double outputLimit = 0.75;
-        /** Estimated sensor/actuator latency (s) for predictive angle compensation. */
-        public static double latency = 0.001;
-    }
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Odometry cache — shared read-only with other systems
+    // ══════════════════════════════════════════════════════════════════════════
 
     public static class PinpointCache {
         public static Position position;
@@ -108,45 +106,73 @@ public class SwerveDrive extends SystemBase {
         public static double   angularVelocity;
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Fields
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // ── Hardware ──────────────────────────────────────────────────────────────
+    private GoBildaPinpointDriver pinpoint;
+    private SwervePod rightFront, leftFront, rightRear, leftRear;
+
+    // ── Configuration (set once at construction) ──────────────────────────────
+    private final Position       startPosition;
+    private final DoubleSupplier headingInput;   // driver turn-stick supplier
+    private       boolean        oPattern;
+    private final boolean        yawCorrection;
+
+    // ── Runtime state ─────────────────────────────────────────────────────────
+    private Vector2 driveVector   = Vector2.cartesian(0.0, 0.0);
+    private double  targetHeading = 0.0;   // degrees, the heading we are holding
+    private boolean turning       = false; // true while in TURNING or SETTLING state
+    private double  omegaCommand  = 0.0;
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Constructors
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Use when heading input is controlled programmatically (autonomous, etc.). */
     public SwerveDrive(Position startPosition, boolean oPattern, boolean yawCorrection) {
         this.startPosition = startPosition;
-        this.heading       = () -> 0;
+        this.headingInput  = () -> 0.0;
         this.oPattern      = oPattern;
         this.yawCorrection = yawCorrection;
     }
 
-    public SwerveDrive(Position startPosition, DoubleSupplier heading,
+    /** Use when heading input comes from a driver gamepad axis. */
+    public SwerveDrive(Position startPosition, DoubleSupplier headingInput,
                        boolean oPattern, boolean yawCorrection) {
         this.startPosition = startPosition;
-        this.heading       = heading;
+        this.headingInput  = headingInput;
         this.oPattern      = oPattern;
         this.yawCorrection = yawCorrection;
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  SystemBase lifecycle
+    // ══════════════════════════════════════════════════════════════════════════
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
 
-        if (PinpointCache.position != null) startPosition = PinpointCache.position;
-
-        AbsoluteEncoder rfEnc = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightFrontAnalog);
-        AbsoluteEncoder lfEnc = new AbsoluteEncoder(hardwareMap, Zeroing.Names.leftFrontAnalog);
-        AbsoluteEncoder rrEnc = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightRearAnalog);
-        AbsoluteEncoder lrEnc = new AbsoluteEncoder(hardwareMap, Zeroing.Names.leftRearAnalog);
-        rfEnc.read(); lfEnc.read(); rrEnc.read(); lrEnc.read();
-
+        // ── Pinpoint odometry ─────────────────────────────────────────────────
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         pinpoint.setEncoderDirections(
                 GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
         pinpoint.setOffsets(134.857, 0, DistanceUnit.MM);
-        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        pinpoint.setEncoderResolution(
+                GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
-        PinpointCache.position        = new Position(startPosition.position.x(),
-                startPosition.position.y(),
-                startPosition.heading);
-        PinpointCache.velocity        = Vector2.cartesian(0, 0);
-        PinpointCache.angularVelocity = 0;
+        // Seed the cache — carry forward from a previous op-mode if available
+        Position seed = (PinpointCache.position != null)
+                ? PinpointCache.position : startPosition;
+        PinpointCache.position        = new Position(seed.position.x(),
+                seed.position.y(),
+                seed.heading);
+        PinpointCache.velocity        = Vector2.cartesian(0.0, 0.0);
+        PinpointCache.angularVelocity = 0.0;
 
+        // ── Drive motors ──────────────────────────────────────────────────────
         LionMotor rfMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightFront);
         LionMotor lfMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.leftFront);
         LionMotor rrMotor = LionMotor.withEncoder(hardwareMap, MotorConstants.Names.rightRear);
@@ -162,28 +188,20 @@ public class SwerveDrive extends SystemBase {
         rrMotor.setZPB(MotorConstants.ZPB.driveMotors);
         lrMotor.setZPB(MotorConstants.ZPB.driveMotors);
 
-        rfMotor.setReverseEncoder(true);
-        rrMotor.setReverseEncoder(true);
+        // ── Steering servos ───────────────────────────────────────────────────
+        //    Initialised to 0.5 so pods are mechanically forward before init().
+        LionServo rfServo = LionServo.single(hardwareMap, ServoConstants.Names.rightFront, 0.5);
+        LionServo lfServo = LionServo.single(hardwareMap, ServoConstants.Names.leftFront,  0.5);
+        LionServo rrServo = LionServo.single(hardwareMap, ServoConstants.Names.rightRear,  0.5);
+        LionServo lrServo = LionServo.single(hardwareMap, ServoConstants.Names.leftRear,   0.5);
 
-        rightFront = new SwervePod(rfMotor,
-                new LionCRServo(hardwareMap, ServoConstants.Names.rightFront),
-                Vector2.cartesian( 1,  1),
-                Zeroing.podAngle(rfEnc.position(), ConstantsStorage.get("rf", 0.0)));
-
-        leftFront = new SwervePod(lfMotor,
-                new LionCRServo(hardwareMap, ServoConstants.Names.leftFront),
-                Vector2.cartesian(-1,  1),
-                Zeroing.podAngle(lfEnc.position(), ConstantsStorage.get("lf", 0.0)));
-
-        rightRear = new SwervePod(rrMotor,
-                new LionCRServo(hardwareMap, ServoConstants.Names.rightRear),
-                Vector2.cartesian( 1, -1),
-                Zeroing.podAngle(rrEnc.position(), ConstantsStorage.get("rr", 0.0)));
-
-        leftRear = new SwervePod(lrMotor,
-                new LionCRServo(hardwareMap, ServoConstants.Names.leftRear),
-                Vector2.cartesian(-1, -1),
-                Zeroing.podAngle(lrEnc.position(), ConstantsStorage.get("lr", 0.0)));
+        // ── Swerve pods ───────────────────────────────────────────────────────
+        //    Offset vectors (±1, ±1) define wheel positions in robot frame.
+        //    x = lateral (right positive), y = longitudinal (forward positive).
+        rightFront = new SwervePod(rfMotor, rfServo, Vector2.cartesian( 1.0,  1.0), -3.0);
+        leftFront  = new SwervePod(lfMotor, lfServo, Vector2.cartesian(-1.0,  1.0), 5.0);
+        rightRear  = new SwervePod(rrMotor, rrServo, Vector2.cartesian( 1.0, -1.0), -3.0);
+        leftRear   = new SwervePod(lrMotor, lrServo, Vector2.cartesian(-1.0, -1.0), 0.0);
     }
 
     @Override
@@ -191,81 +209,92 @@ public class SwerveDrive extends SystemBase {
         pinpoint.resetPosAndIMU();
         sleep(300);
 
+        // Pinpoint uses a rotated coordinate frame: its (X, Y) = robot (-Y, X).
         pinpoint.setPosition(new Position(
                 startPosition.position.y(),
                 -startPosition.position.x(),
                 startPosition.heading).pose());
 
-        targetHeading           = startPosition.heading;
-        driveVector             = Vector2.cartesian(0, 0);
-        turning                 = false;
-        omegaCommand            = 0;
-        filteredHeadingResponse = 0;
-        headingIntegral         = 0;
-        filteredOmega           = 0;
+        targetHeading = startPosition.heading;
+        driveVector   = Vector2.cartesian(0.0, 0.0);
+        omegaCommand  = 0.0;
+        turning       = false;
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Main loop
+    // ══════════════════════════════════════════════════════════════════════════
 
     @Override
     public void update(Telemetry telemetry, boolean useTelemetry) {
 
+        // ── 1. Odometry ───────────────────────────────────────────────────────
         pinpoint.update();
-        Pose2D pos = pinpoint.getPosition();
+        Pose2D pose = pinpoint.getPosition();
 
+        // Convert from Pinpoint frame (X=forward, Y=left) to robot frame (X=right, Y=forward)
         PinpointCache.position.update(
-                -pos.getY(DistanceUnit.MM),
-                pos.getX(DistanceUnit.MM),
-                pos.getHeading(AngleUnit.DEGREES));
-
+                -pose.getY(DistanceUnit.MM),
+                pose.getX(DistanceUnit.MM),
+                pose.getHeading(AngleUnit.DEGREES));
         PinpointCache.angularVelocity =
                 pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES);
-
         PinpointCache.velocity.update(
                 -pinpoint.getVelY(DistanceUnit.MM),
                 pinpoint.getVelX(DistanceUnit.MM));
 
-        double driverTurn = heading.getAsDouble();
-        if (Math.abs(driverTurn) < HeadingControl.driverDeadband) driverTurn = 0;
-        else                                                       driverTurn *= HeadingControl.driverScale;
+        final double heading = PinpointCache.position.heading;
+        final double omega   = PinpointCache.angularVelocity;
 
-        double headingNow = PinpointCache.position.heading + HeadingControl.latency * PinpointCache.angularVelocity;
-        double error      = angleDifference(headingNow, targetHeading);
-        if (Math.abs(error) < HeadingControl.errorDeadband) error = 0;
+        // ── 2. Heading controller ─────────────────────────────────────────────
+        double rawTurn    = -headingInput.getAsDouble();
+        double driverTurn = (Math.abs(rawTurn) < HeadingControl.driverDeadband)
+                ? 0.0 : rawTurn * HeadingControl.driverScale;
 
-        filteredOmega += HeadingControl.omegaFilter
-                * (PinpointCache.angularVelocity - filteredOmega);
-
-        if (!turning && Math.abs(error) < HeadingControl.integralWindow) {
-            headingIntegral += error * HeadingControl.kI;
-            headingIntegral  = Math.max(-HeadingControl.integralLimit,
-                    Math.min( HeadingControl.integralLimit, headingIntegral));
-        } else {
-            headingIntegral *= 0.9;
-        }
-
-        double rawResponse = HeadingControl.kP * error
-                + headingIntegral
-                - HeadingControl.kD * filteredOmega;
-
-        filteredHeadingResponse +=
-                HeadingControl.filterSmoothing * (rawResponse - filteredHeadingResponse);
-        double response = Math.max(-HeadingControl.outputLimit,
-                Math.min( HeadingControl.outputLimit, filteredHeadingResponse));
-
-        if (!yawCorrection) response = 0;
-
-        if (driverTurn != 0) {
+        if (driverTurn != 0.0) {
+            // ── TURNING ───────────────────────────────────────────────────────
+            //    Live-track heading so targetHeading is already correct the
+            //    instant the driver releases the stick.
             turning       = true;
-            targetHeading = headingNow;
-        } else if (turning
-                && Math.abs(PinpointCache.angularVelocity) < HeadingControl.turnSettleOmega) {
-            turning         = false;
-            targetHeading   = headingNow;
-            headingIntegral = 0;
+            targetHeading = heading;
+            omegaCommand  = driverTurn;
+
+        } else if (turning) {
+            // ── SETTLING ──────────────────────────────────────────────────────
+            //    Driver released; wait for spin to decay.
+            //    Apply gentle velocity damping to help the robot stop cleanly.
+            if (Math.abs(omega) < HeadingControl.settleOmega) {
+                turning       = false;
+                targetHeading = heading;   // lock the heading we've arrived at
+                omegaCommand  = 0.0;
+            } else {
+                omegaCommand = -HeadingControl.kD * omega;
+            }
+
+        } else {
+            // ── HOLDING ───────────────────────────────────────────────────────
+            //    PD controller: drives heading error to zero.
+            //      ω_cmd =  kP * error               (proportional restore)
+            //             − kD * ω_measured           (derivative damping)
+            double error = wrapDeg(targetHeading - heading);
+
+            if (Math.abs(error) < HeadingControl.errorDeadband) {
+                omegaCommand = 0.0;
+            } else {
+                omegaCommand = HeadingControl.kP * error - HeadingControl.kD * omega;
+                omegaCommand = Math.max(-HeadingControl.maxOutput,
+                        Math.min( HeadingControl.maxOutput, omegaCommand));
+            }
         }
 
-        omegaCommand = turning ? driverTurn : response;
+        // Override: if yaw correction is disabled, bypass hold entirely.
+        // Driver turn still works; the robot just doesn't self-correct.
+        if (!yawCorrection) {
+            omegaCommand = (driverTurn != 0.0) ? driverTurn : 0.0;
+        }
 
-        boolean idle = driveVector.magnitude() < 0.1 && Math.abs(omegaCommand) < 0.1;
+        // ── 3. Pod kinematics ─────────────────────────────────────────────────
+        boolean idle = driveVector.magnitude() < 0.05 && Math.abs(omegaCommand) < 0.05;
 
         double a, b, c, d;
         if (idle) {
@@ -274,77 +303,123 @@ public class SwerveDrive extends SystemBase {
             c = rightRear .updateIdle(oPattern);
             d = leftRear  .updateIdle(oPattern);
         } else {
-            a = rightFront.update(driveVector, omegaCommand);
-            b = leftFront .update(driveVector, omegaCommand);
-            c = rightRear .update(driveVector, omegaCommand);
-            d = leftRear  .update(driveVector, omegaCommand);
+            a = rightFront.update(driveVector, -omegaCommand);
+            b = leftFront .update(driveVector, -omegaCommand);
+            c = rightRear .update(driveVector, -omegaCommand);
+            d = leftRear  .update(driveVector, -omegaCommand);
         }
 
+        // ── 4. Power normalisation ────────────────────────────────────────────
+        //    Scale all powers down together if any exceeds 1, preserving ratios.
         double maxPow = Math.max(Math.max(Math.abs(a), Math.abs(b)),
                 Math.max(Math.abs(c), Math.abs(d)));
-        if (maxPow > 1) { a /= maxPow; b /= maxPow; c /= maxPow; d /= maxPow; }
+        if (maxPow > 1.0) { a /= maxPow; b /= maxPow; c /= maxPow; d /= maxPow; }
 
-        rightFront.set(a);
-        leftFront .set(b);
-        rightRear .set(c);
-        leftRear  .set(d);
+        rightFront.applyPower(a);
+        leftFront .applyPower(b);
+        rightRear .applyPower(c);
+        leftRear  .applyPower(d);
 
+        // ── 5. Telemetry ──────────────────────────────────────────────────────
         if (useTelemetry) {
-            telemetry.addData("X POSITION",       PinpointCache.position.position.x());
-            telemetry.addData("Y POSITION",       PinpointCache.position.position.y());
-            telemetry.addData("HEADING",          PinpointCache.position.heading);
-            telemetry.addData("TARGET HEADING",   targetHeading);
-            telemetry.addData("OMEGA CMD",        omegaCommand);
-            telemetry.addData("ANGULAR VELOCITY", PinpointCache.angularVelocity);
-            telemetry.addData("HEADING INTEGRAL", headingIntegral);
-            telemetry.addData("frontRight target/actual",
-                    String.format("%.1f / %.1f", rightFront.targetAngle, rightFront.currentAngle));
-            telemetry.addData("frontLeft  target/actual",
-                    String.format("%.1f / %.1f", leftFront.targetAngle,  leftFront.currentAngle));
-            telemetry.addData("rearRight  target/actual",
-                    String.format("%.1f / %.1f", rightRear.targetAngle,  rightRear.currentAngle));
-            telemetry.addData("rearLeft   target/actual",
-                    String.format("%.1f / %.1f", leftRear.targetAngle,   leftRear.currentAngle));
+            String state = turning
+                    ? (Math.abs(omega) < HeadingControl.settleOmega ? "SETTLING" : "TURNING")
+                    : "HOLDING";
+            telemetry.addData("── Heading ──",        "");
+            telemetry.addData("  State",              state);
+            telemetry.addData("  Heading",            String.format("%.1f°", heading));
+            telemetry.addData("  Target",             String.format("%.1f°", targetHeading));
+            telemetry.addData("  Error",              String.format("%.1f°", wrapDeg(targetHeading - heading)));
+            telemetry.addData("  ω measured",         String.format("%.1f °/s", omega));
+            telemetry.addData("  ω command",          String.format("%.3f",     omegaCommand));
+            telemetry.addData("── Position ──",       "");
+            telemetry.addData("  X",                  String.format("%.1f mm", PinpointCache.position.position.x()));
+            telemetry.addData("  Y",                  String.format("%.1f mm", PinpointCache.position.position.y()));
+            telemetry.addData("── Pods (commanded) ──", "");
+            telemetry.addData("  RF",                 String.format("%.1f°", rightFront.currentAngle));
+            telemetry.addData("  LF",                 String.format("%.1f°", leftFront .currentAngle));
+            telemetry.addData("  RR",                 String.format("%.1f°", rightRear .currentAngle));
+            telemetry.addData("  LR",                 String.format("%.1f°", leftRear  .currentAngle));
         }
     }
 
-    public static double angleDifference(double target, double current) {
-        double delta = ((target - current) % 360 + 360) % 360;
-        if (delta > 180) delta -= 360;
-        return delta;
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Public control API
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Sets the translation demand vector for the next update call. */
+    public void setTargetVector(Vector2 vector) {
+        driveVector = vector;
     }
 
-    private static double wrapHeading(double h) {
-        h = ((h % 360) + 360) % 360;
-        if (h > 180) h -= 360;
-        return h;
+    /**
+     * Programmatically commands a new target heading and immediately engages
+     * HOLDING mode.  Use in autonomous routines.
+     */
+    public void setTargetHeading(double degrees) {
+        targetHeading = degrees;
+        turning       = false;
     }
 
-    public void setTargetHeading(double newHeading) { targetHeading = newHeading; }
-    public void setTargetVector(Vector2 vector)     { driveVector   = vector; }
-    public void setOPattern(boolean enabled)        { this.oPattern = enabled; }
+    public void setOPattern(boolean enabled) {
+        oPattern = enabled;
+    }
 
+    /** Resets odometry to startPosition and re-locks targetHeading to it. */
     public void relocalise() {
         pinpoint.setPosition(new Position(
                 startPosition.position.y(),
                 -startPosition.position.x(),
                 startPosition.heading).pose());
-        targetHeading   = startPosition.heading;
-        headingIntegral = 0;
+        targetHeading = startPosition.heading;
+        turning       = false;
     }
 
+    /** Resets odometry to an arbitrary position and locks heading to it. */
     public void relocaliseTo(Position position) {
-        targetHeading   = position.heading;
-        headingIntegral = 0;
         pinpoint.setPosition(position.pose());
+        targetHeading = position.heading;
+        turning       = false;
     }
 
-    public void bumpRight() { targetHeading = wrapHeading(targetHeading - 45); }
-    public void bumpLeft()  { targetHeading = wrapHeading(targetHeading + 45); }
+    /** Snaps targetHeading 45° clockwise. */
+    public void bumpRight() {
+        targetHeading = wrapDeg(targetHeading - 45.0);
+        turning       = false;
+    }
 
+    /** Snaps targetHeading 45° counter-clockwise. */
+    public void bumpLeft() {
+        targetHeading = wrapDeg(targetHeading + 45.0);
+        turning       = false;
+    }
+
+    /** Invalidates the PinpointCache.  Call at the end of the final op-mode
+     *  that should NOT carry odometry forward. */
     public void clear() {
         PinpointCache.position        = null;
         PinpointCache.velocity        = null;
-        PinpointCache.angularVelocity = 0;
+        PinpointCache.angularVelocity = 0.0;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  Static utilities
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Wraps {@code a} to (−180, +180]. */
+    private static double wrapDeg(double a) {
+        a = ((a % 360.0) + 360.0) % 360.0;
+        if (a > 180.0) a -= 360.0;
+        return a;
+    }
+
+    /**
+     * Returns {@code (target − current)} wrapped to (−180, +180].
+     * Kept as a named public helper for use by other systems (auto, etc.).
+     */
+    public static double angleDifference(double target, double current) {
+        return ((target - current) % 360.0 + 360.0) % 360.0 > 180.0
+                ? ((target - current) % 360.0 + 360.0) % 360.0 - 360.0
+                : ((target - current) % 360.0 + 360.0) % 360.0;
     }
 }

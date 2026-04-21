@@ -1,155 +1,118 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
-import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
-import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 
 public class SwervePod {
 
-    private final LionMotor   motor;
-    private final LionCRServo servo;
-    private final Vector2     offset;
+    public static final double SERVO_RANGE_DEG = 270.0;
+    public static final double GEAR_RATIO = 23.0 / 16.0 * 180 / 150;
+    public static final double POD_RANGE_DEG  = SERVO_RANGE_DEG * GEAR_RATIO;
+    public static final double POD_HALF_RANGE = POD_RANGE_DEG / 2.0;
+    public static final boolean CCW_POSITIVE = false;
 
-    public double currentAngle = 0;
-    public double targetAngle  = 0;
+    // ── Hardware ──────────────────────────────────────────────────────────────
 
-    private double lastPodAngle      = 0;
-    private long   lastTime          = System.nanoTime();
-    private double angularVelocity   = 0;
+    private final LionMotor motor;
+    private final LionServo servo;
+    private final Vector2   offset;   // unit wheel position (±1, ±1) in robot frame
 
-    private double lastAngleSetpoint = 0;
-    private long   lastSetpointTime  = System.nanoTime();
+    public double currentAngle = 0.0;
+    public double targetAngle  = 0.0;
 
-    public SwervePod(LionMotor motor, LionCRServo servo,
-                     Vector2 offset, double startDegrees) {
+    public final double offsetDeg;
+
+    // ── Construction ──────────────────────────────────────────────────────────
+
+    /**
+     * @param motor  Drive wheel motor.
+     * @param servo  Steering servo (position 0.5 = pod forward at init).
+     * @param offset Normalised wheel position in robot frame, e.g. (±1, ±1).
+     */
+    public SwervePod(LionMotor motor, LionServo servo, Vector2 offset, double offsetDeg) {
         this.motor  = motor;
         this.servo  = servo;
         this.offset = offset;
-        motor.resetPositionTo(startDegrees * (4096.0 / 360.0));
+        this.offsetDeg = offsetDeg;
+        setServo(0.0);
     }
 
     public double update(Vector2 translation, double omega) {
+        Vector2 rotComponent  = Vector2.cartesian( omega * offset.y(),
+                -omega * offset.x());
+        Vector2 wheelVelocity = translation.add(rotComponent);
 
-        double podAngle = readAngle();
-        trackVelocity(podAngle);
-
-        double predictedAngle = podAngle + angularVelocity * SwerveDrive.PodControl.latency;
-        currentAngle = podAngle;
-
-        Vector2 rotComponent  = Vector2.cartesian(omega * offset.y(), -omega * offset.x());
-        Vector2 finalVelocity = translation.add(rotComponent);
-
-        if (finalVelocity.magnitude() < 1e-6) {
-            servo.setPower(0);
-            return 0;
+        if (wheelVelocity.magnitude() < 1e-6) {
+            return 0.0;
         }
 
-        double rawDesired = -finalVelocity.polarDirection();
-        double fwdAngle   = closestEquivalentAngle(rawDesired,       podAngle);
-        double revAngle   = closestEquivalentAngle(rawDesired + 180, podAngle);
+        double desired = -wheelVelocity.polarDirection();
+        double fwdTarget = closestEquivalent(desired,         currentAngle);
+        double revTarget = closestEquivalent(desired + 180.0, currentAngle);
 
-        double angleSetpoint, drivePower;
-        if (Math.abs(wrapDeg(fwdAngle - podAngle)) <= Math.abs(wrapDeg(revAngle - podAngle))) {
-            angleSetpoint = fwdAngle;
-            drivePower    =  finalVelocity.magnitude();
+        double fwdTravel = Math.abs(wrapDeg(fwdTarget - currentAngle));
+        double revTravel = Math.abs(wrapDeg(revTarget - currentAngle));
+
+        double newAngle;
+        double power;
+        if (fwdTravel <= revTravel) {
+            newAngle = fwdTarget;
+            power    = +wheelVelocity.magnitude();
         } else {
-            angleSetpoint = revAngle;
-            drivePower    = -finalVelocity.magnitude();
+            newAngle = revTarget;
+            power    = -wheelVelocity.magnitude();
         }
 
-        targetAngle = angleSetpoint;
-        commandServo(angleSetpoint, predictedAngle, podAngle);
+        double delta      = Math.abs(wrapDeg(newAngle - currentAngle));
+        double cosineFactor = Math.max(0.0, Math.cos(Math.toRadians(delta)));
+        currentAngle = newAngle;
+        targetAngle  = newAngle;
+        setServo(newAngle);
 
-        double alignError   = Math.abs(wrapDeg(angleSetpoint - podAngle));
-        double scaleFactor  = Math.max(0, Math.cos(Math.toRadians(alignError)));
-        return drivePower * scaleFactor;
+        return power * cosineFactor;
     }
 
     public double updateIdle(boolean oPattern) {
-
-        double podAngle = readAngle();
-        trackVelocity(podAngle);
-        currentAngle = podAngle;
-
         if (oPattern) {
-            double tangent = wrapDeg(offset.polarDirection() + 90);
-            double optA    = closestEquivalentAngle(tangent,       podAngle);
-            double optB    = closestEquivalentAngle(tangent + 180, podAngle);
-            double target  = Math.abs(wrapDeg(optA - podAngle)) <= Math.abs(wrapDeg(optB - podAngle))
-                    ? optA : optB;
+            double tangent = wrapDeg(offset.polarDirection() + 90.0);
+            double optA    = closestEquivalent(tangent,         currentAngle);
+            double optB    = closestEquivalent(tangent + 180.0, currentAngle);
+            double target  = Math.abs(wrapDeg(optA - currentAngle))
+                    <= Math.abs(wrapDeg(optB - currentAngle)) ? optA : optB;
+            currentAngle = target;
+            targetAngle  = target;
+            setServo(target);
+        }
+        return 0.0;
+    }
 
-            targetAngle = target;
-            double raw  = SwerveDrive.PodControl.kP * wrapDeg(target - podAngle);
-            servo.setPower(Double.isNaN(raw) ? 0 : raw);
-        } else {
-            targetAngle = currentAngle;
-            servo.setPower(0);
+    public void applyPower(double power) {
+        motor.setPower(power);
+    }
+
+    private void setServo(double angleDeg) {
+        angleDeg -= offsetDeg;
+        double pos = 0.5 - angleDeg / POD_RANGE_DEG;
+
+        while (pos > 1) {
+            pos -= 360 / POD_RANGE_DEG;
         }
 
-        return 0;
-    }
-
-    public void set(double power) { motor.setPower(power); }
-
-    private double readAngle() {
-        return wrapDeg(Zeroing.polarQuadrature(motor.getPosition()));
-    }
-
-    private void trackVelocity(double podAngle) {
-        long   now      = System.nanoTime();
-        double dt       = Math.max(0.005, Math.min(0.05, (now - lastTime) / 1e9));
-        double rawOmega = wrapDeg(podAngle - lastPodAngle) / dt;
-
-        double alpha    = SwerveDrive.PodControl.velocityFilter;
-        angularVelocity = alpha * rawOmega + (1.0 - alpha) * angularVelocity;
-
-        lastPodAngle = podAngle;
-        lastTime     = now;
-    }
-
-    private void commandServo(double angleSetpoint, double predictedAngle, double podAngle) {
-
-        long   now        = System.nanoTime();
-        double dtFF       = Math.max(0.005, Math.min(0.05, (now - lastSetpointTime) / 1e9));
-        double setpointVelocity = wrapDeg(angleSetpoint - lastAngleSetpoint) / dtFF;
-        lastAngleSetpoint = angleSetpoint;
-        lastSetpointTime  = now;
-
-        final double kP        = SwerveDrive.PodControl.kP;
-        final double kD        = SwerveDrive.PodControl.kD;
-        final double kV        = SwerveDrive.PodControl.kV;
-        final double kS        = SwerveDrive.PodControl.kS;
-        final double deadband  = SwerveDrive.PodControl.errorDeadband;
-        final double limitband = SwerveDrive.PodControl.limitband;
-        final double limit     = SwerveDrive.PodControl.outputLimit;
-
-        double absError = Math.abs(wrapDeg(angleSetpoint - podAngle));
-        double raw;
-
-        if (absError < deadband) {
-            raw = 0;
-        } else {
-            double error    = wrapDeg(angleSetpoint - predictedAngle);
-            double softSign = Math.tanh(error / SwerveDrive.PodControl.kSTransition);
-            raw  = kV * setpointVelocity + kP * error - kD * angularVelocity;
-            raw += softSign * kS * TaskOpMode.Runtime.voltageCompensation;
-            if (absError < limitband) {
-                raw = Math.max(-limit, Math.min(limit, raw));
-            }
+        while (pos < 0) {
+            pos += 360 / POD_RANGE_DEG;
         }
 
-        servo.setPower(Double.isNaN(raw) ? 0 : raw);
+        servo.setPosition(pos);
     }
 
-    private static double wrapDeg(double angle) {
-        angle = ((angle % 360) + 360) % 360;
-        if (angle > 180) angle -= 360;
-        return angle;
+    private static double wrapDeg(double a) {
+        a = ((a % 360.0) + 360.0) % 360.0;
+        if (a > 180.0) a -= 360.0;
+        return a;
     }
 
-    private static double closestEquivalentAngle(double target, double reference) {
+    private static double closestEquivalent(double target, double reference) {
         return reference + wrapDeg(target - reference);
     }
 }

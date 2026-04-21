@@ -31,7 +31,7 @@ public class Follower extends SystemBase {
     @Config
     public static class FollowerConstants {
         public static double translationP = 0.003;
-        public static double maxSpeed = 1100;
+        public static double maxSpeed = 1400;
     }
 
     public Follower(double x, double y, double h) {

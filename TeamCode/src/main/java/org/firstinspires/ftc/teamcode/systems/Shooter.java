@@ -86,8 +86,8 @@ public class Shooter extends SystemBase {
         public static double overPowerFar = 0.92;
         public static double overPowerClose = 1;
 
-        public static double intakePowerFar = 0.58;
-        public static double intakePowerClose = 0.9;
+        public static double intakePowerFar = 0.6;
+        public static double intakePowerClose = 1;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
@@ -103,7 +103,7 @@ public class Shooter extends SystemBase {
         public static double closeZoneDistanceOffset = 400;
 
         public static boolean useLookahead = false;
-        public static double lookaheadTime = 0.1;
+        public static double lookaheadTime = 0.01;
     }
 
     @Override
