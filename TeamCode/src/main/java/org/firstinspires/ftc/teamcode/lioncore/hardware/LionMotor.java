@@ -60,7 +60,7 @@ public class LionMotor {
     }
 
     public void setPower(double power) {
-        if (power != 0 && Math.abs(power - this.power) < 0.1) { return; }
+        if (power != 0 && Math.abs(power - this.power) < 0.01) { return; }
         if (power == this.power) return;
         if (power >= 1 && this.power >= 1) return;
         if (power <=-1 && this.power <=-1) return;

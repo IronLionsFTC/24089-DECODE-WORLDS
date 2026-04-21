@@ -31,9 +31,9 @@ public class ProjectileMotion {
 
     @Config
     public static class ShootOnTheMoveConstants {
-        public static double turretLookahead = 0.1;
-        public static int convergence = 3;
-        public static double timeOverestimate = 1.5;
+        public static double turretLookahead = 0.12;
+        public static int convergence = 5;
+        public static double timeOverestimate = 1.3;
         public static double lastDistance = 1000;
         public static double calcDistance = 1000;
         public static double lastVelocity = 1000;
@@ -185,7 +185,7 @@ public class ProjectileMotion {
         // Projectile math
         double velocity;
 
-        if (distanceChange > 150){
+        if (distanceChange > 60){
             velocity = alternativeFindSuitableVelocity(x, y);
             ShootOnTheMoveConstants.calcDistance = x;
             ShootOnTheMoveConstants.lastVelocity = velocity;
