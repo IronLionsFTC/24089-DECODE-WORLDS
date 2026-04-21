@@ -54,7 +54,7 @@ public class VelocityFollower extends SystemBase {
 
     public VelocityFollower(double x, double y, double h) {
         this.teleop = false;
-        this.xPattern = true;
+        this.xPattern = false;
         this.driveInput = Vector2.cartesian(0, 0);
 
         this.velocityController = new PID(
@@ -71,7 +71,7 @@ public class VelocityFollower extends SystemBase {
 
         this.targetFieldCentricVelocity = Vector2.cartesian(0, 0);
         this.targetRobotCentricVelocity = Vector2.cartesian(0, 0);
-        this.swerveDrive = new SwerveDrive(new Position(x, y, h), true, true);
+        this.swerveDrive = new SwerveDrive(new Position(x, y, h), false, true);
         this.holdpoint = new Position(x, y, h);
         this.state = State.Velocity;
     }

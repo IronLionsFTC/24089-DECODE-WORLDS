@@ -87,6 +87,11 @@ public class SwervePod {
         return 0.0;
     }
 
+    public double updatePreload(Vector2 preload) {
+        setServo(preload.polarDirection());
+        return 0.0;
+    }
+
     public void applyPower(double power) {
         motor.setPower(power);
     }
