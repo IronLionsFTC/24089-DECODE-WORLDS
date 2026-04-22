@@ -31,9 +31,9 @@ public class ProjectileMotion {
 
     @Config
     public static class ShootOnTheMoveConstants {
-        public static double turretLookahead = 0.12;
+        public static double turretLookahead = 0.1;
         public static int convergence = 5;
-        public static double timeOverestimate = 1.3;
+        public static double timeOverestimate = 1.1;
         public static double lastDistance = 1000;
         public static double calcDistance = 1000;
         public static double lastVelocity = 1000;
@@ -155,9 +155,12 @@ public class ProjectileMotion {
         if (far()) x += Shooter.ShooterPID.farZoneDistanceOffset;
         else x += Shooter.ShooterPID.closeZoneDistanceOffset;
 
+        double timestep = 0;
+        if (Shooter.ShooterPID.useConvergence) timestep = ShootOnTheMoveConstants.turretLookahead;
+
         // Calculate the relative position of the target, on the ground, looking ahead in time to counteract turret lag.
         Vector2 groundPlane = Vector2.cartesian(relativeTarget.getX(), relativeTarget.getY())
-                .sub(SwerveDrive.PinpointCache.velocity.multiply(ShootOnTheMoveConstants.turretLookahead));
+                .sub(SwerveDrive.PinpointCache.velocity.multiply(timestep));
 
         double rawDirection =
                 groundPlane.polarDirection()
@@ -237,7 +240,7 @@ public class ProjectileMotion {
 
     public static boolean mid() {
         double distance = SwerveDrive.PinpointCache.position.position.sub( Vector2.cartesian(Shooter.ShooterPID.targetXFar, Shooter.ShooterPID.targetYFar) ).magnitude();
-        return distance > 1800;
+        return distance > 1400;
     }
 
     public static Vector3 getTarget() {

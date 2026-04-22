@@ -78,7 +78,7 @@ public class Shooter extends SystemBase {
         public static double targetZFar = 1000;
         public static double targetXClose = 0;
         public static double targetYClose = 0;
-        public static double targetZClose = 1250;
+        public static double targetZClose = 1200;
         public static double targetZMedium = 1100;
 
         public static boolean useConvergence = true;
@@ -87,7 +87,7 @@ public class Shooter extends SystemBase {
         public static double overPowerClose = 1;
 
         public static double intakePowerFar = 0.6;
-        public static double intakePowerClose = 1;
+        public static double intakePowerClose = 0.9;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
@@ -96,8 +96,8 @@ public class Shooter extends SystemBase {
         public static double velocityScale = 2000;
         public static boolean useVComp = true;
         public static boolean useMinimum = true;
-        public static boolean negativePID = false;
-        public static boolean fullpowerRecovery = false;
+        public static boolean negativePID = true;
+        public static boolean fullpowerRecovery = true;
 
         public static double farZoneDistanceOffset = 600;
         public static double closeZoneDistanceOffset = 400;
@@ -219,15 +219,16 @@ public class Shooter extends SystemBase {
         double feedforward = ShooterPID.kS * Math.signum(targetRPM) + ShooterPID.kV * targetRPM;
 
         if (!Double.isNaN(TaskOpMode.Runtime.voltageCompensation)) feedforward *= TaskOpMode.Runtime.voltageCompensation;
-        if (targetRPM != 0) response += feedforward;
 
         if (response < 0) {
-            if (ShooterPID.negativePID) response *= 0.2;
+            if (ShooterPID.negativePID) response *= 0.5;
             else { response = 0;}
         }
 
+        if (targetRPM != 0) response += feedforward;
+
         if (this.state == State.Cruising || !ShooterPID.fullpowerRecovery) this.motors.setPower(response);
-        else if (this.currentLaunchSpeed < this.targetVelocity) {
+        else if (this.currentLaunchSpeed < this.targetVelocity * 1.02) {
             this.motors.setPower(1);
         } else {
             this.motors.setPower(response);

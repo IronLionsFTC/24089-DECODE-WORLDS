@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.tasks.Shoot;
 import org.firstinspires.ftc.teamcode.tasks.StartXPattern;
 import org.firstinspires.ftc.teamcode.tasks.TeleopDriveVector;
 import org.firstinspires.ftc.teamcode.tasks.TeleopIntake;
+import org.firstinspires.ftc.teamcode.tasks.ToggleSOTM;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOpBlue")
 public class TeleOpBlue extends TaskOpMode {
@@ -38,7 +39,6 @@ public class TeleOpBlue extends TaskOpMode {
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
-        Limelight limelight = new Limelight(Limelight.Team.Blue);
 
         double xOffset = 0;
         double yOffset = 150;
@@ -51,6 +51,8 @@ public class TeleOpBlue extends TaskOpMode {
         controller1.X.onPress(new StartXPattern(drivetrain));
         controller1.X.onRelease(new EndXPattern(drivetrain));
         controller1.A.onPress(new Run(() -> drivetrain.setHeading(150)));
+
+        controller1.Y.onPress(new ToggleSOTM());
 
         controller1.bumpers.right.onPress( new Goto(drivetrain, gateIntake).setMaxSpeed(900).then(
                         new Follow(drivetrain, new Line(
@@ -69,7 +71,6 @@ public class TeleOpBlue extends TaskOpMode {
         );
 
         controller1.dpad.left.onPress(new RelocaliseToStart(drivetrain));
-        controller1.dpad.up.onPress(new LimelightRelocalise(drivetrain, limelight));
         controller1.dpad.right.onPress(new RelocaliseTo(drivetrain, new Position(500, 0, 90)));
         controller1.bumpers.left.onPress(new Jetison(intake));
 
@@ -85,7 +86,6 @@ public class TeleOpBlue extends TaskOpMode {
                 )
                 .registerSystem(shooter)
                 .registerSystem(intake)
-                .registerSystem(limelight)
                 .registerSystem(drivetrain);
 
     }

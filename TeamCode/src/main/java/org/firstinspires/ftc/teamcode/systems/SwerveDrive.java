@@ -81,11 +81,18 @@ public class SwerveDrive extends SystemBase {
         pinpoint.setEncoderResolution(
                 GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
-        Position seed = (PinpointCache.position != null)
-                ? PinpointCache.position : startPosition;
-        PinpointCache.position        = new Position(seed.position.x(),
-                seed.position.y(),
-                seed.heading);
+        if (PinpointCache.position != null) {
+            this.startPosition.update(
+                    PinpointCache.position.position.x(),
+                    PinpointCache.position.position.y(),
+                    PinpointCache.position.heading
+            );
+        }
+
+        PinpointCache.position        = new Position(
+                startPosition.position.x(),
+                startPosition.position.y(),
+                startPosition.heading);
         PinpointCache.velocity        = Vector2.cartesian(0.0, 0.0);
         PinpointCache.angularVelocity = 0.0;
 
