@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.parameters.MotorConstants;
 import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
+import org.firstinspires.ftc.teamcode.parameters.Zeroing;
 import org.firstinspires.ftc.teamcode.projectileMotion.ProjectileMotion;
 import org.firstinspires.ftc.teamcode.projectileMotion.Regressions;
 
@@ -104,6 +105,12 @@ public class Shooter extends SystemBase {
 
         public static boolean useLookahead = false;
         public static double lookaheadTime = 0.01;
+
+        public static double distanceCutoff = 2300;
+        public static double hoodScale = -0.005;
+        public static double hoodOffset = 60;
+        public static double vScale = 1.1;
+        public static double vOffset = 4000;
     }
 
     @Override
@@ -207,8 +214,24 @@ public class Shooter extends SystemBase {
         if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
 
         if (this.targetVelocity < 4000 || Double.isNaN(targetVelocity)) targetVelocity = 8500;
-        double targetRPM = Regressions.velocityToRpm(targetVelocity);
+        double hoodAngle = Regressions.launchAngleToHoodAngle(solution.altitude);
+        if (ShooterPID.hoodAngle != 0) hoodAngle = Regressions.launchAngleToHoodAngle(ShooterPID.hoodAngle);
 
+        if (ProjectileMotion.override()) {
+            Vector3 shooterPositionInField = new Vector3(
+                    SwerveDrive.PinpointCache.position.position.x(),
+                    SwerveDrive.PinpointCache.position.position.y(),
+                    Zeroing.ProjMotConstants.shooterOffset.getZ()
+            );
+
+            Vector3 relativeTarget = target.subtract(shooterPositionInField);
+            double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY());
+
+            targetVelocity = x * ShooterPID.vScale + ShooterPID.vOffset;
+            hoodAngle = x * ShooterPID.hoodScale + ShooterPID.hoodOffset;
+        }
+
+        double targetRPM = Regressions.velocityToRpm(targetVelocity);
         double response = this.pid.calculate(sum, targetRPM);
 
         validEncoder = true;
@@ -233,9 +256,6 @@ public class Shooter extends SystemBase {
         } else {
             this.motors.setPower(response);
         }
-
-        double hoodAngle = Regressions.launchAngleToHoodAngle(solution.altitude);
-        if (ShooterPID.hoodAngle != 0) hoodAngle = Regressions.launchAngleToHoodAngle(ShooterPID.hoodAngle);
 
         double servoPosition = this.calculateHoodAngleForDegrees(hoodAngle);
         hoodServo.setPosition(servoPosition);

@@ -258,4 +258,9 @@ public class ProjectileMotion {
             }
         } return target;
     }
+
+    public static boolean override() {
+        double distance = SwerveDrive.PinpointCache.position.position.sub( Vector2.cartesian(Shooter.ShooterPID.targetXFar, Shooter.ShooterPID.targetYFar) ).magnitude();
+        return distance < Shooter.ShooterPID.distanceCutoff;
+    }
 }
