@@ -211,12 +211,10 @@ public class ProjectileMotion {
 
             if (x < 500) angle = Math.toRadians(60);
 
-            // Given that x = vt cos (a), t = x / (v cos (a))
-            if (currentVelocity < 2500) currentVelocity = velocity;
         }
 
-        double timeOfFlight = x / (currentVelocity * Math.cos(angle));
-
+        // Given that x = vt cos (a), t = x / (v cos (a))
+        double timeOfFlight = x / (velocity * Math.cos(angle));
         return new ProjectileMotion(velocity, Math.toDegrees(angle), direction, timeOfFlight, true, x);
     }
 
@@ -228,7 +226,6 @@ public class ProjectileMotion {
      */
     public static ProjectileMotion calculateConvergence(Vector3 target, double currentVelocity, double currentAngle) {
         ProjectileMotion solution = calculate(target, currentVelocity, currentAngle);
-        if (solution.groundDist < 800 || SwerveDrive.PinpointCache.velocity.magnitude() < 100) return solution;
 
         Vector3 expectedMotion;
 
