@@ -7,9 +7,9 @@ import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 public class SwervePod {
 
     public static final double SERVO_RANGE_DEG = 270.0;
-    public static final double GEAR_RATIO = 23.0 / 16.0 * 180 / 150;
-    public static final double POD_RANGE_DEG  = SERVO_RANGE_DEG * GEAR_RATIO;
-    public static final double POD_HALF_RANGE = POD_RANGE_DEG / 2.0;
+    public static final double GEAR_RATIO      = (23.0 / 16.0) * (180.0 / 150.0);
+    public static final double POD_RANGE_DEG   = SERVO_RANGE_DEG * GEAR_RATIO;
+    public static final double WRAP_LIMIT      = 180.0;
 
     private final LionMotor motor;
     private final LionServo servo;
@@ -32,67 +32,27 @@ public class SwervePod {
         Vector2 rotComponent  = Vector2.cartesian(omega * offset.y(), -omega * offset.x());
         Vector2 wheelVelocity = translation.add(rotComponent);
 
-        if (wheelVelocity.magnitude() < 1e-6) {
-            return 0.0;
-        }
+        if (wheelVelocity.magnitude() < 1e-6) return 0.0;
 
-        double desired = -wheelVelocity.polarDirection();
+        double[] best = findBestTarget(-wheelVelocity.polarDirection());
 
-        double bestTarget   = currentAngle;
-        double bestTravel   = Double.MAX_VALUE;
-        double bestMotorDir = 1.0;
+        double bestTarget   = best[0];
+        double bestMotorDir = best[1];
+        double bestTravel   = best[2];
 
-        for (int i = 0; i < 2; i++) {
-            double heading  = desired + i * 180.0;
-            double motorDir = (i == 0) ? +1.0 : -1.0;
-            double base     = currentAngle + wrapDeg(heading - currentAngle);
-
-            for (int k = -1; k <= 1; k++) {
-                double candidate = base + k * 360.0;
-                if (candidate >= -POD_HALF_RANGE && candidate <= POD_HALF_RANGE) {
-                    double travel = Math.abs(candidate - currentAngle);
-                    if (travel < bestTravel) {
-                        bestTravel   = travel;
-                        bestTarget   = candidate;
-                        bestMotorDir = motorDir;
-                    }
-                }
-            }
-        }
-
-        double cosineFactor = Math.max(0.0, Math.cos(Math.toRadians(bestTravel)));
         currentAngle = bestTarget;
         targetAngle  = bestTarget;
         setServo(bestTarget);
 
-        return bestMotorDir * wheelVelocity.magnitude() * cosineFactor;
+        return bestMotorDir * wheelVelocity.magnitude() * Math.max(0.0, Math.cos(Math.toRadians(bestTravel)));
     }
 
     public double updateIdle(boolean oPattern) {
         if (oPattern) {
-            double tangent    = wrapDeg(offset.polarDirection() + 90.0);
-            double bestTarget = currentAngle;
-            double bestTravel = Double.MAX_VALUE;
-
-            for (int i = 0; i < 2; i++) {
-                double heading = tangent + i * 180.0;
-                double base    = currentAngle + wrapDeg(heading - currentAngle);
-
-                for (int k = -1; k <= 1; k++) {
-                    double candidate = base + k * 360.0;
-                    if (candidate >= -POD_HALF_RANGE && candidate <= POD_HALF_RANGE) {
-                        double travel = Math.abs(candidate - currentAngle);
-                        if (travel < bestTravel) {
-                            bestTravel = travel;
-                            bestTarget = candidate;
-                        }
-                    }
-                }
-            }
-
-            currentAngle = bestTarget;
-            targetAngle  = bestTarget;
-            setServo(bestTarget);
+            double[] best = findBestTarget(wrapDeg(offset.polarDirection() + 90.0));
+            currentAngle = best[0];
+            targetAngle  = best[0];
+            setServo(best[0]);
         }
         return 0.0;
     }
@@ -106,19 +66,35 @@ public class SwervePod {
         motor.setPower(power);
     }
 
+    // Returns [bestTarget, bestMotorDir, bestTravel]
+    private double[] findBestTarget(double desired) {
+        double bestTarget   = currentAngle;
+        double bestTravel   = Double.MAX_VALUE;
+        double bestMotorDir = 1.0;
+
+        for (int flip = 0; flip < 2; flip++) {
+            double heading  = desired + flip * 180.0;
+            double motorDir = (flip == 0) ? 1.0 : -1.0;
+            double base     = currentAngle + wrapDeg(heading - currentAngle);
+
+            for (int k = -1; k <= 1; k++) {
+                double candidate = base + k * 360.0;
+                if (Math.abs(candidate) <= WRAP_LIMIT) {
+                    double travel = Math.abs(candidate - currentAngle);
+                    if (travel < bestTravel) {
+                        bestTravel   = travel;
+                        bestTarget   = candidate;
+                        bestMotorDir = motorDir;
+                    }
+                }
+            }
+        }
+
+        return new double[]{ bestTarget, bestMotorDir, bestTravel };
+    }
+
     private void setServo(double angleDeg) {
-        angleDeg -= offsetDeg;
-        double pos = 0.5 - angleDeg / POD_RANGE_DEG;
-
-        while (pos > 1) {
-            pos -= 360.0 / POD_RANGE_DEG;
-        }
-
-        while (pos < 0) {
-            pos += 360.0 / POD_RANGE_DEG;
-        }
-
-        servo.setPosition(pos);
+        servo.setPosition(0.5 - wrapDeg(angleDeg - offsetDeg) / POD_RANGE_DEG);
     }
 
     private static double wrapDeg(double a) {
