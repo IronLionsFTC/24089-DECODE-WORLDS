@@ -21,8 +21,8 @@ public class FarZoneAllianceRed extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        double xOffset = 0;
-        double yOffset = 150;
+        double xOffset = 100;
+        double yOffset = 100;
 
         Follower follower = new Follower(-3200 + xOffset, 1200 + yOffset, 180);
         Intake intake = new Intake();
@@ -36,9 +36,9 @@ public class FarZoneAllianceRed extends TaskOpMode {
         Position wallIntakeB = new Position(-2500 + xOffset, 120 + yOffset, 210);
 
         Position intakeAStart = new Position(-2500 + xOffset, 1000 + yOffset, 180);
-        Position intakeAEnd = new Position(-2500 + xOffset, 300 + yOffset, 180);
+        Position intakeAEnd = new Position(-2500 + xOffset, 100 + yOffset, 180);
         Position intakeBStart = new Position(-1900 + xOffset, 900 + yOffset, 180);
-        Position intakeBEnd = new Position(-1900 + xOffset, 300 + yOffset, 180);
+        Position intakeBEnd = new Position(-1900 + xOffset, 100 + yOffset, 180);
 
         return Jobs.create()
                 .addSeries(
@@ -49,7 +49,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                                         shoot
                                 )).setMaxSpeed(900)
                         ),
-                        new Sleep(0.2),
+                        new Sleep(0.6),
                         new Shoot(intake, shooter),
 
                         new Follow(follower, new Line(
@@ -60,11 +60,11 @@ public class FarZoneAllianceRed extends TaskOpMode {
                                             wallIntakeA,
                                             shoot
                                         )
-                                ).setMaxSpeed(600))
+                                ).setMaxSpeed(900))
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
-                        new Sleep(0.2),
+                        new Sleep(0.6),
                         new Shoot(intake, shooter),
                         new Follow(follower, new Line(
                                 shoot,
@@ -80,8 +80,8 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         new Follow(follower, new Line(
                                 intakeAEnd,
                                 shoot
-                        )).setMaxSpeed(900),
-                        new Sleep(0.2),
+                        )).setMaxSpeed(1000),
+                        new Sleep(0.6),
                         new Shoot(intake, shooter),
                         new Follow(follower, new Line(
                                 shoot,
@@ -90,7 +90,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                                 new Follow(follower, new Line(
                                         intakeBStart,
                                         intakeBEnd
-                                )).setMaxSpeed(900)
+                                )).setMaxSpeed(800)
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
@@ -98,84 +98,73 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         new Follow(follower, new Line(
                                 intakeBEnd,
                                 shoot
-                        )).setMaxSpeed(900),
-                        new Sleep(0.2),
+                        )).setMaxSpeed(1000),
+                        new Sleep(0.6),
                         new Shoot(intake, shooter),
 
                         // Wall cycle
                         new Follow(follower, new Line(
                                 shoot, wallIntakeA
-                        )).then(
+                        )).setMaxSpeed(900).then(
                                 new Follow(follower, new Line(
                                         wallIntakeA, wallIntakeB
-                                ))
+                                )).setMaxSpeed(900)
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
-                        new Sleep(0.2),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
                         )),
+                        new Sleep(0.6),
+                        new Shoot(intake, shooter),
 
                         // Wall cycle
                         new Follow(follower, new Line(
                                 shoot, wallIntakeA
-                        )).then(
+                        )).setMaxSpeed(900).then(
                                 new Follow(follower, new Line(
                                         wallIntakeA, wallIntakeB
-                                ))
+                                )).setMaxSpeed(900)
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
-                        new Sleep(0.2),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
                         )),
+                        new Sleep(0.6),
+                        new Shoot(intake, shooter),
 
                         // Wall cycle
                         new Follow(follower, new Line(
                                 shoot, wallIntakeA
-                        )).then(
+                        )).setMaxSpeed(900).then(
                                 new Follow(follower, new Line(
                                         wallIntakeA, wallIntakeB
-                                ))
+                                )).setMaxSpeed(900)
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
-                        new Sleep(0.2),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
                         )),
+                        new Sleep(0.6),
+                        new Shoot(intake, shooter),
 
                         // Wall cycle
                         new Follow(follower, new Line(
                                 shoot, wallIntakeA
-                        )).then(
+                        )).setMaxSpeed(900).then(
                                 new Follow(follower, new Line(
                                         wallIntakeA, wallIntakeB
-                                ))
+                                )).setMaxSpeed(900)
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
-                        new Sleep(0.2),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
                         )),
-
-                        // Wall cycle
-                        new Follow(follower, new Line(
-                                shoot, wallIntakeA
-                        )).then(
-                                new Follow(follower, new Line(
-                                        wallIntakeA, wallIntakeB
-                                ))
-                        ).race(
-                                new IntakeUntilFull(intake)
-                        ),
-                                new Sleep(0.2),
-                                new Follow(follower, new Line(
-                                        wallIntakeB, shoot
-                                ))
+                        new Sleep(0.6),
+                        new Shoot(intake, shooter)
                 )
                 .registerSystem(shooter)
                 .registerSystem(intake)

@@ -84,7 +84,7 @@ public class Shooter extends SystemBase {
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 0.92;
+        public static double overPowerFar = 0.91;
         public static double overPowerClose = 1;
 
         public static double intakePowerFar = 0.6;
@@ -110,7 +110,7 @@ public class Shooter extends SystemBase {
         public static double hoodScale = -0.005;
         public static double hoodOffset = 60;
         public static double vScale = 1.1;
-        public static double vOffset = 4000;
+        public static double vOffset = 4300;
     }
 
     @Override

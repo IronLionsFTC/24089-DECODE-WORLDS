@@ -33,7 +33,7 @@ public class ProjectileMotion {
     public static class ShootOnTheMoveConstants {
         public static double turretLookahead = 0.1;
         public static int convergence = 5;
-        public static double timeOverestimate = 1.1;
+        public static double timeOverestimate = 1.5;
         public static double lastDistance = 1000;
         public static double calcDistance = 1000;
         public static double lastVelocity = 1000;
@@ -189,7 +189,7 @@ public class ProjectileMotion {
         if (override()) {
 
             velocity = x * Shooter.ShooterPID.vScale + Shooter.ShooterPID.vOffset;
-            angle = x * Shooter.ShooterPID.hoodScale + Shooter.ShooterPID.hoodOffset;
+            angle = Math.toRadians(x * Shooter.ShooterPID.hoodScale + Shooter.ShooterPID.hoodOffset);
 
         } else{
 

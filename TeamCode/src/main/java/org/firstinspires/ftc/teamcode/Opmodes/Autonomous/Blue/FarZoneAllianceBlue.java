@@ -36,9 +36,9 @@ public class FarZoneAllianceBlue extends TaskOpMode {
         Position wallIntakeB = new Position(2500 + xOffset, 120 + yOffset, 150);
 
         Position intakeAStart = new Position(2500 + xOffset, 1000 + yOffset, 180);
-        Position intakeAEnd = new Position(2500 + xOffset, 300 + yOffset, 180);
+        Position intakeAEnd = new Position(2500 + xOffset, 100 + yOffset, 180);
         Position intakeBStart = new Position(1900 + xOffset, 900 + yOffset, 180);
-        Position intakeBEnd = new Position(1900 + xOffset, 300 + yOffset, 180);
+        Position intakeBEnd = new Position(1900 + xOffset, 100 + yOffset, 180);
 
         return Jobs.create()
                 .addSeries(
