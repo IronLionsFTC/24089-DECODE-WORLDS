@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFull;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
 
 @Autonomous
-public class FarZoneGateCycleBlue extends TaskOpMode {
+public class FarZoneAllianceBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
@@ -31,15 +31,14 @@ public class FarZoneGateCycleBlue extends TaskOpMode {
 
         Position start = new Position(3200 + xOffset, 1200 + yOffset, 180);
         Position shoot = new Position(3000 + xOffset, 1300 + yOffset, 180);
+
         Position wallIntakeA = new Position(3190 + xOffset, 80 + yOffset, 180);
-        Position wallIntakeB = new Position(3190 + xOffset, 80 + yOffset, 180);
-        Position wallIntakeC = new Position(3190 + xOffset, 80 + yOffset, 180);
+        Position wallIntakeB = new Position(2500 + xOffset, 120 + yOffset, 150);
+
         Position intakeAStart = new Position(2500 + xOffset, 1000 + yOffset, 180);
         Position intakeAEnd = new Position(2500 + xOffset, 300 + yOffset, 180);
         Position intakeBStart = new Position(1900 + xOffset, 900 + yOffset, 180);
         Position intakeBEnd = new Position(1900 + xOffset, 300 + yOffset, 180);
-        Position gateA = new Position(1750 + xOffset, 600 + yOffset, 180);
-        Position gateB = new Position(1750 + xOffset, 100 + yOffset, 180);
 
         return Jobs.create()
                 .addSeries(
@@ -50,13 +49,13 @@ public class FarZoneGateCycleBlue extends TaskOpMode {
                                         shoot
                                 )).setMaxSpeed(900)
                         ),
-                        new Sleep(0.5),
+                        new Sleep(0.2),
                         new Shoot(intake, shooter),
 
                         new Follow(follower, new Line(
                                 shoot, wallIntakeA
                         )).setMaxSpeed(1000).then(
-                                new Sleep(0.5).then(
+                                new Sleep(0.2).then(
                                         new Follow(follower, new Line(
                                             wallIntakeA,
                                             shoot
@@ -65,7 +64,7 @@ public class FarZoneGateCycleBlue extends TaskOpMode {
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
-                        new Sleep(0.5),
+                        new Sleep(0.2),
                         new Shoot(intake, shooter),
                         new Follow(follower, new Line(
                                 shoot,
@@ -82,7 +81,7 @@ public class FarZoneGateCycleBlue extends TaskOpMode {
                                 intakeAEnd,
                                 shoot
                         )).setMaxSpeed(900),
-                        new Sleep(0.5),
+                        new Sleep(0.2),
                         new Shoot(intake, shooter),
                         new Follow(follower, new Line(
                                 shoot,
@@ -98,43 +97,85 @@ public class FarZoneGateCycleBlue extends TaskOpMode {
 
                         new Follow(follower, new Line(
                                 intakeBEnd,
-                                gateA
-                        )),
-                        new Follow(follower, new Line(
-                                gateA,
-                                gateB
-                        )),
-
-                        new Follow(follower, new Line(
-                                gateB,
                                 shoot
                         )).setMaxSpeed(900),
-                        new Sleep(0.5),
+                        new Sleep(0.2),
                         new Shoot(intake, shooter),
 
+                        // Wall cycle
                         new Follow(follower, new Line(
-                                shoot, wallIntakeC
-                        )).race(
+                                shoot, wallIntakeA
+                        )).then(
+                                new Follow(follower, new Line(
+                                        wallIntakeA, wallIntakeB
+                                ))
+                        ).race(
                                 new IntakeUntilFull(intake)
                         ),
+                        new Sleep(0.2),
                         new Follow(follower, new Line(
-                                wallIntakeC,
-                                shoot
+                                wallIntakeB, shoot
                         )),
-                        new Sleep(0.5),
-                        new Shoot(intake, shooter),
 
+                        // Wall cycle
                         new Follow(follower, new Line(
-                                shoot, wallIntakeB
-                        )).race(
+                                shoot, wallIntakeA
+                        )).then(
+                                new Follow(follower, new Line(
+                                        wallIntakeA, wallIntakeB
+                                ))
+                        ).race(
                                 new IntakeUntilFull(intake)
                         ),
+                        new Sleep(0.2),
                         new Follow(follower, new Line(
-                                wallIntakeB,
-                                shoot
+                                wallIntakeB, shoot
                         )),
-                        new Sleep(0.5),
-                        new Shoot(intake, shooter)
+
+                        // Wall cycle
+                        new Follow(follower, new Line(
+                                shoot, wallIntakeA
+                        )).then(
+                                new Follow(follower, new Line(
+                                        wallIntakeA, wallIntakeB
+                                ))
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Sleep(0.2),
+                        new Follow(follower, new Line(
+                                wallIntakeB, shoot
+                        )),
+
+                        // Wall cycle
+                        new Follow(follower, new Line(
+                                shoot, wallIntakeA
+                        )).then(
+                                new Follow(follower, new Line(
+                                        wallIntakeA, wallIntakeB
+                                ))
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                        new Sleep(0.2),
+                        new Follow(follower, new Line(
+                                wallIntakeB, shoot
+                        )),
+
+                        // Wall cycle
+                        new Follow(follower, new Line(
+                                shoot, wallIntakeA
+                        )).then(
+                                new Follow(follower, new Line(
+                                        wallIntakeA, wallIntakeB
+                                ))
+                        ).race(
+                                new IntakeUntilFull(intake)
+                        ),
+                                new Sleep(0.2),
+                                new Follow(follower, new Line(
+                                        wallIntakeB, shoot
+                                ))
                 )
                 .registerSystem(shooter)
                 .registerSystem(intake)

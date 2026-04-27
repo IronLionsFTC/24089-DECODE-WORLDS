@@ -139,6 +139,10 @@ public class ProjectileMotion {
 
     public static ProjectileMotion calculate(Vector3 target, double currentVelocity, double currentAngle) {
 
+        // Projectile math
+        double velocity;
+        double angle;
+
         Vector3 shooterPositionInField = new Vector3(
                 SwerveDrive.PinpointCache.position.position.x(),
                 SwerveDrive.PinpointCache.position.position.y(),
@@ -151,9 +155,6 @@ public class ProjectileMotion {
 
         ShootOnTheMoveConstants.lastDistance = x;
         double y = relativeTarget.getZ();
-
-        if (far()) x += Shooter.ShooterPID.farZoneDistanceOffset;
-        else x += Shooter.ShooterPID.closeZoneDistanceOffset;
 
         double timestep = 0;
         if (Shooter.ShooterPID.useConvergence) timestep = ShootOnTheMoveConstants.turretLookahead;
@@ -185,27 +186,35 @@ public class ProjectileMotion {
         // Final safety clamp (guarantee never exceeding limits)
         direction = Math.max(-210, Math.min(210, direction));
 
-        // Projectile math
-        double velocity;
+        if (override()) {
 
-        if (distanceChange > 60){
-            velocity = alternativeFindSuitableVelocity(x, y);
-            ShootOnTheMoveConstants.calcDistance = x;
-            ShootOnTheMoveConstants.lastVelocity = velocity;
+            velocity = x * Shooter.ShooterPID.vScale + Shooter.ShooterPID.vOffset;
+            angle = x * Shooter.ShooterPID.hoodScale + Shooter.ShooterPID.hoodOffset;
+
+        } else{
+
+            if (far()) x += Shooter.ShooterPID.farZoneDistanceOffset;
+            else x += Shooter.ShooterPID.closeZoneDistanceOffset;
+
+            if (distanceChange > 60) {
+                velocity = alternativeFindSuitableVelocity(x, y);
+                ShootOnTheMoveConstants.calcDistance = x;
+                ShootOnTheMoveConstants.lastVelocity = velocity;
+            } else velocity = ShootOnTheMoveConstants.lastVelocity;
+
+            if (!Shooter.ShooterPID.useVComp || currentVelocity < 1000) currentVelocity = velocity;
+            angle = solveAngle(currentVelocity, x, y);
+
+            if (Double.isNaN(velocity)) velocity = 8500.0;
+            if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
+            if (Double.isNaN(angle)) angle = Math.toRadians(45);
+
+            if (x < 500) angle = Math.toRadians(60);
+
+            // Given that x = vt cos (a), t = x / (v cos (a))
+            if (currentVelocity < 2500) currentVelocity = velocity;
         }
-        else velocity = ShootOnTheMoveConstants.lastVelocity;
 
-        if (!Shooter.ShooterPID.useVComp || currentVelocity < 1000) currentVelocity = velocity;
-        double angle = solveAngle(currentVelocity, x, y);
-
-        if (Double.isNaN(velocity)) velocity = 8500.0;
-        if (Double.isNaN(angle)) angle = solveAngle(velocity, x, y);
-        if (Double.isNaN(angle)) angle = Math.toRadians(45);
-
-        if (x < 500) angle = Math.toRadians(60);
-
-        // Given that x = vt cos (a), t = x / (v cos (a))
-        if (currentVelocity < 2500) currentVelocity = velocity;
         double timeOfFlight = x / (currentVelocity * Math.cos(angle));
 
         return new ProjectileMotion(velocity, Math.toDegrees(angle), direction, timeOfFlight, true, x);

@@ -217,20 +217,6 @@ public class Shooter extends SystemBase {
         double hoodAngle = Regressions.launchAngleToHoodAngle(solution.altitude);
         if (ShooterPID.hoodAngle != 0) hoodAngle = Regressions.launchAngleToHoodAngle(ShooterPID.hoodAngle);
 
-        if (ProjectileMotion.override()) {
-            Vector3 shooterPositionInField = new Vector3(
-                    SwerveDrive.PinpointCache.position.position.x(),
-                    SwerveDrive.PinpointCache.position.position.y(),
-                    Zeroing.ProjMotConstants.shooterOffset.getZ()
-            );
-
-            Vector3 relativeTarget = target.subtract(shooterPositionInField);
-            double x = Math.hypot(relativeTarget.getX(), relativeTarget.getY());
-
-            targetVelocity = x * ShooterPID.vScale + ShooterPID.vOffset;
-            hoodAngle = x * ShooterPID.hoodScale + ShooterPID.hoodOffset;
-        }
-
         double targetRPM = Regressions.velocityToRpm(targetVelocity);
         double response = this.pid.calculate(sum, targetRPM);
 

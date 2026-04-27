@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Run;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Sleep;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.WaitUntil;
@@ -21,18 +22,18 @@ public class FarZoneGateCycleRed extends TaskOpMode {
     public Jobs spawn() {
 
         double xOffset = 0;
-        double yOffset = -150;
+        double yOffset = 150;
 
-        Follower follower = new Follower(-3200 + xOffset, 1200 + yOffset, 180);
+        Follower follower = new Follower(3200 + xOffset, 1200 + yOffset, 180);
         Intake intake = new Intake();
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
         Position start = new Position(-3200 + xOffset, 1200 + yOffset, 180);
         Position shoot = new Position(-3000 + xOffset, 1300 + yOffset, 180);
-        Position wallIntakeA = new Position(-3200 + xOffset, 10 + yOffset, 180);
-        Position wallIntakeB = new Position(-3100 + xOffset, 100 + yOffset, 180);
-        Position wallIntakeC = new Position(-3100 + xOffset, 100 + yOffset, 180);
+        Position wallIntakeA = new Position(-3190 + xOffset, 80 + yOffset, 180);
+        Position wallIntakeB = new Position(-3190 + xOffset, 80 + yOffset, 180);
+        Position wallIntakeC = new Position(-3190 + xOffset, 80 + yOffset, 180);
         Position intakeAStart = new Position(-2500 + xOffset, 1000 + yOffset, 180);
         Position intakeAEnd = new Position(-2500 + xOffset, 300 + yOffset, 180);
         Position intakeBStart = new Position(-1900 + xOffset, 900 + yOffset, 180);
@@ -42,6 +43,7 @@ public class FarZoneGateCycleRed extends TaskOpMode {
 
         return Jobs.create()
                 .addSeries(
+                        new Run(() -> Shooter.ShooterPID.useConvergence = false),
                         new WaitUntil(shooter::atSpeed).with(
                                 new Follow(follower, new Line(
                                         start,
@@ -56,10 +58,10 @@ public class FarZoneGateCycleRed extends TaskOpMode {
                         )).setMaxSpeed(1000).then(
                                 new Sleep(0.5).then(
                                         new Follow(follower, new Line(
-                                            wallIntakeA,
-                                            shoot
+                                                wallIntakeA,
+                                                shoot
                                         )
-                                ).setMaxSpeed(600))
+                                        ).setMaxSpeed(600))
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
