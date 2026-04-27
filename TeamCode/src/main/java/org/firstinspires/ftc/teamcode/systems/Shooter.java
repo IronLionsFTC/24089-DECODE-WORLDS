@@ -88,7 +88,7 @@ public class Shooter extends SystemBase {
         public static double overPowerClose = 1;
 
         public static double intakePowerFar = 0.6;
-        public static double intakePowerClose = 0.9;
+        public static double intakePowerClose = 1;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
@@ -109,7 +109,7 @@ public class Shooter extends SystemBase {
         public static double distanceCutoff = 2300;
         public static double hoodScale = -0.005;
         public static double hoodOffset = 60;
-        public static double vScale = 1.1;
+        public static double vScale = 1;
         public static double vOffset = 4300;
     }
 
@@ -233,6 +233,9 @@ public class Shooter extends SystemBase {
             if (ShooterPID.negativePID) response *= 0.5;
             else { response = 0;}
         }
+
+        response = Math.min(1, response);
+        response = Math.max(-1, response);
 
         if (targetRPM != 0) response += feedforward;
 

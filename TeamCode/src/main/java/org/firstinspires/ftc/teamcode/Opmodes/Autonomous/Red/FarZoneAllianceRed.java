@@ -21,8 +21,8 @@ public class FarZoneAllianceRed extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        double xOffset = 100;
-        double yOffset = 100;
+        double xOffset = -100;
+        double yOffset = 0;
 
         Follower follower = new Follower(-3200 + xOffset, 1200 + yOffset, 180);
         Intake intake = new Intake();
@@ -32,8 +32,8 @@ public class FarZoneAllianceRed extends TaskOpMode {
         Position start = new Position(-3200 + xOffset, 1200 + yOffset, 180);
         Position shoot = new Position(-3000 + xOffset, 1300 + yOffset, 180);
 
-        Position wallIntakeA = new Position(-3190 + xOffset, 80 + yOffset, 180);
-        Position wallIntakeB = new Position(-2500 + xOffset, 120 + yOffset, 210);
+        Position wallIntakeA = new Position(-3190 + xOffset, 0 + yOffset, 180);
+        Position wallIntakeB = new Position(-2500 + xOffset, 50 + yOffset, 210);
 
         Position intakeAStart = new Position(-2500 + xOffset, 1000 + yOffset, 180);
         Position intakeAEnd = new Position(-2500 + xOffset, 100 + yOffset, 180);
@@ -69,7 +69,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         new Follow(follower, new Line(
                                 shoot,
                                 intakeAStart
-                        )).then(
+                        )).setMaxSpeed(900).then(
                                 new Sleep(0.2).then(new Follow(follower, new Line(
                                         intakeAStart,
                                         intakeAEnd
@@ -80,13 +80,13 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         new Follow(follower, new Line(
                                 intakeAEnd,
                                 shoot
-                        )).setMaxSpeed(1000),
+                        )).setMaxSpeed(900),
                         new Sleep(0.6),
                         new Shoot(intake, shooter),
                         new Follow(follower, new Line(
                                 shoot,
                                 intakeBStart
-                        )).then(
+                        )).setMaxSpeed(900).then(
                                 new Follow(follower, new Line(
                                         intakeBStart,
                                         intakeBEnd
@@ -98,7 +98,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         new Follow(follower, new Line(
                                 intakeBEnd,
                                 shoot
-                        )).setMaxSpeed(1000),
+                        )).setMaxSpeed(900),
                         new Sleep(0.6),
                         new Shoot(intake, shooter),
 
@@ -114,7 +114,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         ),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
-                        )),
+                        )).setMaxSpeed(900),
                         new Sleep(0.6),
                         new Shoot(intake, shooter),
 
@@ -130,7 +130,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         ),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
-                        )),
+                        )).setMaxSpeed(900),
                         new Sleep(0.6),
                         new Shoot(intake, shooter),
 
@@ -146,7 +146,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         ),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
-                        )),
+                        )).setMaxSpeed(900),
                         new Sleep(0.6),
                         new Shoot(intake, shooter),
 
@@ -162,7 +162,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                         ),
                         new Follow(follower, new Line(
                                 wallIntakeB, shoot
-                        )),
+                        )).setMaxSpeed(900),
                         new Sleep(0.6),
                         new Shoot(intake, shooter)
                 )
