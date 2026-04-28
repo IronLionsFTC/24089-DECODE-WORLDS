@@ -11,11 +11,14 @@ public class LimelightDebug extends SystemBase {
 
     @Override
     public void loadHardware(HardwareMap hardwareMap) {
-        this.limelight = new Limelight(hardwareMap);
+        this.limelight = new Limelight();
+        this.limelight.loadHardware(hardwareMap);
     }
 
     @Override
-    public void init() {}
+    public void init() {
+        this.limelight.init();
+    }
 
     @Override
     public void update(Telemetry telemetry, boolean useTelemetry) {

@@ -16,9 +16,10 @@ public class LimelightTrack extends Task {
     private Limelight limelight;
     private long startTime;
 
-    private boolean foundSolution = false;
-    private boolean startedPathing = false;
-    private double angle = 0;
+    private boolean foundSolution;
+    private boolean startedPathing;
+    private double angle;
+    private int pathingLoops;
 
     public LimelightTrack(Follower drivetrain, Limelight limelight) {
         this.drivetrain = drivetrain;
@@ -27,6 +28,9 @@ public class LimelightTrack extends Task {
 
     @Override
     public void init() {
+        this.pathingLoops = 0;
+        this.foundSolution = false;
+        this.startedPathing = false;
         this.startTime = System.nanoTime();
     }
 
@@ -42,6 +46,8 @@ public class LimelightTrack extends Task {
                         new Position(delta.x(), delta.y(), SwerveDrive.PinpointCache.position.heading)
                 ));
                 this.startedPathing = true;
+            } else {
+                this.pathingLoops += 1;
             }
         } else {
             Double angle = limelight.angle();
@@ -54,6 +60,11 @@ public class LimelightTrack extends Task {
     @Override
     public boolean finished() {
         return (!foundSolution && System.nanoTime() - startTime > 3e9)
-                || (startedPathing && drivetrain.getDistance() < 150 || drivetrain.driver());
+                || (startedPathing && drivetrain.getDistance() < 150) || (pathingLoops > 5 && drivetrain.driver());
+    }
+
+    @Override
+    public void end(boolean i) {
+        if (this.startedPathing) this.drivetrain.stop();
     }
 }

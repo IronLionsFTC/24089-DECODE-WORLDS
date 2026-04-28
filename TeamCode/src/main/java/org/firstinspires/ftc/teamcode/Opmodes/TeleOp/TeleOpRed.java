@@ -40,7 +40,7 @@ public class TeleOpRed extends TaskOpMode {
         controller1.X.onPress(new StartXPattern(drivetrain));
         controller1.X.onRelease(new EndXPattern(drivetrain));
         controller1.A.onPress(new Run(() -> drivetrain.setHeading(205)));
-        Limelight limelight = new Limelight(hardwareMap);
+        Limelight limelight = new Limelight();
 
         controller1.Y.onPress(new ToggleSOTM());
 
@@ -60,6 +60,7 @@ public class TeleOpRed extends TaskOpMode {
                         )
                     )
                 )
+                .registerSystem(limelight)
                 .registerSystem(shooter)
                 .registerSystem(intake)
                 .registerSystem(drivetrain);
