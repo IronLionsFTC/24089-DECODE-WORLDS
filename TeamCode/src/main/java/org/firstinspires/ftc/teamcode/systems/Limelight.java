@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -11,15 +10,22 @@ public class Limelight {
     public Limelight(HardwareMap hardwareMap) {
         this.camera = hardwareMap.get(Limelight3A.class, "limelight");
         setActivePipeline();
+        this.camera.start();
     }
 
     private void setActivePipeline() {
         camera.pipelineSwitch(5);
     }
 
-    public Double angle(boolean updateTelemetry) {
-        LLResult result = camera.getLatestResult();
-        if (result == null || !result.isValid()) return null;
-        return result.getTx();
+    public Double angle() {
+        return camera.getLatestResult().getTx();
+    }
+
+    public double pipeline() {
+        return camera.getStatus().getPipelineIndex();
+    }
+
+    public double temp() {
+        return camera.getStatus().getTemp();
     }
 }

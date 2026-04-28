@@ -30,20 +30,15 @@ public class IndicatorManager extends Task {
         Indicator.Colour colour;
 
         if (this.shooter.validEncoder) {
-            if (this.limelight.running) {
-                if (this.limelight.isValid) colour = Indicator.Colour.Green;
-                else colour = Indicator.Colour.Orange;
+            if (this.intake.getState() == Intake.State.IntakingEmpty) {
+                colour = Indicator.Colour.Purple;
+            } else if (this.intake.getState() == Intake.State.IntakeOnly) {
+                colour = Indicator.Colour.Blue;
             } else {
-                if (this.intake.getState() == Intake.State.IntakingEmpty) {
-                    colour = Indicator.Colour.Purple;
-                } else if (this.intake.getState() == Intake.State.IntakeOnly) {
-                    colour = Indicator.Colour.Blue;
+                if (this.shooter.onTarget) {
+                    colour = Indicator.Colour.Green;
                 } else {
-                    if (this.shooter.onTarget) {
-                        colour = Indicator.Colour.Green;
-                    } else {
-                        colour = Indicator.Colour.Yellow;
-                    }
+                    colour = Indicator.Colour.Yellow;
                 }
             }
         } else {
