@@ -22,7 +22,7 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        double shootDelay = 0.2;
+        double shootDelay = 0.6;
         double xOffset = -50;
         double yOffset = 50;
 
@@ -36,9 +36,9 @@ public class CloseZoneGateCycleBlue extends TaskOpMode {
         Position elbow = new Position(1900 + xOffset, 800 + yOffset, 180);
         Position shootA = new Position(1400 + xOffset, 1100 + yOffset, 150);
         Position shootB = new Position(1300 + xOffset, 1000 + yOffset, 150);
-        Position intakeAEnd = new Position(1960 + xOffset, -150 + yOffset, 180);
+        Position intakeAEnd = new Position(1940 + xOffset, -150 + yOffset, 180);
         Position intakeBEnd = new Position(1300 + xOffset, -60 + yOffset, 180);
-        Position gateIntake = new Position(1900 + xOffset, -60 + yOffset, 150);
+        Position gateIntake = new Position(1880 + xOffset, -50 + yOffset, 150);
         Position endPoint = new Position(2000 + xOffset, 300 + yOffset, 150);
 
         return Jobs.create()

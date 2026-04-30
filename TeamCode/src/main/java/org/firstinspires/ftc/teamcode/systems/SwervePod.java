@@ -4,6 +4,8 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 
+import java.util.function.DoubleSupplier;
+
 public class SwervePod {
 
     public static final double SERVO_RANGE_DEG = 270.0;
@@ -18,9 +20,9 @@ public class SwervePod {
     public double currentAngle = 0.0;
     public double targetAngle  = 0.0;
 
-    public final double offsetDeg;
+    public final DoubleSupplier offsetDeg;
 
-    public SwervePod(LionMotor motor, LionServo servo, Vector2 offset, double offsetDeg) {
+    public SwervePod(LionMotor motor, LionServo servo, Vector2 offset, DoubleSupplier offsetDeg) {
         this.motor     = motor;
         this.servo     = servo;
         this.offset    = offset;
@@ -94,7 +96,7 @@ public class SwervePod {
     }
 
     private void setServo(double angleDeg) {
-        servo.setPosition(0.5 - wrapDeg(angleDeg - offsetDeg) / POD_RANGE_DEG);
+        servo.setPosition(0.5 - wrapDeg(angleDeg - offsetDeg.getAsDouble()) / POD_RANGE_DEG);
     }
 
     private static double wrapDeg(double a) {

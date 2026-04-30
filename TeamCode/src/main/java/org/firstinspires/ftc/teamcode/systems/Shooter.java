@@ -54,6 +54,9 @@ public class Shooter extends SystemBase {
     public long lastTurretTimestamp = 0;
     public double yOffset = 0;
 
+    public boolean distanceLock = false;
+    public Vector3 lockPosition;
+
     // Lookahead
     private double lastVelocity;
     private long lastTime;
@@ -64,6 +67,7 @@ public class Shooter extends SystemBase {
         this.targetHood = 0;
         this.target = new Vector3(0, 0, 3500);
         this.rpmBuffer = new ArrayList<>();
+        this.lockPosition = new Vector3(0, 0, 0);
     }
 
     // PID constants
@@ -89,7 +93,7 @@ public class Shooter extends SystemBase {
         public static double overPowerClose = 1;
 
         public static double intakePowerFar = 0.6;
-        public static double intakePowerClose = 1;
+        public static double intakePowerClose = 1.1;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
@@ -205,11 +209,18 @@ public class Shooter extends SystemBase {
         if (ProjectileMotion.far()) overPower = ShooterPID.overPowerFar;
         else overPower = ShooterPID.overPowerClose;
 
+        Vector3 tp;
+        if (this.distanceLock) {
+            tp = this.lockPosition;
+        } else {
+            tp = ProjectileMotion.getTarget(yOffset);
+        }
+
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
-            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(yOffset), currentLaunchSpeed / overPower, quadraturePosition);
+            solution = ProjectileMotion.calculateConvergence(tp, currentLaunchSpeed / overPower, quadraturePosition);
         else
-            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(yOffset), currentLaunchSpeed / overPower, quadraturePosition);
+            solution = ProjectileMotion.calculate(tp, currentLaunchSpeed / overPower, quadraturePosition);
 
         this.targetVelocity = solution.velocity * overPower;
         if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
@@ -279,10 +290,15 @@ public class Shooter extends SystemBase {
     }
 
     public void upAdjust() {
-        this.yOffset += 10;
+        this.yOffset -= 100;
     }
 
     public void downAdjust() {
-        this.yOffset -= 10;
+        this.yOffset += 100;
+    }
+
+    public void lockTo(Vector3 lockPosition) {
+        this.lockPosition = lockPosition;
+        this.distanceLock = true;
     }
 }
