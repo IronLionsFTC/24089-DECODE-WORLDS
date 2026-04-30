@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -35,7 +36,11 @@ public class Limelight extends SystemBase {
     }
 
     public Double angle() {
-        return camera.getLatestResult().getTx();
+        LLResult result = camera.getLatestResult();
+        if (result == null) return null;
+        double angle = result.getTx();
+        if (angle == 0) return null;
+        else return angle;
     }
 
     public double pipeline() {

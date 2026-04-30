@@ -155,4 +155,8 @@ public class Follower extends SystemBase {
     public boolean driver() {
         return this.drivetrain.state == VelocityFollower.State.Driver;
     }
+
+    public void unDriver() {
+        this.drivetrain.state = VelocityFollower.State.Velocity;
+    }
 }

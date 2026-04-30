@@ -106,7 +106,7 @@ public class Shooter extends SystemBase {
         public static boolean useLookahead = false;
         public static double lookaheadTime = 0.01;
 
-        public static double distanceCutoff = 2300;
+        public static double distanceCutoff = 2100;
         public static double hoodScale = -0.005;
         public static double hoodOffset = 60;
         public static double vScale = 1;

@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFull;
 import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFullTimeout;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
 
-@Autonomous
+@Autonomous(name = "Red 21 Gate Cycle")
 public class CloseZoneGateCycleRed extends TaskOpMode {
     @Override
     public Jobs spawn() {
@@ -34,10 +34,10 @@ public class CloseZoneGateCycleRed extends TaskOpMode {
         Position start = new Position(0 + xOffset, 500 + yOffset, 180);
         Position firstThree = new Position(-1000 + xOffset, 800 + yOffset, 180);
         Position elbow = new Position(-1900 + xOffset, 800 + yOffset, 180);
-        Position shootA = new Position(-1500 + xOffset, 1200 + yOffset, 150);
+        Position shootA = new Position(-1400 + xOffset, 1100 + yOffset, 150);
         Position shootB = new Position(-1300 + xOffset, 1000 + yOffset, 150);
-        Position intakeAEnd = new Position(-2000 + xOffset, -150 + yOffset, 180);
-        Position intakeBEnd = new Position(-1350 + xOffset, -60 + yOffset, 180);
+        Position intakeAEnd = new Position(-1960 + xOffset, -150 + yOffset, 180);
+        Position intakeBEnd = new Position(-1300 + xOffset, -60 + yOffset, 180);
         Position gateIntake = new Position(-1900 + xOffset, -60 + yOffset, 150);
         Position endPoint = new Position(-2000 + xOffset, 300 + yOffset, 150);
 
