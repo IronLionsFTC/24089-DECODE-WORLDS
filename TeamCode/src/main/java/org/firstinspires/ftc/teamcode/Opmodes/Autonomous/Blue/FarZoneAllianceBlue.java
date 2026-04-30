@@ -25,7 +25,7 @@ public class FarZoneAllianceBlue extends TaskOpMode {
     public Jobs spawn() {
 
         double xOffset = 100;
-        double yOffset = 0;
+        double yOffset = 100;
 
         Limelight limelight = new Limelight();
         Follower follower = new Follower(3200 + xOffset, 1200 + yOffset, 180);

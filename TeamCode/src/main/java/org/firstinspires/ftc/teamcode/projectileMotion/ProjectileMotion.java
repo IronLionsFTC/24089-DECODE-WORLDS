@@ -249,14 +249,14 @@ public class ProjectileMotion {
         return distance > 1400;
     }
 
-    public static Vector3 getTarget() {
+    public static Vector3 getTarget(double yOffset) {
         if (far()) {
             target.setX(Shooter.ShooterPID.targetXFar);
-            target.setY(Shooter.ShooterPID.targetYFar);
+            target.setY(Shooter.ShooterPID.targetYFar + yOffset);
             target.setZ(Shooter.ShooterPID.targetZFar);
         } else {
             target.setX(Shooter.ShooterPID.targetXClose);
-            target.setY(Shooter.ShooterPID.targetYClose);
+            target.setY(Shooter.ShooterPID.targetYClose + yOffset);
             if (mid()) {
                 target.setZ(Shooter.ShooterPID.targetZMedium);
             } else {

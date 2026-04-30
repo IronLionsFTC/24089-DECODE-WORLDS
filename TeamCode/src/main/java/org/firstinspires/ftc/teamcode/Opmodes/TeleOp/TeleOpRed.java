@@ -42,13 +42,13 @@ public class TeleOpRed extends TaskOpMode {
         controller1.rightTrigger.asButton.onPress(new Shoot(intake, shooter));
         controller1.X.onPress(new StartXPattern(drivetrain));
         controller1.X.onRelease(new EndXPattern(drivetrain));
-        controller1.A.onPress(new Run(() -> drivetrain.setHeading(205)));
+        controller1.A.onPress(new Run(() -> drivetrain.setHeading(210)));
         Limelight limelight = new Limelight();
 
         controller1.Y.onPress(new ToggleSOTM());
 
-        controller1.dpad.up.onPress(new UpAdjust());
-        controller1.dpad.down.onPress(new DownAdjust());
+        controller1.dpad.up.onPress(new UpAdjust(shooter));
+        controller1.dpad.down.onPress(new DownAdjust(shooter));
         controller1.dpad.left.onPress(new RelocaliseTo(drivetrain, new Position(3150, 3300, 0)));
         controller1.dpad.right.onPress(new RelocaliseTo(drivetrain, new Position(-500, 0, 90)));
         controller1.bumpers.left.onPress(new Jetison(intake));

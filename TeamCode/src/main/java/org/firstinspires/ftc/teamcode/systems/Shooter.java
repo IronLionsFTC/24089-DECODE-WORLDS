@@ -52,6 +52,7 @@ public class Shooter extends SystemBase {
     public boolean validEncoder = true;
     public double lastTurretAngle = 0;
     public long lastTurretTimestamp = 0;
+    public double yOffset = 0;
 
     // Lookahead
     private double lastVelocity;
@@ -206,9 +207,9 @@ public class Shooter extends SystemBase {
 
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
-            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower, quadraturePosition);
+            solution = ProjectileMotion.calculateConvergence(ProjectileMotion.getTarget(yOffset), currentLaunchSpeed / overPower, quadraturePosition);
         else
-            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(), currentLaunchSpeed / overPower, quadraturePosition);
+            solution = ProjectileMotion.calculate(ProjectileMotion.getTarget(yOffset), currentLaunchSpeed / overPower, quadraturePosition);
 
         this.targetVelocity = solution.velocity * overPower;
         if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
@@ -275,5 +276,13 @@ public class Shooter extends SystemBase {
 
     public boolean atSpeed() {
         return Math.abs(currentLaunchSpeed - targetVelocity) < 500 && currentLaunchSpeed > 3000;
+    }
+
+    public void upAdjust() {
+        this.yOffset += 10;
+    }
+
+    public void downAdjust() {
+        this.yOffset -= 10;
     }
 }
