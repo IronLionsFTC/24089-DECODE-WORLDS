@@ -16,7 +16,7 @@ public class ServoModeTuning extends LinearOpMode {
         public static double rightRear = 0;
         public static double leftRear = 0;
 
-        public static double rfz = -3;
+        public static double rfz = -6;
         public static double lfz = 5;
         public static double rrz = -3;
         public static double lrz = 0;

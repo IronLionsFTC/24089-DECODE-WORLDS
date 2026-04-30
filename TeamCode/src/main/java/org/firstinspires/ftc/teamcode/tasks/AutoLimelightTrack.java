@@ -18,6 +18,7 @@ public class AutoLimelightTrack extends Task {
     private boolean startedPathing;
     private Double angle;
     private int pathingLoops;
+    private boolean abort;
 
     public AutoLimelightTrack(Follower drivetrain, Limelight limelight) {
         this.drivetrain = drivetrain;
@@ -31,16 +32,18 @@ public class AutoLimelightTrack extends Task {
         this.foundSolution = false;
         this.startedPathing = false;
         this.startTime = System.nanoTime();
+        this.abort = false;
     }
 
     @Override
     public void run() {
+        Follower.FollowerConstants.maxSpeed = 900;
         if (foundSolution) {
             if (!startedPathing) {
                 double heading = angle - SwerveDrive.PinpointCache.position.heading;
                 Vector2 position = SwerveDrive.PinpointCache.position.position;
                 Vector2 delta = Vector2.polar(1000, Math.toRadians( 90 - heading)).add(position);
-                double x = Math.max(Math.min(delta.x(), 3100), -3100);
+                double x = Math.max(Math.min(delta.x(), 3300), -3300);
                 double y = -100;
 
                 if (x > 0 && x < 1900) x = 1900;
@@ -55,6 +58,10 @@ public class AutoLimelightTrack extends Task {
                 this.startedPathing = true;
             } else {
                 this.pathingLoops += 1;
+
+                if (this.drivetrain.getDistance() < 300 && SwerveDrive.PinpointCache.velocity.magnitude() < 100) {
+                    this.abort = true;
+                }
             }
         } else {
             Double angle = limelight.angle();
@@ -67,14 +74,17 @@ public class AutoLimelightTrack extends Task {
     @Override
     public boolean finished() {
         return (!foundSolution && System.nanoTime() - startTime > 3e9)
+                || abort
                 || (startedPathing && drivetrain.getDistance() < 150) || (pathingLoops > 5 && drivetrain.driver());
     }
 
     @Override
     public void end(boolean i) {
+        Follower.FollowerConstants.maxSpeed = 1300;
         if (this.startedPathing) this.drivetrain.stop();
         this.startedPathing = false;
         this.foundSolution = false;
         this.angle = null;
+        this.abort = false;
     }
 }

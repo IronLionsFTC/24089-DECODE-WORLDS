@@ -72,7 +72,7 @@ public class FarZoneAllianceRed extends TaskOpMode {
                                         new Follow(follower, new Line(
                                                 intakeAStart,
                                                 intakeAEnd
-                                        )).setMaxSpeed(700))
+                                        )).setMaxSpeed(900))
                         ).race(
                                 new IntakeUntilFull(intake)
                         ),
@@ -85,39 +85,41 @@ public class FarZoneAllianceRed extends TaskOpMode {
 
                         // WALL CYCLE
                         new AutoLimelightTrack(follower, limelight).then(
-                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(900)
-                        ).master(
-                                new IntakeUntilFull(intake)
+                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(1000)
+                        ).with(
+                                new Run(() -> intake.setState(Intake.State.IntakingEmpty))
                         ),
                         new Sleep(0.5),
                         new Shoot(intake, shooter),
 
                         // WALL CYCLE
                         new AutoLimelightTrack(follower, limelight).then(
-                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(900)
-                        ).master(
-                                new IntakeUntilFull(intake)
+                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(1000)
+                        ).with(
+                                new Run(() -> intake.setState(Intake.State.IntakingEmpty))
                         ),
                         new Sleep(0.5),
                         new Shoot(intake, shooter),
 
                         // WALL CYCLE
                         new AutoLimelightTrack(follower, limelight).then(
-                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(900)
-                        ).master(
-                                new IntakeUntilFull(intake)
+                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(1000)
+                        ).with(
+                                new Run(() -> intake.setState(Intake.State.IntakingEmpty))
                         ),
                         new Sleep(0.5),
                         new Shoot(intake, shooter),
 
                         // WALL CYCLE
                         new AutoLimelightTrack(follower, limelight).then(
-                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(900)
-                        ).master(
-                                new IntakeUntilFull(intake)
+                                new Follow(follower, new Line(wallIntakeA, shoot)).setMaxSpeed(1000)
+                        ).with(
+                                new Run(() -> intake.setState(Intake.State.IntakingEmpty))
                         ),
                         new Sleep(0.5),
-                        new Shoot(intake, shooter)
+                        new Shoot(intake, shooter),
+
+                        new Follow(follower, new Line(shoot, intakeAStart))
                 )
                 .registerSystem(limelight)
                 .registerSystem(shooter)
