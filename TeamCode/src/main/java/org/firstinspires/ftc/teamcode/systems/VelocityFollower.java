@@ -49,7 +49,7 @@ public class VelocityFollower extends SystemBase {
         public static double kS = 0.2;
 
         public static double breakVelocity = 300;
-        public static double breakDistance = 380;
+        public static double breakDistance = 300;
     }
 
     public VelocityFollower(double x, double y, double h) {

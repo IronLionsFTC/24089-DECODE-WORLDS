@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.lioncore.hardware.LionCRServo;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionMotor;
 import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
 import org.firstinspires.ftc.teamcode.lioncore.math.pid.PID;
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
 import org.firstinspires.ftc.teamcode.lioncore.systems.SystemBase;
@@ -55,7 +56,7 @@ public class Shooter extends SystemBase {
     public double yOffset = 0;
 
     public boolean distanceLock = false;
-    public Vector3 lockPosition;
+    public Position lockPosition;
 
     // Lookahead
     private double lastVelocity;
@@ -67,7 +68,7 @@ public class Shooter extends SystemBase {
         this.targetHood = 0;
         this.target = new Vector3(0, 0, 3500);
         this.rpmBuffer = new ArrayList<>();
-        this.lockPosition = new Vector3(0, 0, 0);
+        this.lockPosition = new Position(0, 0, 0);
     }
 
     // PID constants
@@ -114,7 +115,7 @@ public class Shooter extends SystemBase {
         public static double distanceCutoff = 2100;
         public static double hoodScale = -0.005;
         public static double hoodOffset = 60;
-        public static double vScale = 1;
+        public static double vScale = 0.99;
         public static double vOffset = 4300;
     }
 
@@ -209,18 +210,17 @@ public class Shooter extends SystemBase {
         if (ProjectileMotion.far()) overPower = ShooterPID.overPowerFar;
         else overPower = ShooterPID.overPowerClose;
 
-        Vector3 tp;
-        if (this.distanceLock) {
-            tp = this.lockPosition;
-        } else {
-            tp = ProjectileMotion.getTarget(yOffset);
-        }
+        Vector3 tp = ProjectileMotion.getTarget(yOffset);
+        Position rp;
+
+        if (distanceLock) rp = lockPosition;
+        else rp = SwerveDrive.PinpointCache.position;
 
         ProjectileMotion solution;
         if (ShooterPID.useConvergence)
-            solution = ProjectileMotion.calculateConvergence(tp, currentLaunchSpeed / overPower, quadraturePosition);
+            solution = ProjectileMotion.calculateConvergence(tp, rp, currentLaunchSpeed / overPower, quadraturePosition);
         else
-            solution = ProjectileMotion.calculate(tp, currentLaunchSpeed / overPower, quadraturePosition);
+            solution = ProjectileMotion.calculate(tp, rp, currentLaunchSpeed / overPower, quadraturePosition);
 
         this.targetVelocity = solution.velocity * overPower;
         if (ShooterPID.launchVelocity != 0) targetVelocity = ShooterPID.launchVelocity;
@@ -297,7 +297,7 @@ public class Shooter extends SystemBase {
         this.yOffset += 100;
     }
 
-    public void lockTo(Vector3 lockPosition) {
+    public void lockTo(Position lockPosition) {
         this.lockPosition = lockPosition;
         this.distanceLock = true;
     }

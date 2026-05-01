@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.projectileMotion;
 
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector2;
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Vector3;
 import org.firstinspires.ftc.teamcode.parameters.Zeroing;
@@ -137,15 +138,15 @@ public class ProjectileMotion {
         return solution;
     }
 
-    public static ProjectileMotion calculate(Vector3 target, double currentVelocity, double currentAngle) {
+    public static ProjectileMotion calculate(Vector3 target, Position robot, double currentVelocity, double currentAngle) {
 
         // Projectile math
         double velocity;
         double angle;
 
         Vector3 shooterPositionInField = new Vector3(
-                SwerveDrive.PinpointCache.position.position.x(),
-                SwerveDrive.PinpointCache.position.position.y(),
+                robot.position.x(),
+                robot.position.y(),
                 Zeroing.ProjMotConstants.shooterOffset.getZ()
         );
 
@@ -224,8 +225,8 @@ public class ProjectileMotion {
      * @param currentVelocity The current flywheel velocity, in mm
      * @return The aiming parameters that should work even accounting for robot velocity
      */
-    public static ProjectileMotion calculateConvergence(Vector3 target, double currentVelocity, double currentAngle) {
-        ProjectileMotion solution = calculate(target, currentVelocity, currentAngle);
+    public static ProjectileMotion calculateConvergence(Vector3 target, Position robot, double currentVelocity, double currentAngle) {
+        ProjectileMotion solution = calculate(target, robot, currentVelocity, currentAngle);
 
         Vector3 expectedMotion;
 
@@ -233,7 +234,7 @@ public class ProjectileMotion {
             expectedMotion = new Vector3(SwerveDrive.PinpointCache.velocity.x(), SwerveDrive.PinpointCache.velocity.y(), 0.0)
                     .scale(solution.time * ShootOnTheMoveConstants.timeOverestimate);
             Vector3 trueTarget = target.subtract(expectedMotion);
-            solution = calculate(trueTarget, currentVelocity, currentAngle);
+            solution = calculate(trueTarget, robot, currentVelocity, currentAngle);
         }
 
         return solution;

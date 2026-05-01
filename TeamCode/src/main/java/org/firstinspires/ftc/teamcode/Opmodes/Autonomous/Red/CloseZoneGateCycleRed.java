@@ -22,7 +22,7 @@ public class CloseZoneGateCycleRed extends TaskOpMode {
     @Override
     public Jobs spawn() {
 
-        double shootDelay = 0.6;
+        double shootDelay = 0.2;
         double xOffset = 50;
         double yOffset = 50;
 
@@ -34,11 +34,11 @@ public class CloseZoneGateCycleRed extends TaskOpMode {
         Position start = new Position(0 + xOffset, 500 + yOffset, 180);
         Position firstThree = new Position(-1000 + xOffset, 800 + yOffset, 180);
         Position elbow = new Position(-1900 + xOffset, 800 + yOffset, 180);
-        Position shootA = new Position(-1400 + xOffset, 1100 + yOffset, 210);
+        Position shootA = new Position(-1500 + xOffset, 1100 + yOffset, 210);
         Position shootB = new Position(-1300 + xOffset, 1000 + yOffset, 210);
         Position intakeAEnd = new Position(-1940 + xOffset, -150 + yOffset, 180);
         Position intakeBEnd = new Position(-1300 + xOffset, -60 + yOffset, 180);
-        Position gateIntake = new Position(-1880 + xOffset, -50 + yOffset, 210);
+        Position gateIntake = new Position(-1900 + xOffset, -50 + yOffset, 200);
         Position endPoint = new Position(-2000 + xOffset, 300 + yOffset, 210);
 
         return Jobs.create()
@@ -57,6 +57,8 @@ public class CloseZoneGateCycleRed extends TaskOpMode {
                                 firstThree,
                                 elbow
                         )),
+
+                        new Run(() -> shooter.lockTo(shootA)),
 
                         new Follow(follower, new Line(
                                 elbow, intakeAEnd
@@ -93,6 +95,8 @@ public class CloseZoneGateCycleRed extends TaskOpMode {
                         )).setMaxSpeed(800).race(
                                 new IntakeUntilFull(intake)
                         ),
+
+                        new Run(() -> shooter.lockTo(shootB)),
 
                         new Follow(follower, new Line(
                                 intakeBEnd,
