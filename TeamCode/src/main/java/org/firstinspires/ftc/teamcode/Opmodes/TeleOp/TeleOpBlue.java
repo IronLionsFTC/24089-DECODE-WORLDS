@@ -1,20 +1,29 @@
 package org.firstinspires.ftc.teamcode.Opmodes.TeleOp;
 
 import org.firstinspires.ftc.teamcode.lioncore.math.types.Position;
+import org.firstinspires.ftc.teamcode.lioncore.paths.Line;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Forever;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Jobs;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.Run;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Series;
+import org.firstinspires.ftc.teamcode.lioncore.tasks.Sleep;
 import org.firstinspires.ftc.teamcode.lioncore.tasks.TaskOpMode;
 import org.firstinspires.ftc.teamcode.systems.Follower;
 import org.firstinspires.ftc.teamcode.systems.Intake;
 import org.firstinspires.ftc.teamcode.systems.Limelight;
 import org.firstinspires.ftc.teamcode.systems.Shooter;
+import org.firstinspires.ftc.teamcode.tasks.AutoLimelightTrack;
 import org.firstinspires.ftc.teamcode.tasks.DownAdjust;
 import org.firstinspires.ftc.teamcode.tasks.EndXPattern;
+import org.firstinspires.ftc.teamcode.tasks.Follow;
+import org.firstinspires.ftc.teamcode.tasks.FollowHeading;
+import org.firstinspires.ftc.teamcode.tasks.Goto;
 import org.firstinspires.ftc.teamcode.tasks.IntakeUntilFull;
 import org.firstinspires.ftc.teamcode.tasks.Jetison;
+import org.firstinspires.ftc.teamcode.tasks.LeftAdjust;
 import org.firstinspires.ftc.teamcode.tasks.LimelightTrack;
 import org.firstinspires.ftc.teamcode.tasks.RelocaliseTo;
+import org.firstinspires.ftc.teamcode.tasks.RightAdjust;
 import org.firstinspires.ftc.teamcode.tasks.Shoot;
 import org.firstinspires.ftc.teamcode.tasks.StartXPattern;
 import org.firstinspires.ftc.teamcode.tasks.TeleopDriveVector;
@@ -46,9 +55,25 @@ public class TeleOpBlue extends TaskOpMode {
 
         controller1.Y.onPress(new ToggleSOTM());
 
+        Position shoot = new Position(3100, 1300, 180);
+        controller1.dpad.up.onPress(
+                new Series(
+                    // WALL CYCLE
+                    new AutoLimelightTrack(drivetrain, limelight).then(
+                            new FollowHeading(drivetrain, shoot).setMaxSpeed(1000)
+                    ).with(
+                            new Run(() -> intake.setState(Intake.State.IntakingEmpty))
+                    ),
+                    new Sleep(0.5),
+                    new Shoot(intake, shooter)
+                )
+        );
+
         controller2.dpad.up.onPress(new UpAdjust(shooter));
         controller2.dpad.down.onPress(new DownAdjust(shooter));
-        controller1.dpad.left.onPress(new RelocaliseTo(drivetrain, new Position(3150, -3300, 0)));
+        controller2.dpad.right.onPress(new RightAdjust(shooter));
+        controller2.dpad.left.onPress(new LeftAdjust(shooter));
+        controller1.dpad.left.onPress(new RelocaliseTo(drivetrain, new Position(3150, -3200, 0)));
         controller1.dpad.right.onPress(new RelocaliseTo(drivetrain, new Position(500, 0, 90)));
         controller1.bumpers.left.onPress(new Jetison(intake));
 

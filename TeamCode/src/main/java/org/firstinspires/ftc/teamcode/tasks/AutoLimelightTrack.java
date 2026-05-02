@@ -37,14 +37,19 @@ public class AutoLimelightTrack extends Task {
 
     @Override
     public void run() {
-        Follower.FollowerConstants.maxSpeed = 900;
+        Follower.FollowerConstants.maxSpeed = 1100;
         if (foundSolution) {
             if (!startedPathing) {
                 double heading = angle - SwerveDrive.PinpointCache.position.heading;
                 Vector2 position = SwerveDrive.PinpointCache.position.position;
                 Vector2 delta = Vector2.polar(1000, Math.toRadians( 90 - heading)).add(position);
+
+                double h = SwerveDrive.PinpointCache.position.heading;
+                double y;
+                if (h > 90 || h < -90) y = -100;
+                else y = 3400;
+
                 double x = Math.max(Math.min(delta.x(), 3300), -3300);
-                double y = -100;
 
                 if (x > 0 && x < 1900) x = 1900;
                 if (x < 0 && x > -1900) x = -1900;

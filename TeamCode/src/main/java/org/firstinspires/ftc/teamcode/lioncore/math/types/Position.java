@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.lioncore.math.types;
 
+import androidx.annotation.NonNull;
+
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public class Position {
@@ -19,5 +21,10 @@ public class Position {
     public void update(double x, double y, double heading) {
         this.position = Vector2.cartesian(x, y);
         this.heading = heading;
+    }
+
+    @NonNull
+    public Position clone() {
+        return new Position(position.x(), position.y(), heading);
     }
 }

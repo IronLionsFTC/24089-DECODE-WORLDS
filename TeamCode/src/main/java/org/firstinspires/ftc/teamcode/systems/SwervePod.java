@@ -96,7 +96,10 @@ public class SwervePod {
     }
 
     private void setServo(double angleDeg) {
-        servo.setPosition(0.5 - wrapDeg(angleDeg - offsetDeg.getAsDouble()) / POD_RANGE_DEG);
+        double position = 0.5 - wrapDeg(angleDeg - offsetDeg.getAsDouble()) / POD_RANGE_DEG;
+        if (position < 0.05) position = 0.05;
+        if (position > 0.95) position = 0.95;
+        servo.setPosition(position);
     }
 
     private static double wrapDeg(double a) {

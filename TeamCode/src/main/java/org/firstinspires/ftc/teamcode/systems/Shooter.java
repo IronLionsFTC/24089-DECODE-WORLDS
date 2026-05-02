@@ -53,6 +53,7 @@ public class Shooter extends SystemBase {
     public boolean validEncoder = true;
     public double lastTurretAngle = 0;
     public long lastTurretTimestamp = 0;
+    public double xOffset = 0;
     public double yOffset = 0;
 
     public boolean distanceLock = false;
@@ -90,10 +91,10 @@ public class Shooter extends SystemBase {
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 0.91;
+        public static double overPowerFar = 0.9;
         public static double overPowerClose = 1;
 
-        public static double intakePowerFar = 0.6;
+        public static double intakePowerFar = 0.5;
         public static double intakePowerClose = 1.1;
         public static double expectedDrop = 0.4;
 
@@ -112,7 +113,7 @@ public class Shooter extends SystemBase {
         public static boolean useLookahead = false;
         public static double lookaheadTime = 0.01;
 
-        public static double distanceCutoff = 2100;
+        public static double distanceCutoff = 5000;
         public static double hoodScale = -0.005;
         public static double hoodOffset = 60;
         public static double vScale = 0.99;
@@ -210,7 +211,7 @@ public class Shooter extends SystemBase {
         if (ProjectileMotion.far()) overPower = ShooterPID.overPowerFar;
         else overPower = ShooterPID.overPowerClose;
 
-        Vector3 tp = ProjectileMotion.getTarget(yOffset);
+        Vector3 tp = ProjectileMotion.getTarget(xOffset, yOffset);
         Position rp;
 
         if (distanceLock) rp = lockPosition;
@@ -290,11 +291,23 @@ public class Shooter extends SystemBase {
     }
 
     public void upAdjust() {
-        this.yOffset -= 100;
+        this.yOffset += 100;
     }
 
     public void downAdjust() {
-        this.yOffset += 100;
+        this.yOffset -= 100;
+    }
+
+    public void rightAdjust() {
+        double x = SwerveDrive.PinpointCache.position.position.x();
+        if (x < 0) this.xOffset -= 100;
+        else this.xOffset += 100;
+    }
+
+    public void leftAdjust() {
+        double x = SwerveDrive.PinpointCache.position.position.x();
+        if (x < 0) this.xOffset += 100;
+        else this.xOffset -= 100;
     }
 
     public void lockTo(Position lockPosition) {
