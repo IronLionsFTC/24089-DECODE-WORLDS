@@ -31,7 +31,7 @@ public abstract class TaskOpMode extends OpMode {
      * Create all systems and tasks and return them. Do not initialise the systems.
      * @return Return a "Jobs" item containing task and systems
      */
-    public abstract Jobs spawn();
+    public abstract Jobs  spawn();
 
     /**
      * Empty by default, allows users to override with something they want to happen once all commands in this iteration have been executed.

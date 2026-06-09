@@ -39,7 +39,7 @@ public class TeleOpRed extends TaskOpMode {
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
         // Changed right trigger --> button A for Teleop Intake
-        controller1.A.onPress(new TeleopIntake(intake));
+        controller1.leftTrigger.asButton.onPress(new TeleopIntake(intake));
         controller1.rightTrigger.asButton.onPress(new Shoot(intake, shooter));
         controller1.X.onPress(new StartXPattern(drivetrain));
         controller1.X.onRelease(new EndXPattern(drivetrain));
@@ -47,6 +47,7 @@ public class TeleOpRed extends TaskOpMode {
         //controller1.A.onPress(new Run(() -> drivetrain.setHeading(210)));
         Limelight limelight = new Limelight();
 
+        // a 90 turn controller1.B.onPress(new );
         controller1.Y.onPress(new ToggleSOTM());
 
         controller2.dpad.up.onPress(new UpAdjust(shooter));

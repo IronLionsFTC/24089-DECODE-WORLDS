@@ -1,38 +1,47 @@
 package org.firstinspires.ftc.teamcode.Opmodes.Debug;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.lioncore.hardware.AbsoluteEncoder;
-import org.firstinspires.ftc.teamcode.lioncore.system.ConstantsStorage;
-import org.firstinspires.ftc.teamcode.parameters.Zeroing;
+import org.firstinspires.ftc.teamcode.lioncore.hardware.LionServo;
+import org.firstinspires.ftc.teamcode.parameters.ServoConstants;
 
 @TeleOp
 public class ZeroSwerve extends LinearOpMode {
 
+    private static final double STEP = 0.002;
+
     public void runOpMode() {
 
-        if (isStopRequested()) return;
+        LionServo rightFront = LionServo.single(hardwareMap, ServoConstants.Names.rightFront, 0.5);
+        LionServo leftFront  = LionServo.single(hardwareMap, ServoConstants.Names.leftFront,  0.5);
+        LionServo rightRear  = LionServo.single(hardwareMap, ServoConstants.Names.rightRear,  0.5);
+        LionServo leftRear   = LionServo.single(hardwareMap, ServoConstants.Names.leftRear,   0.5);
 
-        AbsoluteEncoder rightFrontAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightFrontAnalog);
-        AbsoluteEncoder leftFrontAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.leftFrontAnalog);
-        AbsoluteEncoder rightRearAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.rightRearAnalog);
-        AbsoluteEncoder leftRearAnalog = new AbsoluteEncoder(hardwareMap, Zeroing.Names.leftRearAnalog);
+        double rfPos = 0.5;
+        double lfPos = 0.5;
+        double rrPos = 0.5;
+        double lrPos = 0.5;
 
         waitForStart();
 
-        rightFrontAnalog.read();
-        leftFrontAnalog.read();
-        rightRearAnalog.read();
-        leftRearAnalog.read();
-
-        ConstantsStorage.save("rf", rightFrontAnalog.position());
-        ConstantsStorage.save("lf", leftFrontAnalog.position());
-        ConstantsStorage.save("rr", rightRearAnalog.position());
-        ConstantsStorage.save("lr", leftRearAnalog.position());
-
         while (opModeIsActive()) {
 
+            if (gamepad1.dpad_up)    rfPos = clamp(rfPos + STEP);
+            if (gamepad1.dpad_down)  lfPos = clamp(lfPos + STEP);
+            if (gamepad1.dpad_left)  rrPos = clamp(rrPos + STEP);
+            if (gamepad1.dpad_right) lrPos = clamp(lrPos + STEP);
+
+            rightFront.setPosition(rfPos);
+            leftFront.setPosition(lfPos);
+            rightRear.setPosition(rrPos);
+            leftRear.setPosition(lrPos);
+
         }
+    }
+
+    private double clamp(double pos) {
+        return Math.max(0.0, Math.min(1.0, pos));
     }
 }

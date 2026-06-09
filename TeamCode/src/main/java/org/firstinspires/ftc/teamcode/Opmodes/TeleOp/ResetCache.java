@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.systems.SwerveDrive;
 
 @TeleOp
-public class ResetCache extends LinearOpMode     {
+public class ResetCache extends LinearOpMode  {
     public void runOpMode() {
         if (isStopRequested()) return;
         waitForStart();

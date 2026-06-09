@@ -16,8 +16,8 @@ public class IntakeTest extends OpMode{
 
     @Config
     public static class IntakeTransferTest {
-        public static double intakePower = 0;
-        public static double transferPower = 0;
+        public static double intakePower = 1;
+        public static double transferPower = 1;
         public static boolean useIntakeForBoth = false;
     }
 
