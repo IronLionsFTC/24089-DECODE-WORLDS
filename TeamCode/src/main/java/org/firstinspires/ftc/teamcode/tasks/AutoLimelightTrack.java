@@ -37,7 +37,7 @@ public class AutoLimelightTrack extends Task {
 
     @Override
     public void run() {
-        Follower.FollowerConstants.maxSpeed = 1100;
+        Follower.FollowerConstants.maxSpeed = 1300;
         if (foundSolution) {
             if (!startedPathing) {
                 double heading = angle - SwerveDrive.PinpointCache.position.heading;

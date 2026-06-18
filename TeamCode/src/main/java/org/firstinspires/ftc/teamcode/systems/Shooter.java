@@ -86,34 +86,34 @@ public class Shooter extends SystemBase {
         public static double targetZFar = 1000;
         public static double targetXClose = 0;
         public static double targetYClose = 0;
-        public static double targetZClose = 1200;
+        public static double targetZClose = 1100;
         public static double targetZMedium = 1100;
 
         public static boolean useConvergence = true;
 
-        public static double overPowerFar = 0.9;
+        public static double overPowerFar = 0.915;
         public static double overPowerClose = 1;
 
-        public static double intakePowerFar = 0.5;
-        public static double intakePowerClose = 1.1;
+        public static double intakePowerFar = 0.55;
+        public static double intakePowerClose = 0.7;
         public static double expectedDrop = 0.4;
 
         public static double hoodAngle = 0;
         public static double launchVelocity = 0;
 
-        public static double velocityScale = 2000;
+        public static double velocityScale = 1800;
         public static boolean useVComp = true;
         public static boolean useMinimum = true;
         public static boolean negativePID = true;
         public static boolean fullpowerRecovery = true;
 
         public static double farZoneDistanceOffset = 600;
-        public static double closeZoneDistanceOffset = 400;
+        public static double closeZoneDistanceOffset = 0;
 
         public static boolean useLookahead = false;
         public static double lookaheadTime = 0.01;
 
-        public static double distanceCutoff = 5000;
+        public static double distanceCutoff = 2000;
         public static double hoodScale = -0.005;
         public static double hoodOffset = 60;
         public static double vScale = 0.99;

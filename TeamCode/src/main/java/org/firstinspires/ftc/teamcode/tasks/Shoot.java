@@ -24,9 +24,9 @@ public class Shoot extends Task {
         this.shooter.state = Shooter.State.Shooting;
 
         if (ProjectileMotion.far()) {
-            this.endTime = (long) (this.initTime + 1e9);
+            this.endTime = (long) (this.initTime + 13e8);
         } else {
-            this.endTime = (long) (this.initTime + 6e8);
+            this.endTime = (long) (this.initTime + 8e8);
         }
     }
 
