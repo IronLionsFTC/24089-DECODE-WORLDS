@@ -20,8 +20,8 @@ public class ServoConstants {
     }
 
     public static class Positions {
-        public static double blockerOpen = 0.08;
-        public static double blockerClosed = 0.2;
+        public static double blockerOpen = 0.1; //prior one 0.08
+        public static double blockerClosed = 0.3; //prior one 0.3
     }
 
     public static class Ratios {

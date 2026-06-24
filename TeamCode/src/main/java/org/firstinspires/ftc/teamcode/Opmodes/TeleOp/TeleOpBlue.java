@@ -37,7 +37,6 @@ public class TeleOpBlue extends TaskOpMode {
         intake.loadHardware(hardwareMap);
         Shooter shooter = new Shooter(intake.yieldTurretEncoder());
 
-        // Changed right trigger --> button A for Teleop Intake
         controller1.leftTrigger.asButton.onPress(new TeleopIntake(intake));
         controller1.rightTrigger.asButton.onPress(new Shoot(intake, shooter));
         controller1.X.onPress(new StartXPattern(drivetrain));
